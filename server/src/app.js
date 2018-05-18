@@ -24,6 +24,34 @@ var Sc = require("../models/smallClass")
 var Journal = require("../models/journal")
 var Wc = require("../models/workClass")
 
+// Fetch workCode by _id
+app.get('/wc/getWCById/:id', (req, res) => {
+  var db = req.db
+  Wc.find({}, '_id text bCode mCode sCode wCode', function (error, wcs) {
+    if (error) { console.error(error); }
+    res.send(wcs[0].bCode + wcs[0].mCode + wcs[0].sCode + wcs[0].wCode)
+  })
+  .where('_id').equals(req.params.id)
+})
+
+// Fetch _id by workCode 
+app.get('/wc/getIdByWC/:code', (req, res) => {
+  var db = req.db
+  var code = req.params.code
+  var bc = code.substring(0, 3)
+  var mc = code.substring(3, 7)
+  var sc = code.substring(7, 11)
+  var wc = code.substring(11, 15)
+  Wc.find({}, '_id text bCode mCode sCode wCode', function (error, wcs) {
+    if (error) { console.error(error); }
+    res.send(wcs)
+  })
+  .where('bCode').equals(bc)
+  .where('mCode').equals(mc)
+  .where('sCode').equals(sc)
+  .where('wCode').equals(wc)
+})
+
 // Fetch workcalss text by cropCode
 app.get('/wc/getTxtByCC/:code', (req, res) => {
   var db = req.db
@@ -56,6 +84,56 @@ app.get('/wc/getText/:code', (req, res) => {
   .where('mCode').equals(mc)
   .where('sCode').equals(sc)
   .where('wCode').equals(wc)
+})
+
+// Update journal
+app.put('/journals/:id', (req, res) => {
+  var db = req.db;
+  Journal.findById(req.params.id, 'userId name', function (error, journals) {
+    if (error) { console.error(error); }
+
+    journals.userId = req.body.userId;
+    journals.date = req.body.date;
+    journals.landId = req.body.landId;
+    journals.workCode = req.body.workCode;
+    journals.workContent = req.body.workContent;
+    journals.workSTime = req.body.workSTime;
+    journals.workETime = req.body.workETime;
+    journals.weather = [];
+    for(var i = 0; i < req.body.weather.length; i++) {
+	  	journals.weather[i] = new Object();
+	  	journals.weather[i].baseTime = req.body.weather[i].baseTime;
+	  	journals.weather[i].sky = req.body.weather[i].sky;
+	  	journals.weather[i].t1h = req.body.weather[i].t1h;
+	  	journals.weather[i].reh = req.body.weather[i].reh;
+	  	journals.weather[i].rn1 = req.body.weather[i].rn1;
+  	}
+  	journals.remarks = req.body.remarks
+
+    journals.save(function (error) {
+      if (error) {
+        console.log(error)
+      }
+      res.send({
+        success: true
+      })
+    })
+  })
+})
+
+// Delete journal
+app.delete('/journals/:id', (req, res) => {
+	var db = req.db
+	Journal.remove({
+		_id: req.params.id
+	}, function(err, lands) {
+		if (err) {
+			res.send(err)
+		}
+		res.send({
+			success: true
+		})
+	})
 })
 
 // Fetch journals by date, workType, workContent

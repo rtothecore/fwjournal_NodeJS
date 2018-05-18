@@ -104,6 +104,13 @@
         >
           검색
         </v-btn>
+        <v-btn
+          color="light-blue"
+          class="white--text"
+          @click.native="searchReset"
+        >
+          리셋
+        </v-btn>
       </v-flex>
       
       <div>
@@ -118,22 +125,87 @@
           <v-container grid-list-md>
             <v-layout wrap>
               <v-flex xs12 sm6 md4>
-                <v-text-field v-model="editedItem.farmName" label="농장명"></v-text-field>
+                <!-- <v-text-field v-model="editedItem.farmName" label="농장명"></v-text-field> -->
+                <v-select
+                  :items="landItems"
+                  v-model="editedItem.farmName"
+                  label="농장명"
+                  required
+                  v-on:change="onChangeLand"
+                  item-text="name"
+                  item-value="_id"
+                ></v-select>
               </v-flex>
               <v-flex xs12 sm6 md4>
-                <v-text-field v-model="editedItem.cropName" label="작물명"></v-text-field>
+                <!-- <v-text-field v-model="editedItem.cropName" label="작물명"></v-text-field> -->
+                <v-text-field
+                  v-model="editedItem.cropName"
+                  label="작물명" 
+                  hint="농장명을 선택하면 자동입력됩니다"
+                  persistent-hint
+                  required
+                  ></v-text-field>
               </v-flex>
               <v-flex xs12 sm6 md4>
-                <v-text-field v-model="editedItem.workType" label="작업분류"></v-text-field>
+                <!-- <v-text-field v-model="editedItem.workType" label="작업분류"></v-text-field> -->
+                <v-select
+                  :items="editeWorkTypeItems"
+                  v-model="editedItem.workType"
+                  label="작업분류"
+                  required
+                  v-on:change="onChangeEditWorkType"
+                  item-text="text"
+                  item-value="_id"
+                  hint="작물명에 따른 작업분류 선택"
+                  persistent-hint                  
+                ></v-select>
               </v-flex>
-              <v-flex xs12 sm6 md4>
+              <v-flex xs12 sm12 md12>
                 <v-text-field v-model="editedItem.workContent" label="작업내용"></v-text-field>
               </v-flex>
-              <v-flex xs12 sm6 md4>
-                <v-text-field v-model="editedItem.workSTime" label="시작시간"></v-text-field>
+              <v-flex xs12 sm6 md6>
+                <!-- <v-text-field v-model="editedItem.workSTime" label="시작시간"></v-text-field> -->
+                <v-menu
+                  lazy
+                  :close-on-content-click="false"
+                  v-model="menu4"
+                  transition="scale-transition"
+                  offset-y
+                  :nudge-left="40"
+                >
+                  <v-text-field
+                    v-model="e6"
+                    label="작업시작 시간"
+                    required
+                    slot="activator"
+                    prepend-icon="access_time"
+                    readonly
+                    v-on:change="onChangeWSTime"
+                  ></v-text-field>
+                  <!-- <v-time-picker v-model="e6" format="24hr" autosave></v-time-picker> -->
+                </v-menu>
               </v-flex>
-              <v-flex xs12 sm6 md4>
-                <v-text-field v-model="editedItem.workETime" label="종료시간"></v-text-field>
+              <v-flex xs12 sm6 md6>
+                <!-- <v-text-field v-model="editedItem.workETime" label="종료시간"></v-text-field> -->
+                <v-menu
+                  lazy
+                  :close-on-content-click="false"
+                  v-model="menu5"
+                  transition="scale-transition"
+                  offset-y
+                  :nudge-left="40"
+                >
+                  <v-text-field
+                    v-model="e7"
+                    label="작업종료 시간"
+                    required
+                    slot="activator"
+                    prepend-icon="access_time"
+                    readonly
+                    v-on:change="onChangeWETime"
+                  ></v-text-field>
+                  <!-- <v-time-picker v-model="e7" format="24hr" autosave></v-time-picker> -->
+                </v-menu>
               </v-flex>
                <v-flex xs12 sm6 md3>
                 <v-text-field v-model="editedItem.sky" label="날씨"></v-text-field>
@@ -155,12 +227,11 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <!-- <v-btn color="blue darken-1" flat @click.native="save">저장</v-btn> -->
+          <v-btn color="blue darken-1" flat @click.native="save">수정</v-btn>
           <v-btn color="blue darken-1" flat @click.native="close">닫기</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
-
         <v-data-table
           :headers="headers"
           :items="journals"
@@ -188,7 +259,10 @@
             <td class="text-xs-right">{{ props.item.remarks }}</td>
             <td class="justify-center layout px-0">
               <v-btn icon class="mx-0" @click="editItem(props.item)">
-                <v-icon color="teal">speaker_notes</v-icon>
+                <v-icon color="teal">edit</v-icon>
+              </v-btn>
+              <v-btn icon class="mx-0" @click="deleteItem(props.item)">
+                <v-icon color="pink">delete</v-icon>
               </v-btn>
             </td>
           </template>
@@ -212,6 +286,17 @@ export default {
   },
   data () {
     return {
+      editWorkCode: '',
+      editDate: '',
+      e7: null,
+      e6: null,
+      menu4: false,
+      menu5: false,
+      editedWorkTypeCode: '',
+      editeWorkTypeItems: [],
+      selectedCropCode: '',
+      selectedLandId: '',
+      landItems: [],
       selectedWorkType: '',
       e2: null,
       WorkTypeitems: [
@@ -291,6 +376,7 @@ export default {
   },
   created () {
     this.getJournals()
+    this.getLands()
   },
   watch: {
     loader () {
@@ -316,6 +402,12 @@ export default {
     }
   },
   methods: {
+    async getLands () {
+      const response = await LandService.fetchLands({
+        userId: this.userId
+      })
+      this.landItems = response.data.lands
+    },
     async getJournals () {
       const response = await JournalService.fetchJournals({
         userId: this.userId
@@ -374,14 +466,92 @@ export default {
       }
       this.journals = tmpJournals
     },
+    async deleteJournal (id) {
+      await JournalService.deleteJournal(id)
+    },
+    async updateJournal () {
+      await JournalService.updateJournal({
+        id: this.editedItem._id,
+        userId: this.userId,
+        date: this.editDate,
+        landId: this.selectedLandId,
+        workCode: this.editWorkCode,
+        workContent: this.editedItem.workContent,
+        workSTime: this.editedItem.workSTime,
+        workETime: this.editedItem.workETime,
+        weather: [],
+        remarks: this.editedItem.remarks
+      })
+    },
+    async getCropCodeByLandId (landId) {
+      const response = await LandService.fetchCropCodeByLandId({
+        landId: landId
+      })
+      this.selectedCropCode = response.data[0].cropCode
+      this.getCropNameByCropCode(this.selectedCropCode)
+      this.getWorkTypeByCropCode(this.selectedCropCode)
+    },
+    async getCropNameByCropCode (cropCode) {
+      const response = await ScService.fetchCropNameByCropCode({
+        cropCode: cropCode
+      })
+      this.editedItem.cropName = response.data[0].text
+    },
+    async getWorkTypeByCropCode (cropCode) {
+      const response = await WcService.fetchTextByCropCode({
+        cropCode: cropCode
+      })
+      this.editeWorkTypeItems = response.data
+    },
+    async getIdByWorkCode (workCode) {
+      const response = await WcService.fetchIdByWorkCode({
+        code: workCode
+      })
+      this.editedItem.workType = response.data[0]._id
+    },
+    async getWorkCodeById (workId) {
+      const response = await WcService.fetchWorkCodeById({
+        id: workId
+      })
+      this.editedWorkTypeCode = response.data
+    },
+    onChangeWSTime: function (event) {
+      var tmpStr = event
+      this.editedItem.workSTime = tmpStr.replace(':', '')
+      console.log(this.editedItem.workSTime)
+    },
+    onChangeWETime: function (event) {
+      var tmpStr = event
+      this.editedItem.workETime = tmpStr.replace(':', '')
+      console.log(this.editedItem.workETime)
+    },
+    onChangeEditWorkType: function (event) {
+      this.getWorkCodeById(event)
+    },
+    onChangeLand: function (event) {
+      this.selectedLandId = event
+      this.getCropCodeByLandId(this.selectedLandId)
+    },
     onChangeWorkType: function (event) {
       this.selectedWorkType = event
     },
     editItem (item) {
       this.editedIndex = this.journals.indexOf(item)
       this.editedItem = Object.assign({}, item)
+      this.editedItem.farmName = this.journals[this.editedIndex].landId
+      this.selectedLandId = this.journals[this.editedIndex].landId
+      this.getCropCodeByLandId(this.journals[this.editedIndex].landId)
+      this.editWorkCode = this.journals[this.editedIndex].workCode
+      this.getIdByWorkCode(this.editWorkCode)
+      this.e6 = this.journals[this.editedIndex].workSTime.substring(0, 2) + ':' + this.journals[this.editedIndex].workSTime.substring(2, 4)
+      this.e7 = this.journals[this.editedIndex].workETime.substring(0, 2) + ':' + this.journals[this.editedIndex].workETime.substring(2, 4)
       this.dialog = true
+      this.editDate = this.journals[this.editedIndex].date
       this.formTitle = '영농일지 - ' + this.journals[this.editedIndex].date
+    },
+    deleteItem (item) {
+      const index = this.journals.indexOf(item)
+      confirm('이 일지를 지우시겠습니까?') && this.journals.splice(index, 1) && this.deleteJournal(item._id)
     },
     close () {
       this.dialog = false
@@ -398,6 +568,28 @@ export default {
         }
         this.getJournalsBy4()
       }).catch(() => {})
+    },
+    searchReset () {
+      this.startDate = ''
+      this.endDate = ''
+      this.e2 = null
+      this.workContent = null
+      this.getJournals()
+      this.getLands()
+      this.$validator.reset()
+    },
+    save () {
+      this.updateJournal()
+      this.dialog = false
+      /*
+      this.$validator.validateAll().then((result) => {
+        if (!result) {
+          return
+        }
+        this.updateJournal()
+        this.dialog = false
+      }).catch(() => {})
+      */
     }
   }
 }
