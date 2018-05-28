@@ -21,6 +21,10 @@ export default {
     return Api().get('journals/' + params.userId, params)
   },
 
+  fetchJournal (params) {
+    return Api().get('journal/' + params.id, params)
+  },
+
   createJournals (params) {
     return Api().post('journals', params)
   }

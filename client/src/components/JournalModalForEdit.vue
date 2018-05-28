@@ -41,6 +41,8 @@
                   data-vv-name="selectWorkType"
                   required
                   v-on:change="onChangeWorkType"
+                  item-text="text"
+                  item-value="_id"
                   hint="작물명에 따른 작업분류 선택"
                   persistent-hint                  
                 ></v-select>
@@ -99,7 +101,8 @@
                 </v-menu>
               </v-flex>
               <v-flex xs12 sm6 md3>
-                <v-text-field 
+                <v-text-field
+                  v-model="weatherSky"
                   label="날씨" 
                   hint="자동입력"
                   persistent-hint
@@ -107,7 +110,8 @@
                   ></v-text-field>
               </v-flex>
               <v-flex xs12 sm6 md3>
-                <v-text-field 
+                <v-text-field
+                  v-model="weatherT1h"
                   label="온도" 
                   hint="자동입력"
                   persistent-hint
@@ -115,7 +119,8 @@
                   ></v-text-field>
               </v-flex>
               <v-flex xs12 sm6 md3>
-                <v-text-field 
+                <v-text-field
+                  v-model="weatherReh"
                   label="습도" 
                   hint="자동입력"
                   persistent-hint
@@ -123,7 +128,8 @@
                   ></v-text-field>
               </v-flex>
               <v-flex xs12 sm6 md3>
-                <v-text-field 
+                <v-text-field
+                  v-model="weatherRn1"
                   label="강수량" 
                   hint="자동입력"
                   persistent-hint
@@ -139,9 +145,9 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="blue darken-1" flat @click.native="dialog = false">취소</v-btn>
-          <!-- <v-btn color="blue darken-1" flat @click.native="dialog = false" :disabled="!valid">작성</v-btn> -->
-          <v-btn color="blue darken-1" flat @click.native="save">작성</v-btn>
+          <v-btn color="blue darken-1" flat @click.native="deleteJ">삭제</v-btn>
+          <v-btn color="blue darken-1" flat @click.native="save">수정</v-btn>
+          <v-btn color="blue darken-1" flat @click.native="dialog = false">닫기</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -160,6 +166,10 @@ export default {
   },
   data () {
     return {
+      weatherSky: '',
+      weatherT1h: '',
+      weatherReh: '',
+      weatherRn1: '',
       journalId: '',
       remarks: '',
       workContent: '',
@@ -179,7 +189,7 @@ export default {
       cropName: '',
       workType: [],
       selectLand: null,
-      selectWorkType: null,
+      selectWorkType: '',
       dictionary: {
         custom: {
           e7: {
@@ -201,15 +211,35 @@ export default {
   mounted () {
     this.$validator.localize('ko', this.dictionary)
     var vm = this
-    bus.$on('dialog', function (value) {
-      vm.User_Profile = '영농일지 작성 - ' + value
+    bus.$on('dialogForEdit', function (value) {
+      vm.journalId = value
       vm.dialog = true
+      vm.getJournal()
     })
   },
   created () {
     this.getLands()
   },
   methods: {
+    async getJournal () {
+      const response = await JournalService.fetchJournal({
+        id: this.journalId
+      })
+      this.User_Profile = '영농일지 수정 - ' + response.data[0].date
+      this.selectLand = response.data[0].landId
+      this.getCropCodeByLandId(this.selectLand)
+      this.selectedWorkTypeCode = response.data[0].workCode
+      this.getIdByWorkCode(response.data[0].workCode)
+      this.workContent = response.data[0].workContent
+      this.e6 = response.data[0].workSTime.substring(0, 2) + ':' + response.data[0].workSTime.substring(2, 4)
+      this.e7 = response.data[0].workETime.substring(0, 2) + ':' + response.data[0].workETime.substring(2, 4)
+      this.weatherSky = response.data[0].weather[0].sky
+      this.weatherT1h = response.data[0].weather[0].t1h
+      this.weatherReh = response.data[0].weather[0].reh
+      this.weatherRn1 = response.data[0].weather[0].rn1
+      this.remarks = response.data[0].remarks
+      // console.log(response.data[0])
+    },
     async getLands () {
       const response = await LandService.fetchLands({
         userId: this.userId
@@ -234,8 +264,33 @@ export default {
       const response = await WcService.fetchTextByCropCode({
         cropCode: cropCode
       })
-      console.log(cropCode)
       this.workType = response.data
+    },
+    async getIdByWorkCode (workCode) {
+      const response = await WcService.fetchIdByWorkCode({
+        code: workCode
+      })
+      this.selectWorkType = response.data[0]._id
+    },
+    async getWorkCodeById (id) {
+      const response = await WcService.fetchWorkCodeById({
+        id: id
+      })
+      this.selectedWorkTypeCode = response.data
+    },
+    async updateJournal () {
+      await JournalService.updateJournal({
+        id: this.journalId,
+        userId: this.userId,
+        date: this.User_Profile.substring(10, 20),
+        landId: this.selectLand,
+        workCode: this.selectedWorkTypeCode,
+        workContent: this.workContent,
+        workSTime: this.e6.replace(':', ''),
+        workETime: this.e7.replace(':', ''),
+        weather: [{'baseTime': '1400', 'sky': '00', 't1h': '17', 'reh': '01', 'rn1': '02'}],
+        remarks: this.remarks
+      })
     },
     async createNewJournal () {
       await JournalService.createJournals({
@@ -250,12 +305,15 @@ export default {
         remarks: this.remarks
       })
     },
+    async deleteJournal (id) {
+      await JournalService.deleteJournal(id)
+    },
     onChangeLand: function (event) {
       this.selectedLandId = event
       this.getCropCodeByLandId(this.selectedLandId)
     },
     onChangeWorkType: function (event) {
-      this.selectedWorkTypeCode = event.bCode + event.mCode + event.sCode + event.wCode
+      this.getWorkCodeById(event)
     },
     onChangeWSTime: function (event) {
       var tmpStr = event
@@ -272,10 +330,15 @@ export default {
         if (!result) {
           return
         }
-        this.createNewJournal()
+        this.updateJournal()
         bus.$emit('toJournal', 'test')
         this.dialog = false
       }).catch(() => {})
+    },
+    deleteJ () {
+      confirm('이 일지를 지우시겠습니까?') && this.deleteJournal(this.journalId)
+      bus.$emit('toJournal', 'test')
+      this.dialog = false
     }
   }
 }

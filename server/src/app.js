@@ -185,6 +185,16 @@ app.get('/journals/:userId', (req, res) => {
   .where('userId').equals(req.params.userId)
 })
 
+// Fetch journal by id
+app.get('/journal/:id', (req, res) => {
+  var db = req.db
+  Journal.find({}, '_id userId date landId workCode workContent workSTime workETime weather remarks', function (error, journals) {
+    if (error) { console.error(error); }
+    res.send(journals)
+  })
+  .where('_id').equals(req.params.id)
+})
+
 // Add new journal
 app.post('/journals', (req, res) => {
   var db = req.db;

@@ -8,9 +8,11 @@ import 'vuetify/dist/vuetify.min.css'
 import FullCalendar from 'vue-full-calendar'
 import 'fullcalendar/dist/fullcalendar.min.css'
 import JournalModal from './components/JournalModal.vue'
+import JournalModalForEdit from './components/JournalModalForEdit.vue'
 import VeeValidate from 'vee-validate'
 
 Vue.component('journalModal', JournalModal)
+Vue.component('journalModalForEdit', JournalModalForEdit)
 
 Vue.use(Vuetify)
 Vue.use(FullCalendar)

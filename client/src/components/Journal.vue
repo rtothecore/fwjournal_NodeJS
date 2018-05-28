@@ -1,7 +1,8 @@
 <template>
     <div id="calendar" style="height:900px; width:900px;">
-	    <full-calendar :config="config" :events="events"/>
+	    <full-calendar :config="config" :events="events" @event-selected="eventSelected"/>
       <journalModal></journalModal>
+      <journalModalForEdit></journalModalForEdit>
     </div>
 </template>
 
@@ -57,6 +58,10 @@
         })
   },
   methods: {
+        eventSelected: function (event, jsEvent, view) {
+          // console.log(event)
+          bus.$emit('dialogForEdit', event.journalId)
+        },
         async getJournal () {
           const response = await JournalService.fetchJournals({
             userId: this.userId
@@ -73,8 +78,11 @@
               landId: response.data[i].landId
             })
             tmpEvent.title = response4.data[0].name + ' - ' + response3.data[0].text + '\n' + response2.data[0].text + ' - ' + response.data[i].workContent
-            tmpEvent.start = response.data[i].date
-            tmpEvent.end = response.data[i].date
+            var tmpSTime = response.data[i].date + ' ' + response.data[i].workSTime.substring(0, 2) + ':' + response.data[i].workSTime.substring(2, 4)
+            var tmpETime = response.data[i].date + ' ' + response.data[i].workETime.substring(0, 2) + ':' + response.data[i].workETime.substring(2, 4)
+            tmpEvent.start = tmpSTime
+            tmpEvent.end = tmpETime
+            tmpEvent.journalId = response.data[i]._id
             this.events.push(tmpEvent)
           }
         }
