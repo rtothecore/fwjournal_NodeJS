@@ -53,14 +53,21 @@
         }
   },
   mounted () {
-        bus.$on('toJournal', function (value) {
-          location.reload()
+        var vm = this
+        bus.$on('toJournalForNew', function (value) {
+          vm.events.push(value)
+        })
+        bus.$on('toJournalForUpdate', function (value) {
+          vm.events.splice(value.eventIndex, 1)
+          vm.events.push(value)
+        })
+        bus.$on('toJournalForDel', function (value) {
+          vm.events.splice(value, 1)
         })
   },
   methods: {
         eventSelected: function (event, jsEvent, view) {
-          // console.log(event)
-          bus.$emit('dialogForEdit', event.journalId)
+          bus.$emit('dialogForEdit', event)
         },
         async getJournal () {
           const response = await JournalService.fetchJournals({
@@ -84,6 +91,8 @@
             tmpEvent.end = tmpETime
             tmpEvent.journalId = response.data[i]._id
             this.events.push(tmpEvent)
+            tmpEvent.eventIndex = this.events.indexOf(tmpEvent)
+            // console.log(this.events.indexOf(tmpEvent))
           }
         }
   }

@@ -479,7 +479,7 @@ export default {
         workContent: this.editedItem.workContent,
         workSTime: this.editedItem.workSTime,
         workETime: this.editedItem.workETime,
-        weather: [],
+        weather: [{'baseTime': '1400', 'sky': '00', 't1h': '17', 'reh': '01', 'rn1': '02'}],
         remarks: this.editedItem.remarks
       })
     },
@@ -545,13 +545,37 @@ export default {
       this.getIdByWorkCode(this.editWorkCode)
       this.e6 = this.journals[this.editedIndex].workSTime.substring(0, 2) + ':' + this.journals[this.editedIndex].workSTime.substring(2, 4)
       this.e7 = this.journals[this.editedIndex].workETime.substring(0, 2) + ':' + this.journals[this.editedIndex].workETime.substring(2, 4)
+      this.editedItem.sky = this.journals[this.editedIndex].weather[0].sky
+      this.editedItem.t1h = this.journals[this.editedIndex].weather[0].t1h
+      this.editedItem.reh = this.journals[this.editedIndex].weather[0].reh
+      this.editedItem.rn1 = this.journals[this.editedIndex].weather[0].rn1
       this.dialog = true
       this.editDate = this.journals[this.editedIndex].date
       this.formTitle = '영농일지 - ' + this.journals[this.editedIndex].date
     },
     deleteItem (item) {
       const index = this.journals.indexOf(item)
-      confirm('이 일지를 지우시겠습니까?') && this.journals.splice(index, 1) && this.deleteJournal(item._id)
+      // confirm('이 일지를 지우시겠습니까?') && this.journals.splice(index, 1) && this.deleteJournal(item._id)
+      this.$swal({
+        title: '이 일지를 삭제 하시겠습니까?',
+        text: '삭제 후에 되돌릴 수 없습니다',
+        type: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: '네, 삭제합니다',
+        cancelButtonText: '취소합니다'
+      }).then((result) => {
+        if (result.value) {
+          this.deleteJournal(item._id)
+          this.journals.splice(index, 1)
+          this.$swal(
+            '삭제했습니다!',
+            '일지가 삭제되었습니다',
+            'success'
+          )
+        }
+      })
     },
     close () {
       this.dialog = false
@@ -580,6 +604,12 @@ export default {
     },
     save () {
       this.updateJournal()
+      this.$swal({
+        type: 'success',
+        title: '일지를 수정하였습니다',
+        showConfirmButton: false,
+        timer: 777
+      })
       this.dialog = false
       /*
       this.$validator.validateAll().then((result) => {

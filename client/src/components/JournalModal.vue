@@ -160,6 +160,7 @@ export default {
   },
   data () {
     return {
+      newEvent: {},
       journalId: '',
       remarks: '',
       workContent: '',
@@ -234,7 +235,6 @@ export default {
       const response = await WcService.fetchTextByCropCode({
         cropCode: cropCode
       })
-      console.log(cropCode)
       this.workType = response.data
     },
     async createNewJournal () {
@@ -249,6 +249,27 @@ export default {
         weather: [{'baseTime': '1400', 'sky': '00', 't1h': '17', 'reh': '01', 'rn1': '02'}],
         remarks: this.remarks
       })
+      this.fetchNameByLandId(this.selectedLandId)
+      this.fetchCropNameByCropCode(this.selectedWorkTypeCode.substring(0, 11))
+      this.fetchTextByCode(this.selectedWorkTypeCode)
+    },
+    async fetchNameByLandId (landId) {
+      const response = await LandService.fetchNameByLandId({
+        landId: landId
+      })
+      this.newEvent.title = response.data[0].name
+    },
+    async fetchCropNameByCropCode (cropCode) {
+      const response = await ScService.fetchCropNameByCropCode({
+        cropCode: cropCode
+      })
+      this.newEvent.title += ' - ' + response.data[0].text
+    },
+    async fetchTextByCode (workCode) {
+      const response = await WcService.fetchTextByCode({
+        code: workCode
+      })
+      this.newEvent.title += '\n' + response.data[0].text + ' - ' + this.workContent
     },
     onChangeLand: function (event) {
       this.selectedLandId = event
@@ -258,11 +279,13 @@ export default {
       this.selectedWorkTypeCode = event.bCode + event.mCode + event.sCode + event.wCode
     },
     onChangeWSTime: function (event) {
+      this.newEvent.start = this.User_Profile.substring(10, 20) + ' ' + event
       var tmpStr = event
       this.selectedWSTime = tmpStr.replace(':', '')
       console.log(this.selectedWSTime)
     },
     onChangeWETime: function (event) {
+      this.newEvent.end = this.User_Profile.substring(10, 20) + ' ' + event
       var tmpStr = event
       this.selectedWETime = tmpStr.replace(':', '')
       console.log(this.selectedWETime)
@@ -273,8 +296,17 @@ export default {
           return
         }
         this.createNewJournal()
-        bus.$emit('toJournal', 'test')
-        this.dialog = false
+        this.$swal({
+          type: 'success',
+          title: '일지를 작성하였습니다',
+          showConfirmButton: false,
+          timer: 777
+        }).then((result) => {
+          bus.$emit('toJournalForNew', this.newEvent)
+          this.dialog = false
+        })
+        // bus.$emit('toJournal', 'test')
+        // this.dialog = false
       }).catch(() => {})
     }
   }

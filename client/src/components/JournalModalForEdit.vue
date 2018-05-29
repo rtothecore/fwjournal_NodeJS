@@ -166,6 +166,8 @@ export default {
   },
   data () {
     return {
+      updatedEvent: {},
+      eventIndex: '',
       weatherSky: '',
       weatherT1h: '',
       weatherReh: '',
@@ -212,7 +214,8 @@ export default {
     this.$validator.localize('ko', this.dictionary)
     var vm = this
     bus.$on('dialogForEdit', function (value) {
-      vm.journalId = value
+      vm.journalId = value.journalId
+      vm.eventIndex = value.eventIndex
       vm.dialog = true
       vm.getJournal()
     })
@@ -233,12 +236,18 @@ export default {
       this.workContent = response.data[0].workContent
       this.e6 = response.data[0].workSTime.substring(0, 2) + ':' + response.data[0].workSTime.substring(2, 4)
       this.e7 = response.data[0].workETime.substring(0, 2) + ':' + response.data[0].workETime.substring(2, 4)
-      this.weatherSky = response.data[0].weather[0].sky
-      this.weatherT1h = response.data[0].weather[0].t1h
-      this.weatherReh = response.data[0].weather[0].reh
-      this.weatherRn1 = response.data[0].weather[0].rn1
+      if (response.data[0].weather[0]) {
+        this.weatherSky = response.data[0].weather[0].sky
+        this.weatherT1h = response.data[0].weather[0].t1h
+        this.weatherReh = response.data[0].weather[0].reh
+        this.weatherRn1 = response.data[0].weather[0].rn1
+      } else {
+        this.weatherSky = ''
+        this.weatherT1h = ''
+        this.weatherReh = ''
+        this.weatherRn1 = ''
+      }
       this.remarks = response.data[0].remarks
-      // console.log(response.data[0])
     },
     async getLands () {
       const response = await LandService.fetchLands({
@@ -291,22 +300,34 @@ export default {
         weather: [{'baseTime': '1400', 'sky': '00', 't1h': '17', 'reh': '01', 'rn1': '02'}],
         remarks: this.remarks
       })
-    },
-    async createNewJournal () {
-      await JournalService.createJournals({
-        userId: this.userId,
-        date: this.User_Profile.substring(10, 20),
-        landId: this.selectedLandId,
-        workCode: this.selectedWorkTypeCode,
-        workContent: this.workContent,
-        workSTime: this.selectedWSTime,
-        workETime: this.selectedWETime,
-        weather: [{'baseTime': '1400', 'sky': '00', 't1h': '17', 'reh': '01', 'rn1': '02'}],
-        remarks: this.remarks
-      })
+      this.fetchNameByLandId(this.selectLand)
+      this.fetchCropNameByCropCode(this.selectedWorkTypeCode.substring(0, 11))
+      this.fetchTextByCode(this.selectedWorkTypeCode)
+      this.updatedEvent.start = this.User_Profile.substring(10, 20) + ' ' + this.e6
+      this.updatedEvent.end = this.User_Profile.substring(10, 20) + ' ' + this.e7
+      this.updatedEvent.journalId = this.journalId
+      this.updatedEvent.eventIndex = this.eventIndex
     },
     async deleteJournal (id) {
       await JournalService.deleteJournal(id)
+    },
+    async fetchNameByLandId (landId) {
+      const response = await LandService.fetchNameByLandId({
+        landId: landId
+      })
+      this.updatedEvent.title = response.data[0].name
+    },
+    async fetchCropNameByCropCode (cropCode) {
+      const response = await ScService.fetchCropNameByCropCode({
+        cropCode: cropCode
+      })
+      this.updatedEvent.title += ' - ' + response.data[0].text
+    },
+    async fetchTextByCode (workCode) {
+      const response = await WcService.fetchTextByCode({
+        code: workCode
+      })
+      this.updatedEvent.title += '\n' + response.data[0].text + ' - ' + this.workContent
     },
     onChangeLand: function (event) {
       this.selectedLandId = event
@@ -331,14 +352,44 @@ export default {
           return
         }
         this.updateJournal()
-        bus.$emit('toJournal', 'test')
-        this.dialog = false
+        this.$swal({
+          type: 'success',
+          title: '일지를 수정하였습니다',
+          showConfirmButton: false,
+          timer: 777
+        }).then((result) => {
+          bus.$emit('toJournalForUpdate', this.updatedEvent)
+          this.dialog = false
+        })
+        // bus.$emit('toJournal', 'test')
+        // this.dialog = false
       }).catch(() => {})
     },
     deleteJ () {
-      confirm('이 일지를 지우시겠습니까?') && this.deleteJournal(this.journalId)
-      bus.$emit('toJournal', 'test')
-      this.dialog = false
+      // confirm('이 일지를 지우시겠습니까?') && this.deleteJournal(this.journalId)
+      this.$swal({
+        title: '이 일지를 삭제 하시겠습니까?',
+        text: '삭제 후에 되돌릴 수 없습니다',
+        type: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: '네, 삭제합니다',
+        cancelButtonText: '취소합니다'
+      }).then((result) => {
+        if (result.value) {
+          this.deleteJournal(this.journalId)
+          this.$swal(
+            '삭제했습니다!',
+            '일지가 삭제되었습니다',
+            'success'
+          )
+          bus.$emit('toJournalForDel', this.eventIndex)
+          this.dialog = false
+        }
+      })
+      // bus.$emit('toJournal', 'test')
+      // this.dialog = false
     }
   }
 }
