@@ -2,6 +2,9 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const cors = require('cors')
 const morgan = require('morgan')
+const axios = require('axios')
+const CircularJSON = require('circular-json')
+
 
 const app = express()
 app.use(morgan('combined'))
@@ -9,6 +12,21 @@ app.use(bodyParser.json())
 app.use(cors())
 
 app.listen(process.env.PORT || 8081)
+
+//////////////////////////////////////////////FOR HTTPS
+// http://blog.saltfactory.net/implements-nodejs-based-https-server/
+// https://coderwall.com/p/yo4mqw/creating-a-nodejs-express-https-server
+/*
+const fs = require('fs')
+var httpsOptions = {
+	key: fs.readFileSync('key.pem')
+	, cert: fs.readFileSync('cert.pem')
+}
+
+const appSecure = express(httpsOptions)
+appSecure.listen(443)
+*/
+///////////////////////////////////////////////////////
 
 var mongoose = require('mongoose')
 mongoose.connect('mongodb://localhost:27017/fwjournal')
@@ -23,6 +41,147 @@ var Land = require("../models/land")
 var Sc = require("../models/smallClass")
 var Journal = require("../models/journal")
 var Wc = require("../models/workClass")
+
+const serviceKey = '73Jjl5lZRvBRKkGsPnGmZ7EL9JtwsWNi3hhCIN8cpVJzMdRRgyzntwz2lHmTKeR1tp7NWzoihNGGazcDEFgh8w%3D%3D'
+
+// Fetch weather data
+app.get('/ForecastGrib/:baseDate/:baseTime/:nx/:ny', (req, res) => {
+	// console.log(req.params)
+	axios.get('http://newsky2.kma.go.kr/service/SecndSrtpdFrcstInfoService2/ForecastGrib?serviceKey=' + serviceKey +
+		'&base_date=' + req.params.baseDate +
+		'&base_time=' + req.params.baseTime +
+		'&nx=' + req.params.nx +
+		'&ny=' + req.params.ny +
+		'&numOfRows=10&pageSize=10&pageNo=1&startPage=1&_type=json')
+  	.then(function (response) {  		
+  		res.send(response.data.response.body.items)
+  		// res.send(CircularJSON.stringify(response.data.response.body))
+  }).catch(function (error) {
+    console.log(error)
+  })
+})
+
+function leadingZeros(n, digits) {
+  var zero = '';
+  n = n.toString();
+
+  if (n.length < digits) {
+    for (i = 0; i < digits - n.length; i++)
+      zero += '0';
+  }
+  return zero + n;
+}
+
+function getBaseTime(currentHour) {
+	var dateRange = [2, 5, 8, 11, 14, 17, 20 ,23]
+	var todayYYYYMMDD = ''
+	var baseHour = 0
+	var baseDate = ''
+	for(var i = 0; i < dateRange.length; i++) {
+		if (currentHour == dateRange[i]) {
+			var todayDate = new Date()
+			todayYYYYMMDD = leadingZeros(todayDate.getFullYear(), 4) + 
+							leadingZeros(todayDate.getMonth() + 1, 2) +
+							leadingZeros(todayDate.getDate(), 2)
+			baseHour = dateRange[i]
+		}
+	}
+
+	if (currentHour < 2) {
+		var todayDate = new Date()
+		todayDate.setDate(todayDate.getDate() - 1)
+		todayYYYYMMDD = leadingZeros(todayDate.getFullYear(), 4) + 
+						leadingZeros(todayDate.getMonth() + 1, 2) +
+						leadingZeros(todayDate.getDate(), 2)
+		baseHour = 23
+	} else if(currentHour > 23) {
+		var todayDate = new Date()
+		todayYYYYMMDD = leadingZeros(todayDate.getFullYear(), 4) + 
+						leadingZeros(todayDate.getMonth() + 1, 2) +
+						leadingZeros(todayDate.getDate(), 2)
+		baseHour = 23
+	}
+
+	if (0 != baseHour) {
+		return todayYYYYMMDD + '' + baseHour
+	} else {
+		var todayDate = new Date()
+		todayYYYYMMDD = leadingZeros(todayDate.getFullYear(), 4) + 
+						leadingZeros(todayDate.getMonth() + 1, 2) +
+						leadingZeros(todayDate.getDate(), 2)
+
+		if (currentHour < 11) {
+			if (currentHour < 5) {
+				baseHour = 2
+			} else if (currentHour > 8) {
+				baseHour = 8
+			} else if (5 < currentHour && currentHour < 8) {
+				baseHour = 5
+			}
+		} else if (currentHour > 14) {
+			if (currentHour < 17) {
+				baseHour = 14
+			} else if (currentHour > 20) {
+				baseHour = 20
+			} else if (17 < currentHour && currentHour < 20) {
+				baseHour = 17
+			}
+		} else if (11 < currentHour && currentHour < 14) {
+			baseHour = 11
+		}
+	}
+	return todayYYYYMMDD + '' + baseHour
+}
+
+// Fetch weather (tomorrown, afterTomorrow) data
+app.get('/ForecastSpaceData/:nx/:ny', (req, res) => {
+	var todayDate = new Date()
+	var currentHour = todayDate.getHours()
+	var baseDateTime = getBaseTime(currentHour)
+	var baseDate = baseDateTime.substring(0, 8)
+	var baseTime = baseDateTime.substring(8, 10) + '00'
+	
+	axios.get('http://newsky2.kma.go.kr/service/SecndSrtpdFrcstInfoService2/ForecastSpaceData?serviceKey=' + serviceKey +
+		'&base_date=' + baseDate +
+		'&base_time=' + baseTime +
+		'&nx=' + req.params.nx +
+		'&ny=' + req.params.ny +
+		'&numOfRows=500&pageSize=500&pageNo=1&startPage=1&_type=json')
+  	.then(function (response) {  		
+  		res.send(response.data.response.body.items)
+  	}).catch(function (error) {
+    	console.log(error)
+  	})
+})
+
+// Fetch air data
+app.get('/Airdata/:tmX/:tmY', (req, res) => {
+	var stationName = ''
+	axios.get('http://openapi.airkorea.or.kr/openapi/services/rest/MsrstnInfoInqireSvc/getNearbyMsrstnList?' +
+		'tmX=' + req.params.tmX +
+		'&tmY=' + req.params.tmY +
+		'&pageNo=1&numOfRows=10' +
+		'&ServiceKey=' + serviceKey +
+		'&_returnType=json')
+	.then(function (response) {
+		stationName = response.data.list[response.data.list.length-1].stationName
+		axios.get('http://openapi.airkorea.or.kr/openapi/services/rest/ArpltnInforInqireSvc/getMsrstnAcctoRltmMesureDnsty' +
+			'?numOfRows=10' +
+			'&pageNo=1' +
+			'&stationName=' + encodeURIComponent(stationName) +
+			'&dataTerm=DAILY' +
+			'&ver=1.3' +
+			'&ServiceKey=' + serviceKey +
+			'&_returnType=json')
+		.then(function (response2) {
+			res.send(response2.data.list[0])
+		}).catch(function (error) {
+			console.log(error)
+		})
+	}).catch(function (error) {
+    	console.log(error)
+  	})
+})
 
 // Fetch workCode by _id
 app.get('/wc/getWCById/:id', (req, res) => {

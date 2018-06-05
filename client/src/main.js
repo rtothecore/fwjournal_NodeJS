@@ -11,6 +11,7 @@ import JournalModal from './components/JournalModal.vue'
 import JournalModalForEdit from './components/JournalModalForEdit.vue'
 import VeeValidate from 'vee-validate'
 import VueSweetalert2 from 'vue-sweetalert2'
+// import axios from 'axios'
 
 Vue.component('journalModal', JournalModal)
 Vue.component('journalModalForEdit', JournalModalForEdit)
@@ -19,6 +20,7 @@ Vue.use(Vuetify)
 Vue.use(FullCalendar)
 Vue.use(VeeValidate)
 Vue.use(VueSweetalert2)
+// Vue.prototype.$http = axios
 
 Vue.config.productionTip = false
 
