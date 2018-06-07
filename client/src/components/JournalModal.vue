@@ -204,6 +204,13 @@ export default {
     var vm = this
     bus.$on('dialog', function (value) {
       vm.User_Profile = '영농일지 작성 - ' + value
+      vm.selectLand = ''
+      vm.cropName = ''
+      vm.selectWorkType = ''
+      vm.workContent = ''
+      vm.e6 = null
+      vm.e7 = null
+      vm.remarks = ''
       vm.dialog = true
     })
   },
@@ -238,7 +245,7 @@ export default {
       this.workType = response.data
     },
     async createNewJournal () {
-      await JournalService.createJournals({
+      const response = await JournalService.createJournals({
         userId: this.userId,
         date: this.User_Profile.substring(10, 20),
         landId: this.selectedLandId,
@@ -249,6 +256,7 @@ export default {
         weather: [{'baseTime': '1400', 'sky': '00', 't1h': '17', 'reh': '01', 'rn1': '02'}],
         remarks: this.remarks
       })
+      this.newEvent.journalId = response.data.result._id
       this.fetchNameByLandId(this.selectedLandId)
       this.fetchCropNameByCropCode(this.selectedWorkTypeCode.substring(0, 11))
       this.fetchTextByCode(this.selectedWorkTypeCode)

@@ -1,5 +1,119 @@
 <template>
     <div id="calendar" style="height:900px; width:900px;">
+      <div>
+        <!-- <img src="../assets/rain.png"> -->
+        <v-layout row>
+          <v-flex xs4 order-md1 order-xs1>
+            <v-card color="purple" class="white--text">
+                <v-container fluid grid-list-lg>
+                  <v-layout row>
+                    <v-flex xs7>
+                      <div>
+                        <div class="subheading">오늘</div>
+                        <div class="title">{{ todayT1h }}</div>
+                        <div class="caption">{{ todayPm10 }}</div>
+                      </div>
+                    </v-flex>
+                    <v-flex xs5>
+                      <v-card-media
+                        :src="todaySkyImg"
+                        height="100px"
+                        contain
+                      ></v-card-media>
+                    </v-flex>
+                  </v-layout>
+                </v-container>
+              </v-card>
+          </v-flex>
+          <v-flex xs4 order-md2 order-xs2>
+            <v-card color="cyan darken-2" class="white--text">
+                <v-container fluid grid-list-lg>
+                  <v-layout row>
+                    <v-flex xs7>
+                      <div>
+                        <div class="subheading">내일 오전</div>
+                        <div class="title">{{ tomorrowAmT1h }}</div>
+                      </div>
+                    </v-flex>
+                    <v-flex xs5>
+                      <v-card-media
+                        :src="tomAmSkyImg"
+                        height="100px"
+                        contain
+                      ></v-card-media>
+                    </v-flex>
+                  </v-layout>
+                </v-container>
+              </v-card>
+          </v-flex>
+
+          <v-flex xs4 order-md2 order-xs2>
+            <v-card color="cyan darken-2" class="white--text">
+                <v-container fluid grid-list-lg>
+                  <v-layout row>
+                    <v-flex xs7>
+                      <div>
+                        <div class="subheading">내일 오후</div>
+                        <div class="title">{{ tomorrowPmT1h }}</div>
+                      </div>
+                    </v-flex>
+                    <v-flex xs5>
+                      <v-card-media
+                        :src="tomPmSkyImg"
+                        height="100px"
+                        contain
+                      ></v-card-media>
+                    </v-flex>
+                  </v-layout>
+                </v-container>
+              </v-card>
+          </v-flex>
+
+          <v-flex xs4 order-md3 order-xs3>
+            <v-card color="orange darken-2" class="white--text">
+                <v-container fluid grid-list-lg>
+                  <v-layout row>
+                    <v-flex xs7>
+                      <div>
+                        <div class="subheading">모레 오전</div>
+                        <div class="title">{{ afterTomorrowAmT1h }}</div>
+                      </div>
+                    </v-flex>
+                    <v-flex xs5>
+                      <v-card-media
+                        :src="afTomAmSkyImg"
+                        height="100px"
+                        contain
+                      ></v-card-media>
+                    </v-flex>
+                  </v-layout>
+                </v-container>
+              </v-card>
+          </v-flex>
+
+          <v-flex xs4 order-md3 order-xs3>
+            <v-card color="orange darken-2" class="white--text">
+                <v-container fluid grid-list-lg>
+                  <v-layout row>
+                    <v-flex xs7>
+                      <div>
+                        <div class="subheading">모레 오후</div>
+                        <div class="title">{{ afterTomorrowPmT1h }}</div>
+                      </div>
+                    </v-flex>
+                    <v-flex xs5>
+                      <v-card-media
+                        :src="afTomPmSkyImg"
+                        height="100px"
+                        contain
+                      ></v-card-media>
+                    </v-flex>
+                  </v-layout>
+                </v-container>
+              </v-card>
+          </v-flex>
+        </v-layout>
+      </div>
 	    <full-calendar :config="config" :events="events" @event-selected="eventSelected"/>
       <journalModal></journalModal>
       <journalModalForEdit></journalModalForEdit>
@@ -13,13 +127,27 @@
     import WcService from '@/services/WcService'
     import ScService from '@/services/ScService'
     import LandService from '@/services/LandService'
+    import WeatherService from '@/services/WeatherService'
+    import proj4 from 'proj4'
     export default {
   created () {
         // this.$refs.calendar.fireMethod('changeView', view)
         this.getJournal()
+        this.getLocation()
   },
   data () {
         return {
+          todayPm10: '',
+          afTomAmSkyImg: '',
+          afTomPmSkyImg: '',
+          tomPmSkyImg: '',
+          tomAmSkyImg: '',
+          todaySkyImg: '',
+          afterTomorrowAmT1h: '',
+          afterTomorrowPmT1h: '',
+          tomorrowPmT1h: '',
+          tomorrowAmT1h: '',
+          todayT1h: '',
           userId: '5af4fa281a1ee4261039149f',
           events: [
             /*
@@ -94,6 +222,338 @@
             tmpEvent.eventIndex = this.events.indexOf(tmpEvent)
             // console.log(this.events.indexOf(tmpEvent))
           }
+        },
+        async fetchTodayWeather (nx, ny) {
+          const response = await WeatherService.fetchTodayWeather({
+            nx: nx,
+            ny: ny
+          })
+          for (var i = 0; i < response.data.item.length; i++) {
+            var sky = 'SKY'
+            var t1h = 'T1H'
+            var reh = 'REH'
+            if (sky === response.data.item[i].category) {
+              switch (response.data.item[i].obsrValue) {
+                case 1 :
+                  // this.todaySky = '맑음'
+                  this.todaySkyImg = require('../assets/sun.png')
+                  break
+                case 2 :
+                  // this.todaySky = '구름조금'
+                  this.todaySkyImg = require('../assets/cloud1.png')
+                  break
+                case 3 :
+                  // this.todaySky = '구름많음'
+                  this.todaySkyImg = require('../assets/cloud2.png')
+                  break
+                case 4 :
+                  // this.todaySky = '흐림'
+                  this.todaySkyImg = require('../assets/heu.png')
+                  break
+                default :
+                  break
+              }
+            } else if (t1h === response.data.item[i].category) {
+              this.todayT1h = response.data.item[i].obsrValue + '℃'
+            } else if (reh === response.data.item[i].category) {
+              this.todayREH = response.data.item[i].obsrValue + '%'
+            }
+          }
+        },
+        async fetchWeatherForecast (nx, ny) {
+          const response = await WeatherService.fetchWeatherForecast({
+            nx: nx,
+            ny: ny
+          })
+          // TOMORROW START
+          var todayDate = new Date()
+          todayDate.setDate(todayDate.getDate() + 1)
+          var todayYYYYMMDD = this.leadingZeros(todayDate.getFullYear(), 4) +
+                              this.leadingZeros(todayDate.getMonth() + 1, 2) +
+                              this.leadingZeros(todayDate.getDate(), 2) + ''
+          this.tt1Date = todayYYYYMMDD.substring(4, 6) + '/' + todayYYYYMMDD.substring(6, 8)
+          var onlyFcstDate = []
+          for (var i = 0; i < response.data.item.length; i++) {
+            if (todayYYYYMMDD === response.data.item[i].fcstDate + '') {
+              onlyFcstDate.push(response.data.item[i])
+            }
+          }
+
+          var onlyFcstTime = []
+          var fcstTime = '0900'
+          for (var j = 0; j < onlyFcstDate.length; j++) {
+            if (fcstTime === onlyFcstDate[j].fcstTime) {
+              onlyFcstTime.push(onlyFcstDate[j])
+            }
+          }
+
+          var sky = 'SKY'
+          var t3h = 'T3H'
+          var reh = 'REH'
+          for (var k = 0; k < onlyFcstTime.length; k++) {
+            if (sky === onlyFcstTime[k].category) {
+              switch (onlyFcstTime[k].fcstValue + '') {
+                case '1' :
+                  // this.tt1Sky = '맑음'
+                  this.tomAmSkyImg = require('../assets/sun.png')
+                  break
+                case '2' :
+                  // this.tt1Sky = '구름조금'
+                  this.tomAmSkyImg = require('../assets/cloud1.png')
+                  break
+                case '3' :
+                  // this.tt1Sky = '구름많음'
+                  this.tomAmSkyImg = require('../assets/cloud2.png')
+                  break
+                case '4' :
+                  // this.tt1Sky = '흐림'
+                  this.tomAmSkyImg = require('../assets/heu.png')
+                  break
+                default :
+                  break
+              }
+            } else if (t3h === onlyFcstTime[k].category) {
+              this.tomorrowAmT1h = onlyFcstTime[k].fcstValue + '℃'
+            } else if (reh === onlyFcstTime[k].category) {
+              this.tt1Reh = onlyFcstTime[k].fcstValue + '%'
+            }
+          }
+
+          onlyFcstTime = []
+          fcstTime = '1200'
+          for (j = 0; j < onlyFcstDate.length; j++) {
+            if (fcstTime === onlyFcstDate[j].fcstTime + '') {
+              onlyFcstTime.push(onlyFcstDate[j])
+            }
+          }
+
+          for (k = 0; k < onlyFcstTime.length; k++) {
+            if (sky === onlyFcstTime[k].category) {
+              switch (onlyFcstTime[k].fcstValue + '') {
+                case '1' :
+                  this.tomPmSkyImg = require('../assets/sun.png')
+                  break
+                case '2' :
+                  this.tomPmSkyImg = require('../assets/cloud1.png')
+                  break
+                case '3' :
+                  this.tomPmSkyImg = require('../assets/cloud2.png')
+                  break
+                case '4' :
+                  this.tomPmSkyImg = require('../assets/heu.png')
+                  break
+                default :
+                  break
+              }
+            } else if (t3h === onlyFcstTime[k].category) {
+              this.tomorrowPmT1h = onlyFcstTime[k].fcstValue + '℃'
+            } else if (reh === onlyFcstTime[k].category) {
+              this.tt1Reh = onlyFcstTime[k].fcstValue + '%'
+            }
+          }
+          // TOMORROW END
+          // AFTER TOMORROW START
+          todayDate = new Date()
+          todayDate.setDate(todayDate.getDate() + 2)
+          todayYYYYMMDD = this.leadingZeros(todayDate.getFullYear(), 4) +
+                              this.leadingZeros(todayDate.getMonth() + 1, 2) +
+                              this.leadingZeros(todayDate.getDate(), 2) + ''
+          this.tt2Date = todayYYYYMMDD.substring(4, 6) + '/' + todayYYYYMMDD.substring(6, 8)
+          onlyFcstDate = []
+          for (i = 0; i < response.data.item.length; i++) {
+            if (todayYYYYMMDD === response.data.item[i].fcstDate + '') {
+              onlyFcstDate.push(response.data.item[i])
+            }
+          }
+
+          onlyFcstTime = []
+          fcstTime = '0900'
+          for (j = 0; j < onlyFcstDate.length; j++) {
+            if (fcstTime === onlyFcstDate[j].fcstTime) {
+              onlyFcstTime.push(onlyFcstDate[j])
+            }
+          }
+
+          for (k = 0; k < onlyFcstTime.length; k++) {
+            if (sky === onlyFcstTime[k].category) {
+              switch (onlyFcstTime[k].fcstValue + '') {
+                case '1' :
+                  // this.tt2Sky = '맑음'
+                  this.afTomAmSkyImg = require('../assets/sun.png')
+                  break
+                case '2' :
+                  // this.tt2Sky = '구름조금'
+                  this.afTomAmSkyImg = require('../assets/cloud1.png')
+                  break
+                case '3' :
+                  // this.tt2Sky = '구름많음'
+                  this.afTomAmSkyImg = require('../assets/cloud2.png')
+                  break
+                case '4' :
+                  // this.tt2Sky = '흐림'
+                  this.afTomAmSkyImg = require('../assets/heu.png')
+                  break
+                default :
+                  break
+              }
+            } else if (t3h === onlyFcstTime[k].category) {
+              this.afterTomorrowAmT1h = onlyFcstTime[k].fcstValue + '℃'
+            } else if (reh === onlyFcstTime[k].category) {
+              this.tt2Reh = onlyFcstTime[k].fcstValue + '%'
+            }
+          }
+
+          onlyFcstTime = []
+          fcstTime = '1200'
+          for (j = 0; j < onlyFcstDate.length; j++) {
+            if (fcstTime === onlyFcstDate[j].fcstTime + '') {
+              onlyFcstTime.push(onlyFcstDate[j])
+            }
+          }
+
+          for (k = 0; k < onlyFcstTime.length; k++) {
+            if (sky === onlyFcstTime[k].category) {
+              switch (onlyFcstTime[k].fcstValue + '') {
+                case '1' :
+                  this.afTomPmSkyImg = require('../assets/sun.png')
+                  break
+                case '2' :
+                  this.afTomPmSkyImg = require('../assets/cloud1.png')
+                  break
+                case '3' :
+                  this.afTomPmSkyImg = require('../assets/cloud2.png')
+                  break
+                case '4' :
+                  this.afTomPmSkyImg = require('../assets/heu.png')
+                  break
+                default :
+                  break
+              }
+            } else if (t3h === onlyFcstTime[k].category) {
+              this.afterTomorrowPmT1h = onlyFcstTime[k].fcstValue + '℃'
+            } else if (reh === onlyFcstTime[k].category) {
+              this.tt2Reh = onlyFcstTime[k].fcstValue + '%'
+            }
+          }
+          // AFTER TOMORROW END
+        },
+        async fetchAirData (tmX, tmY) {
+          const response = await WeatherService.fetchAirData({
+            tmX: tmX,
+            tmY: tmY
+          })
+          // console.log(response.data.pm10Grade)
+          switch (response.data.pm10Grade) {
+            case '1' :
+              this.todayPm10 = '미세먼지:좋음'
+              break
+            case '2' :
+              this.todayPm10 = '미세먼지:보통'
+              break
+            case '3' :
+              this.todayPm10 = '미세먼지:나쁨'
+              break
+            case '4' :
+              this.todayPm10 = '미세먼지:매우나쁨'
+              break
+            default :
+              break
+          }
+        },
+        leadingZeros: function (n, digits) {
+          var zero = ''
+          n = n.toString()
+
+          if (n.length < digits) {
+            for (var i = 0; i < digits - n.length; i++) {
+              zero += '0'
+            }
+          }
+          return zero + n
+        },
+        getLocation: function () {
+          if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(this.showPosition)
+          } else {
+            console.log('Geolocation is not supported by this browser.')
+          }
+        },
+        showPosition: function (position) {
+          var convertedXY = this.dfs_xy_conv('toXY', position.coords.latitude, position.coords.longitude)
+          this.fetchTodayWeather(convertedXY.x, convertedXY.y)
+          this.fetchWeatherForecast(convertedXY.x, convertedXY.y)
+
+          // https://www.npmjs.com/package/proj4
+          // http://www.gisdeveloper.co.kr/?p=1854
+          var firstProjection = '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs'
+          var secondProjection = '+proj=longlat +ellps=bessel +towgs84=-146.43,507.89,681.46 +no_defs'
+          var tmXY = proj4(firstProjection, secondProjection, [convertedXY.y, convertedXY.x])
+          this.fetchAirData(tmXY[0], tmXY[1])
+        },
+        dfs_xy_conv: function (code, v1, v2) { // http://fronteer.kr/service/kmaxy - 37.579871128849334, 126.98935225645432 => 60, 127
+          var RE = 6371.00877 // 지구 반경(km)
+          var GRID = 5.0 // 격자 간격(km)
+          var SLAT1 = 30.0 // 투영 위도1(degree)
+          var SLAT2 = 60.0 // 투영 위도2(degree)
+          var OLON = 126.0 // 기준점 경도(degree)
+          var OLAT = 38.0 // 기준점 위도(degree)
+          var XO = 43 // 기준점 X좌표(GRID)
+          var YO = 136 // 기1준점 Y좌표(GRID)
+
+          var DEGRAD = Math.PI / 180.0
+          var RADDEG = 180.0 / Math.PI
+
+          var re = RE / GRID
+          var slat1 = SLAT1 * DEGRAD
+          var slat2 = SLAT2 * DEGRAD
+          var olon = OLON * DEGRAD
+          var olat = OLAT * DEGRAD
+
+          var sn = Math.tan(Math.PI * 0.25 + slat2 * 0.5) / Math.tan(Math.PI * 0.25 + slat1 * 0.5)
+          sn = Math.log(Math.cos(slat1) / Math.cos(slat2)) / Math.log(sn)
+          var sf = Math.tan(Math.PI * 0.25 + slat1 * 0.5)
+          sf = Math.pow(sf, sn) * Math.cos(slat1) / sn
+          var ro = Math.tan(Math.PI * 0.25 + olat * 0.5)
+          ro = re * sf / Math.pow(ro, sn)
+          var rs = {}
+          if (code === 'toXY') {
+            rs['lat'] = v1
+            rs['lng'] = v2
+            var ra = Math.tan(Math.PI * 0.25 + (v1) * DEGRAD * 0.5)
+            ra = re * sf / Math.pow(ra, sn)
+            var theta = v2 * DEGRAD - olon
+            if (theta > Math.PI) theta -= 2.0 * Math.PI
+            if (theta < -Math.PI) theta += 2.0 * Math.PI
+            theta *= sn
+            rs['x'] = Math.floor(ra * Math.sin(theta) + XO + 0.5)
+            rs['y'] = Math.floor(ro - ra * Math.cos(theta) + YO + 0.5)
+          } else {
+            rs['x'] = v1
+            rs['y'] = v2
+            var xn = v1 - XO
+            var yn = ro - v2 + YO
+            ra = Math.sqrt(xn * xn + yn * yn)
+            if (sn < 0.0) {
+              ra = -ra
+            }
+            var alat = Math.pow((re * sf / ra), (1.0 / sn))
+            alat = 2.0 * Math.atan(alat) - Math.PI * 0.5
+
+            if (Math.abs(xn) <= 0.0) {
+              theta = 0.0
+            } else {
+              if (Math.abs(yn) <= 0.0) {
+                theta = Math.PI * 0.5
+                if (xn < 0.0) {
+                  theta = -theta
+                }
+              } else theta = Math.atan2(xn, yn)
+            }
+            var alon = theta / sn + olon
+            rs['lat'] = alat * RADDEG
+            rs['lng'] = alon * RADDEG
+          }
+          return rs
         }
   }
 }

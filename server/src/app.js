@@ -44,12 +44,55 @@ var Wc = require("../models/workClass")
 
 const serviceKey = '73Jjl5lZRvBRKkGsPnGmZ7EL9JtwsWNi3hhCIN8cpVJzMdRRgyzntwz2lHmTKeR1tp7NWzoihNGGazcDEFgh8w%3D%3D'
 
+function getTodayBaseTime() {
+	var todayDate = new Date()
+	var currentHour = todayDate.getHours()
+	var currentMin = todayDate.getMinutes()
+	var baseDate = ''
+	var baseTime = ''
+
+	if(40 <= currentMin) {
+		if(6 <= currentHour) {
+			baseDate = leadingZeros(todayDate.getFullYear(), 4) + 
+					   leadingZeros(todayDate.getMonth() + 1, 2) +
+					   leadingZeros(todayDate.getDate(), 2)
+			baseTime = leadingZeros(currentHour, 2) + '00'
+		} else if(6 > currentHour) {
+			var yesterdayDate = new Date()
+			yesterdayDate.setDate(yesterdayDate.getDate() - 1)
+			baseDate = leadingZeros(yesterdayDate.getFullYear(), 4) + 
+					   leadingZeros(yesterdayDate.getMonth() + 1, 2) +
+					   leadingZeros(yesterdayDate.getDate(), 2)
+			baseTime = '2300'
+		}
+	} else if(40 > currentMin) {
+		if(6 <= currentHour) {
+			baseDate = leadingZeros(todayDate.getFullYear(), 4) + 
+					   leadingZeros(todayDate.getMonth() + 1, 2) +
+					   leadingZeros(todayDate.getDate(), 2)
+			baseTime = leadingZeros((currentHour-1), 2) + '00'
+		} else if(6 > currentHour) {
+			var yesterdayDate = new Date()
+			yesterdayDate.setDate(yesterdayDate.getDate() - 1)
+			baseDate = leadingZeros(yesterdayDate.getFullYear(), 4) + 
+					   leadingZeros(yesterdayDate.getMonth() + 1, 2) +
+					   leadingZeros(yesterdayDate.getDate(), 2)
+			baseTime = '2300'
+		}
+	}
+	// console.log(baseDate + ' ' + baseTime)
+	return baseDate + '' + baseTime
+}
+
 // Fetch weather data
-app.get('/ForecastGrib/:baseDate/:baseTime/:nx/:ny', (req, res) => {
-	// console.log(req.params)
+app.get('/ForecastGrib/:nx/:ny', (req, res) => {
+	var baseDateTime = getTodayBaseTime()
+	var baseDate = baseDateTime.substring(0, 8)
+	var baseTime = baseDateTime.substring(8, 12)
+
 	axios.get('http://newsky2.kma.go.kr/service/SecndSrtpdFrcstInfoService2/ForecastGrib?serviceKey=' + serviceKey +
-		'&base_date=' + req.params.baseDate +
-		'&base_time=' + req.params.baseTime +
+		'&base_date=' + baseDate +
+		'&base_time=' + baseTime +
 		'&nx=' + req.params.nx +
 		'&ny=' + req.params.ny +
 		'&numOfRows=10&pageSize=10&pageNo=1&startPage=1&_type=json')
@@ -73,7 +116,7 @@ function leadingZeros(n, digits) {
 }
 
 function getBaseTime(currentHour) {
-	var dateRange = [2, 5, 8, 11, 14, 17, 20 ,23]
+	var dateRange = [2, 5, 8, 11, 14, 17, 20, 23]
 	var todayYYYYMMDD = ''
 	var baseHour = 0
 	var baseDate = ''
@@ -103,7 +146,7 @@ function getBaseTime(currentHour) {
 	}
 
 	if (0 != baseHour) {
-		return todayYYYYMMDD + '' + baseHour
+		return todayYYYYMMDD + '' + leadingZeros(baseHour, 2)
 	} else {
 		var todayDate = new Date()
 		todayYYYYMMDD = leadingZeros(todayDate.getFullYear(), 4) + 
@@ -130,7 +173,7 @@ function getBaseTime(currentHour) {
 			baseHour = 11
 		}
 	}
-	return todayYYYYMMDD + '' + baseHour
+	return todayYYYYMMDD + '' + leadingZeros(baseHour, 2)
 }
 
 // Fetch weather (tomorrown, afterTomorrow) data
@@ -387,13 +430,14 @@ app.post('/journals', (req, res) => {
     remarks: remarks
   })
 
-  new_journal.save(function (error) {
+  new_journal.save(function (error, result) {
     if (error) {
       console.log(error)
     }
     res.send({
       success: true,
-      message: 'Journal saved successfully!'
+      message: 'Journal saved successfully!',
+      result: result
     })
   })
 })
