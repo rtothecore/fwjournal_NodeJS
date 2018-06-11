@@ -12,6 +12,7 @@
                         <div class="subheading">오늘</div>
                         <div class="title">{{ todayT1h }}</div>
                         <div class="caption">{{ todayPm10 }}</div>
+                        <div class="body-2">{{ weatherLoc }}</div>
                       </div>
                     </v-flex>
                     <v-flex xs5>
@@ -117,6 +118,7 @@
 	    <full-calendar :config="config" :events="events" @event-selected="eventSelected"/>
       <journalModal></journalModal>
       <journalModalForEdit></journalModalForEdit>
+      <addWorkTypeModal></addWorkTypeModal>
     </div>
 </template>
 
@@ -137,6 +139,7 @@
   },
   data () {
         return {
+          weatherLoc: '',
           todayPm10: '',
           afTomAmSkyImg: '',
           afTomPmSkyImg: '',
@@ -479,6 +482,22 @@
           }
         },
         showPosition: function (position) {
+          var vm = this
+          // Reverse geo coding
+          // https://github.com/googlemaps/google-maps-services-js
+          var googleMapsClient = require('@google/maps').createClient({
+            key: 'AIzaSyAbcu_ORn9DV9mv0GFbxwX3FrYFMyL-nRA'
+          })
+          var latlng = {lat: position.coords.latitude, lng: position.coords.longitude}
+          googleMapsClient.reverseGeocode({
+            latlng: latlng
+          }, function (err, response) {
+            if (!err) {
+              // console.log(response.json.results[0].address_components[1].short_name)
+              vm.weatherLoc = response.json.results[0].address_components[1].short_name
+            }
+          })
+
           var convertedXY = this.dfs_xy_conv('toXY', position.coords.latitude, position.coords.longitude)
           this.fetchTodayWeather(convertedXY.x, convertedXY.y)
           this.fetchWeatherForecast(convertedXY.x, convertedXY.y)

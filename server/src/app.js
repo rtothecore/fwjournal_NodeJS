@@ -39,6 +39,8 @@ db.once("open", function(callback){
 var User = require("../models/user")
 var Land = require("../models/land")
 var Sc = require("../models/smallClass")
+var Mc = require("../models/mediumClass")
+var Bc = require("../models/bigClass")
 var Journal = require("../models/journal")
 var Wc = require("../models/workClass")
 
@@ -98,6 +100,22 @@ app.get('/ForecastGrib/:nx/:ny', (req, res) => {
 		'&numOfRows=10&pageSize=10&pageNo=1&startPage=1&_type=json')
   	.then(function (response) {  		
   		res.send(response.data.response.body.items)
+  		// res.send(CircularJSON.stringify(response.data.response.body))
+  }).catch(function (error) {
+    console.log(error)
+  })
+})
+
+// Fetch weather data with date, time, nx, ny
+app.get('/ForecastGrib/:baseDate/:baseTime/:nx/:ny', (req, res) => {
+	axios.get('http://newsky2.kma.go.kr/service/SecndSrtpdFrcstInfoService2/ForecastGrib?serviceKey=' + serviceKey +
+		'&base_date=' + req.params.baseDate +
+		'&base_time=' + req.params.baseTime +
+		'&nx=' + req.params.nx +
+		'&ny=' + req.params.ny +
+		'&numOfRows=10&pageSize=10&pageNo=1&startPage=1&_type=json')
+  	.then(function (response) {
+  		res.send(response.data)
   		// res.send(CircularJSON.stringify(response.data.response.body))
   }).catch(function (error) {
     console.log(error)
@@ -288,6 +306,47 @@ app.get('/wc/getText/:code', (req, res) => {
   .where('wCode').equals(wc)
 })
 
+// Fetch workClass by bCode, mCode, sCode
+app.get('/wc/:bCode/:mCode/:sCode', (req, res) => {
+  Wc.find({}, 'bCode mCode sCode wCode text', function (error, wcs) {
+    if (error) { console.error(error); }
+    res.send(wcs)
+  })
+  .where('bCode').equals(req.params.bCode)
+  .where('mCode').equals(req.params.mCode)
+  .where('sCode').equals(req.params.sCode)
+  .sort({wCode:-1})
+})
+
+// Add new workClass
+app.post('/wc', (req, res) => {
+  // console.log(req.body);
+  var bCode = req.body.bCode;
+  var mCode = req.body.mCode;
+  var sCode = req.body.sCode;
+  var wCode = req.body.wCode;
+  var text = req.body.text;
+
+  var new_wc = new Wc({
+    bCode: bCode,
+    mCode: mCode,
+    sCode: sCode,
+    wCode: wCode,
+    text: text
+  })
+
+  new_wc.save(function (error, result) {
+    if (error) {
+      console.log(error)
+    }
+    res.send({
+      success: true,
+      message: 'Wc saved successfully!',
+      result: result
+    })
+  })
+})
+
 // Update journal
 app.put('/journals/:id', (req, res) => {
   var db = req.db;
@@ -299,6 +358,7 @@ app.put('/journals/:id', (req, res) => {
     journals.landId = req.body.landId;
     journals.workCode = req.body.workCode;
     journals.workContent = req.body.workContent;
+    /*
     journals.workSTime = req.body.workSTime;
     journals.workETime = req.body.workETime;
     journals.weather = [];
@@ -310,6 +370,7 @@ app.put('/journals/:id', (req, res) => {
 	  	journals.weather[i].reh = req.body.weather[i].reh;
 	  	journals.weather[i].rn1 = req.body.weather[i].rn1;
   	}
+  	*/
   	journals.remarks = req.body.remarks
 
     journals.save(function (error) {
@@ -399,6 +460,7 @@ app.get('/journal/:id', (req, res) => {
 
 // Add new journal
 app.post('/journals', (req, res) => {
+  // console.log(req.body);
   var db = req.db;
   var userId = req.body.userId;
   var date = req.body.date;
@@ -468,12 +530,59 @@ app.get('/sc/:cropName', (req, res) => {
   .where('text').equals(req.params.cropName)
 })
 
+// Fetch smallClass by bCode, mCode
+app.get('/sc/:bCode/:mCode', (req, res) => {
+  Sc.find({}, 'bCode mCode sCode text', function (error, scs) {
+    if (error) { console.error(error); }
+    res.send({
+      scs: scs
+    })
+  })
+  .where('bCode').equals(req.params.bCode)
+  .where('mCode').equals(req.params.mCode)
+  .sort({text:1})
+})
+
 // Fetch all smallClass
 app.get('/sc', (req, res) => {
   Sc.find({}, 'bCode mCode sCode text', function (error, scs) {
     if (error) { console.error(error); }
     res.send({
       scs: scs
+    })
+  })
+  .sort({text:1})
+})
+
+// Fetch mediumClass by bCode
+app.get('/mc/:bCode', (req, res) => {
+  Mc.find({}, 'bCode mCode text', function (error, mcs) {
+    if (error) { console.error(error); }
+    res.send({
+      mcs: mcs
+    })
+  })
+  .where('bCode').equals(req.params.bCode)
+  .sort({text:1})
+})
+
+// Fetch all mediumClass
+app.get('/mc', (req, res) => {
+  Mc.find({}, 'bCode mCode text', function (error, mcs) {
+    if (error) { console.error(error); }
+    res.send({
+      mcs: mcs
+    })
+  })
+  .sort({text:1})
+})
+
+// Fetch all bigClass
+app.get('/bc', (req, res) => {
+  Bc.find({}, 'bCode text', function (error, bcs) {
+    if (error) { console.error(error); }
+    res.send({
+      bcs: bcs
     })
   })
   .sort({text:1})

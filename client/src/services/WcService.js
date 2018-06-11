@@ -15,5 +15,13 @@ export default {
 
   fetchTextByCropCode (params) {
     return Api().get('wc/getTxtByCC/' + params.cropCode, params)
+  },
+
+  fetchByBCodeMCodeSCode (params) {
+    return Api().get('wc/' + params.bCode + '/' + params.mCode + '/' + params.sCode, params)
+  },
+
+  createWc (params) {
+    return Api().post('wc', params)
   }
 }

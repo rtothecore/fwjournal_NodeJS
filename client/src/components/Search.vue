@@ -172,6 +172,7 @@
                   transition="scale-transition"
                   offset-y
                   :nudge-left="40"
+                  disabled
                 >
                   <v-text-field
                     v-model="e6"
@@ -181,6 +182,7 @@
                     prepend-icon="access_time"
                     readonly
                     v-on:change="onChangeWSTime"
+                    disabled
                   ></v-text-field>
                   <!-- <v-time-picker v-model="e6" format="24hr" autosave></v-time-picker> -->
                 </v-menu>
@@ -194,6 +196,7 @@
                   transition="scale-transition"
                   offset-y
                   :nudge-left="40"
+                  disabled
                 >
                   <v-text-field
                     v-model="e7"
@@ -203,21 +206,22 @@
                     prepend-icon="access_time"
                     readonly
                     v-on:change="onChangeWETime"
+                    disabled
                   ></v-text-field>
                   <!-- <v-time-picker v-model="e7" format="24hr" autosave></v-time-picker> -->
                 </v-menu>
               </v-flex>
                <v-flex xs12 sm6 md3>
-                <v-text-field v-model="editedItem.sky" label="날씨"></v-text-field>
+                <v-text-field v-model="editedItem.sky" label="날씨" disabled></v-text-field>
               </v-flex>
               <v-flex xs12 sm6 md3>
-                <v-text-field v-model="editedItem.t1h" label="온도"></v-text-field>
+                <v-text-field v-model="editedItem.t1h" label="온도" disabled></v-text-field>
               </v-flex>
               <v-flex xs12 sm6 md3>
-                <v-text-field v-model="editedItem.reh" label="습도"></v-text-field>
+                <v-text-field v-model="editedItem.reh" label="습도" disabled></v-text-field>
               </v-flex>
               <v-flex xs12 sm6 md3>
-                <v-text-field v-model="editedItem.rn1" label="강수량"></v-text-field>
+                <v-text-field v-model="editedItem.rn1" label="강수량" disabled></v-text-field>
               </v-flex>
               <v-flex xs12>
                 <v-text-field v-model="editedItem.remarks" label="특기사항"></v-text-field>

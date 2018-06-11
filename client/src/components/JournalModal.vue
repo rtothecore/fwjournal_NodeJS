@@ -8,7 +8,7 @@
         <v-card-text>
           <v-container grid-list-md>
             <v-layout wrap>
-              <v-flex xs12 sm6 md4>
+              <v-flex xs12 sm6 md3>
                 <v-select
                   v-validate="'required'"
                   :items="landItems"
@@ -22,7 +22,7 @@
                   item-value="_id"
                 ></v-select>
               </v-flex>
-              <v-flex xs12 sm6 md4>
+              <v-flex xs12 sm6 md3>
                 <v-text-field
                   v-model="cropName"
                   label="작물명" 
@@ -31,7 +31,7 @@
                   required
                   ></v-text-field>
               </v-flex>
-              <v-flex xs12 sm6 md4>
+              <v-flex xs12 sm6 md3>
                 <v-select
                   v-validate="'required'"
                   :items="workType"
@@ -44,6 +44,9 @@
                   hint="작물명에 따른 작업분류 선택"
                   persistent-hint                  
                 ></v-select>
+              </v-flex>
+              <v-flex xs12 sm6 md3>
+                <v-btn outline color="indigo" @click.native="addWorkType">작업추가</v-btn>
               </v-flex>
               <v-flex xs12>
                 <v-text-field v-model="workContent" label="작업내용"></v-text-field>
@@ -154,12 +157,16 @@ import LandService from '@/services/LandService'
 import ScService from '@/services/ScService'
 import WcService from '@/services/WcService'
 import JournalService from '@/services/JournalService'
+import WeatherService from '@/services/WeatherService'
+var async = require('async')
 export default {
   $_veeValidate: {
     validator: 'new'
   },
   data () {
     return {
+      weatherData: [],
+      convertedXY: {},
       newEvent: {},
       journalId: '',
       remarks: '',
@@ -215,6 +222,7 @@ export default {
     })
   },
   created () {
+    this.getLocation()
     this.getLands()
   },
   methods: {
@@ -245,21 +253,14 @@ export default {
       this.workType = response.data
     },
     async createNewJournal () {
-      const response = await JournalService.createJournals({
-        userId: this.userId,
-        date: this.User_Profile.substring(10, 20),
-        landId: this.selectedLandId,
-        workCode: this.selectedWorkTypeCode,
-        workContent: this.workContent,
-        workSTime: this.selectedWSTime,
-        workETime: this.selectedWETime,
-        weather: [{'baseTime': '1400', 'sky': '00', 't1h': '17', 'reh': '01', 'rn1': '02'}],
-        remarks: this.remarks
+      async.series([this.task1, this.task2], function (err, results) {
+        if (err) {
+          console.log('error : ' + err)
+        } else {
+          console.log('task finish')
+          console.log(results)
+        }
       })
-      this.newEvent.journalId = response.data.result._id
-      this.fetchNameByLandId(this.selectedLandId)
-      this.fetchCropNameByCropCode(this.selectedWorkTypeCode.substring(0, 11))
-      this.fetchTextByCode(this.selectedWorkTypeCode)
     },
     async fetchNameByLandId (landId) {
       const response = await LandService.fetchNameByLandId({
@@ -278,6 +279,166 @@ export default {
         code: workCode
       })
       this.newEvent.title += '\n' + response.data[0].text + ' - ' + this.workContent
+    },
+    async fetchWeatherData (baseDate, baseTime, callback, weatherDataSize) {
+      const response = await WeatherService.fetchWeatherData({
+        baseDate: baseDate,
+        baseTime: baseTime,
+        nx: this.convertedXY.x,
+        ny: this.convertedXY.y
+      })
+      var tmpObj = {}
+      tmpObj.baseTime = baseTime
+      var normalCode = '0000'
+      var abnormalCode = '99'
+      if (normalCode === await response.data.response.header.resultCode) {
+        var sky = 'SKY'
+        var t1h = 'T1H'
+        var reh = 'REH'
+        var rn1 = 'RN1'
+        for (var i = 0; i < await response.data.response.body.items.item.length; i++) {
+          if (sky === await response.data.response.body.items.item[i].category) {
+            tmpObj.sky = await response.data.response.body.items.item[i].obsrValue + ''
+          } else if (t1h === await response.data.response.body.items.item[i].category) {
+            tmpObj.t1h = await response.data.response.body.items.item[i].obsrValue + ''
+          } else if (reh === await response.data.response.body.items.item[i].category) {
+            tmpObj.reh = await response.data.response.body.items.item[i].obsrValue + ''
+          } else if (rn1 === await response.data.response.body.items.item[i].category) {
+            tmpObj.rn1 = await response.data.response.body.items.item[i].obsrValue + ''
+          }
+        }
+      } else if (abnormalCode === await response.data.response.header.resultCode) {
+        tmpObj.sky = '-1'
+        tmpObj.t1h = '-1'
+        tmpObj.reh = '-1'
+        tmpObj.rn1 = '-1'
+      }
+      this.weatherData.push(tmpObj)
+      if (this.weatherData.length === weatherDataSize) {
+        callback(null, 'result1')
+      }
+    },
+    task1: function (callback) {
+      this.getWeatherData(this.User_Profile.substring(10, 20).replace(/-/gi, ''),
+                          this.selectedWSTime.substring(0, 2).replace(/(^0+)/, ''),
+                          this.selectedWETime.substring(0, 2).replace(/(^0+)/, ''),
+                          callback)
+    },
+    task2: function (callback) {
+      this.task21()
+      // callback(null, 'result2')
+    },
+    async task21 () {
+      const response = await JournalService.createJournals({
+        userId: this.userId,
+        date: this.User_Profile.substring(10, 20),
+        landId: this.selectedLandId,
+        workCode: this.selectedWorkTypeCode,
+        workContent: this.workContent,
+        workSTime: this.selectedWSTime,
+        workETime: this.selectedWETime,
+        // weather: [{'baseTime': '1400', 'sky': '00', 't1h': '17', 'reh': '01', 'rn1': '02'}],
+        weather: this.weatherData,
+        remarks: this.remarks
+      })
+      this.newEvent.journalId = response.data.result._id
+      this.fetchNameByLandId(this.selectedLandId)
+      this.fetchCropNameByCropCode(this.selectedWorkTypeCode.substring(0, 11))
+      this.fetchTextByCode(this.selectedWorkTypeCode)
+    },
+    getWeatherData: function (baseDate, baseSTime, baseETime, callback) {
+      // console.log('baseDate:' + baseDate + ', baseSTime:' + baseSTime + ', baseETime:' + baseETime)
+      for (var i = baseSTime * 1; i < baseETime * 1; i++) {
+        var baseTime = this.leadingZeros(i, 2) + '00'
+        var weatherDataSize = baseETime - baseSTime
+        this.fetchWeatherData(baseDate, baseTime, callback, weatherDataSize)
+      }
+    },
+    leadingZeros: function (n, digits) {
+      var zero = ''
+      n = n.toString()
+
+      if (n.length < digits) {
+        for (var i = 0; i < digits - n.length; i++) {
+          zero += '0'
+        }
+      }
+      return zero + n
+    },
+    getLocation: function () {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(this.showPosition)
+      } else {
+        console.log('Geolocation is not supported by this browser.')
+      }
+    },
+    showPosition: function (position) {
+      this.convertedXY = this.dfs_xy_conv('toXY', position.coords.latitude, position.coords.longitude)
+    },
+    dfs_xy_conv: function (code, v1, v2) { // http://fronteer.kr/service/kmaxy - 37.579871128849334, 126.98935225645432 => 60, 127
+      var RE = 6371.00877 // 지구 반경(km)
+      var GRID = 5.0 // 격자 간격(km)
+      var SLAT1 = 30.0 // 투영 위도1(degree)
+      var SLAT2 = 60.0 // 투영 위도2(degree)
+      var OLON = 126.0 // 기준점 경도(degree)
+      var OLAT = 38.0 // 기준점 위도(degree)
+      var XO = 43 // 기준점 X좌표(GRID)
+      var YO = 136 // 기1준점 Y좌표(GRID)
+
+      var DEGRAD = Math.PI / 180.0
+      var RADDEG = 180.0 / Math.PI
+
+      var re = RE / GRID
+      var slat1 = SLAT1 * DEGRAD
+      var slat2 = SLAT2 * DEGRAD
+      var olon = OLON * DEGRAD
+      var olat = OLAT * DEGRAD
+
+      var sn = Math.tan(Math.PI * 0.25 + slat2 * 0.5) / Math.tan(Math.PI * 0.25 + slat1 * 0.5)
+      sn = Math.log(Math.cos(slat1) / Math.cos(slat2)) / Math.log(sn)
+      var sf = Math.tan(Math.PI * 0.25 + slat1 * 0.5)
+      sf = Math.pow(sf, sn) * Math.cos(slat1) / sn
+      var ro = Math.tan(Math.PI * 0.25 + olat * 0.5)
+      ro = re * sf / Math.pow(ro, sn)
+      var rs = {}
+      if (code === 'toXY') {
+        rs['lat'] = v1
+        rs['lng'] = v2
+        var ra = Math.tan(Math.PI * 0.25 + (v1) * DEGRAD * 0.5)
+        ra = re * sf / Math.pow(ra, sn)
+        var theta = v2 * DEGRAD - olon
+        if (theta > Math.PI) theta -= 2.0 * Math.PI
+        if (theta < -Math.PI) theta += 2.0 * Math.PI
+        theta *= sn
+        rs['x'] = Math.floor(ra * Math.sin(theta) + XO + 0.5)
+        rs['y'] = Math.floor(ro - ra * Math.cos(theta) + YO + 0.5)
+      } else {
+        rs['x'] = v1
+        rs['y'] = v2
+        var xn = v1 - XO
+        var yn = ro - v2 + YO
+        ra = Math.sqrt(xn * xn + yn * yn)
+        if (sn < 0.0) {
+          ra = -ra
+        }
+        var alat = Math.pow((re * sf / ra), (1.0 / sn))
+        alat = 2.0 * Math.atan(alat) - Math.PI * 0.5
+
+        if (Math.abs(xn) <= 0.0) {
+          theta = 0.0
+        } else {
+          if (Math.abs(yn) <= 0.0) {
+            theta = Math.PI * 0.5
+            if (xn < 0.0) {
+              theta = -theta
+            }
+          } else theta = Math.atan2(xn, yn)
+        }
+        var alon = theta / sn + olon
+        rs['lat'] = alat * RADDEG
+        rs['lng'] = alon * RADDEG
+      }
+      return rs
     },
     onChangeLand: function (event) {
       this.selectedLandId = event
@@ -316,6 +477,9 @@ export default {
         // bus.$emit('toJournal', 'test')
         // this.dialog = false
       }).catch(() => {})
+    },
+    addWorkType () {
+      bus.$emit('dialogForAddWorkType', 'test')
     }
   }
 }

@@ -59,6 +59,7 @@
                   transition="scale-transition"
                   offset-y
                   :nudge-left="40"
+                  disabled
                 >
                   <v-text-field
                     v-validate="'required'"
@@ -71,6 +72,7 @@
                     prepend-icon="access_time"
                     readonly
                     v-on:change="onChangeWSTime"
+                    disabled
                   ></v-text-field>
                   <v-time-picker v-model="e6" format="24hr" autosave></v-time-picker>
                 </v-menu>
@@ -84,6 +86,7 @@
                   transition="scale-transition"
                   offset-y
                   :nudge-left="40"
+                  disabled
                 >
                   <v-text-field
                     v-validate="'required'"
@@ -96,6 +99,7 @@
                     prepend-icon="access_time"
                     readonly
                     v-on:change="onChangeWETime"
+                    disabled
                   ></v-text-field>
                   <v-time-picker v-model="e7" format="24hr" autosave></v-time-picker>
                 </v-menu>
@@ -107,6 +111,7 @@
                   hint="자동입력"
                   persistent-hint
                   required
+                  disabled
                   ></v-text-field>
               </v-flex>
               <v-flex xs12 sm6 md3>
@@ -116,6 +121,7 @@
                   hint="자동입력"
                   persistent-hint
                   required
+                  disabled
                   ></v-text-field>
               </v-flex>
               <v-flex xs12 sm6 md3>
@@ -125,6 +131,7 @@
                   hint="자동입력"
                   persistent-hint
                   required
+                  disabled
                   ></v-text-field>
               </v-flex>
               <v-flex xs12 sm6 md3>
@@ -134,6 +141,7 @@
                   hint="자동입력"
                   persistent-hint
                   required
+                  disabled
                   ></v-text-field>
               </v-flex>
               <v-flex xs12>
@@ -295,9 +303,11 @@ export default {
         landId: this.selectLand,
         workCode: this.selectedWorkTypeCode,
         workContent: this.workContent,
+        /*
         workSTime: this.e6.replace(':', ''),
         workETime: this.e7.replace(':', ''),
         weather: [{'baseTime': '1400', 'sky': '00', 't1h': '17', 'reh': '01', 'rn1': '02'}],
+        */
         remarks: this.remarks
       })
       this.fetchNameByLandId(this.selectLand)

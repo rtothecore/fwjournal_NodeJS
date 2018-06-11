@@ -5,6 +5,10 @@ export default {
     return Api().get('sc', params)
   },
 
+  fetchScsByBCodeMCode (params) {
+    return Api().get('sc/' + params.bCode + '/' + params.mCode, params)
+  },
+
   fetchCropCode (params) {
     return Api().get('sc/' + params.text, params)
   },
