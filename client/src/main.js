@@ -10,6 +10,7 @@ import 'fullcalendar/dist/fullcalendar.min.css'
 import JournalModal from './components/JournalModal.vue'
 import JournalModalForEdit from './components/JournalModalForEdit.vue'
 import AddWorkTypeModal from './components/AddWorkTypeModal.vue'
+import SearchAddressModal from './components/SearchAddressModal.vue'
 import VeeValidate from 'vee-validate'
 import VueSweetalert2 from 'vue-sweetalert2'
 // import axios from 'axios'
@@ -17,6 +18,7 @@ import VueSweetalert2 from 'vue-sweetalert2'
 Vue.component('journalModal', JournalModal)
 Vue.component('journalModalForEdit', JournalModalForEdit)
 Vue.component('addWorkTypeModal', AddWorkTypeModal)
+Vue.component('searchAddressModal', SearchAddressModal)
 
 Vue.use(Vuetify)
 Vue.use(FullCalendar)

@@ -46,6 +46,25 @@ var Wc = require("../models/workClass")
 
 const serviceKey = '73Jjl5lZRvBRKkGsPnGmZ7EL9JtwsWNi3hhCIN8cpVJzMdRRgyzntwz2lHmTKeR1tp7NWzoihNGGazcDEFgh8w%3D%3D'
 
+// Fetch address
+// https://www.poesis.org/postcodify/guide/appdev
+// https://api.poesis.kr/post/search.php?q=검색어&v=버전&ref=도메인
+app.get('/getAddress/:searchText', (req, res) => {
+	var searchText = encodeURIComponent(req.params.searchText)
+	var version = '3.0.0-fwjournal'
+	var domain = 'www.ezinfotech.co.kr'
+
+	axios.get('https://api.poesis.kr/post/search.php?q=' + searchText +
+		'&v=' + version +
+		'&ref=' + domain)
+  	.then(function (response) {  		
+  		res.send(response.data)
+  		//res.send(CircularJSON.stringify(response.data))
+  }).catch(function (error) {
+    console.log(error)
+  })
+})
+
 function getTodayBaseTime() {
 	var todayDate = new Date()
 	var currentHour = todayDate.getHours()
@@ -566,6 +585,19 @@ app.get('/mc/:bCode', (req, res) => {
   .sort({text:1})
 })
 
+// Fetch mediumClass text by bCode mCode
+app.get('/mc/:bCode/:mCode', (req, res) => {
+  Mc.find({}, 'bCode mCode text', function (error, mcs) {
+    if (error) { console.error(error); }
+    res.send({
+      mcs: mcs
+    })
+  })
+  .where('bCode').equals(req.params.bCode)
+  .where('mCode').equals(req.params.mCode)
+  .sort({text:1})
+})
+
 // Fetch all mediumClass
 app.get('/mc', (req, res) => {
   Mc.find({}, 'bCode mCode text', function (error, mcs) {
@@ -585,6 +617,18 @@ app.get('/bc', (req, res) => {
       bcs: bcs
     })
   })
+  .sort({text:1})
+})
+
+// Fetch bigClass text by bCode
+app.get('/bc/:bCode', (req, res) => {
+  Bc.find({}, 'bCode text', function (error, bcs) {
+    if (error) { console.error(error); }
+    res.send({
+      bcs: bcs
+    })
+  })
+  .where('bCode').equals(req.params.bCode)
   .sort({text:1})
 })
 

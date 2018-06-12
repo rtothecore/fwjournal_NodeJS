@@ -56,6 +56,8 @@
         </v-form>
       </v-flex>
 
+      <searchAddressModal></searchAddressModal>
+
       <div>
         <v-dialog v-model="dialog" max-width="500px">
           <v-btn slot="activator" color="primary" dark class="mb-2">새 농장</v-btn>
@@ -66,7 +68,7 @@
             <v-card-text>
               <v-container grid-list-md>
                 <v-layout wrap>
-                  <v-flex xs12 sm6 md4>
+                  <v-flex xs12 sm6 md12>
                     <v-text-field 
                         v-model="editedItem.name" 
                         :counter="10" 
@@ -77,18 +79,21 @@
                         data-vv-name="landName"
                     ></v-text-field>
                   </v-flex>
-                  <v-flex xs12 sm6 md4>
+                  <v-flex xs12 sm6 md8>
                     <v-text-field 
                         v-model="editedItem.address"
-                        :counter="20"
+                        :counter="30"
                         :error-messages="errors.collect('address')"
                         label="주소"
                         required
-                        v-validate="'required|max:20'"
+                        v-validate="'required|max:30'"
                         data-vv-name="address"
                     ></v-text-field>
                   </v-flex>
                   <v-flex xs12 sm6 md4>
+                     <v-btn outline color="indigo" @click.native="searchAddr">주소찾기</v-btn>
+                  </v-flex>
+                  <v-flex xs12 sm6 md12>
                     <v-text-field 
                         v-model="editedItem.size"
                         :counter="10"
@@ -100,18 +105,49 @@
                     ></v-text-field>
                   </v-flex>
                   <v-flex xs12 sm6 md4>
+                    <v-select
+                      :items="items0"
+                      v-model="editedItem.bcs"
+                      label="대분류"
+                      class="input-group--focused"
+                      v-on:change="onChangeBcs"
+                      :error-messages="errors.collect('bcs')"
+                      required
+                      v-validate="'required'"
+                      data-vv-name="bcs"
+                      item-text="text"
+                      item-value="bCode"
+                    ></v-select>
+                  </v-flex>
+                  <v-flex xs12 sm6 md4>
+                    <v-select
+                      :items="items1"
+                      v-model="editedItem.mcs"
+                      label="중분류"
+                      class="input-group--focused"
+                      v-on:change="onChangeMcs"
+                      :error-messages="errors.collect('mcs')"
+                      required
+                      v-validate="'required'"
+                      data-vv-name="mcs"
+                      item-text="text"
+                      item-value="mCode"
+                    ></v-select>
+                  </v-flex>
+                  <v-flex xs12 sm6 md4>
                     <!-- <v-text-field v-model="editedItem.cropCode" label="작물,가축명"></v-text-field> -->
                     <v-select
                       :items="items2"
                       v-model="editedItem.cropCode"
                       label="작물,가축명"
                       class="input-group--focused"
-                      item-value="text"
                       v-on:change="onChangeSelect2"
                       :error-messages="errors.collect('cropName')"
                       required
                       v-validate="'required'"
                       data-vv-name="cropName"
+                      item-text="text"
+                      item-value="sCode"
                     ></v-select>
                   </v-flex>
                 </v-layout>
@@ -149,14 +185,16 @@
           </template>
         </v-data-table>
       </div>
-
     </v-layout>
   </v-container>
 </template>
 
 <script>
+import {bus} from '../main'
 import UserService from '@/services/UserService'
 import LandService from '@/services/LandService'
+import BcService from '@/services/BcService'
+import McService from '@/services/McService'
 import ScService from '@/services/ScService'
 export default {
   $_veeValidate: {
@@ -171,7 +209,7 @@ export default {
         },
         address: {
           required: () => '주소를 입력해주세요',
-          max: '주소는 20자 이하여야 합니다'
+          max: '주소는 30자 이하여야 합니다'
         },
         size: {
           required: () => '농장크기를 입력해주세요',
@@ -179,6 +217,12 @@ export default {
         },
         cropName: {
           required: '작물,가축명을 선택해주세요'
+        },
+        bcs: {
+          required: '대분류를 선택해주세요'
+        },
+        mcs: {
+          required: '중분류를 선택해주세요'
         }
       }
     },
@@ -209,6 +253,8 @@ export default {
       '남',
       '여'
     ],
+    items0: [],
+    items1: [],
     items2: [],
     selectedCropCode: '',
     dialog: false,
@@ -231,6 +277,8 @@ export default {
       name: '',
       address: '',
       size: '',
+      bcs: '',
+      mcs: '',
       cropCode: ''
     },
     defaultItem: {
@@ -238,6 +286,8 @@ export default {
       name: '',
       address: '',
       size: '',
+      bcs: '',
+      mcs: '',
       cropCode: ''
     }
   }),
@@ -246,24 +296,44 @@ export default {
       return this.editedIndex === -1 ? '새 농장' : '농장정보 수정'
     }
   },
-
   watch: {
     dialog (val) {
       val || this.close()
     }
   },
-
   mounted () {
+    var vm = this
     this.$validator.localize('ko', this.dictionary)
+    bus.$on('dialogForSearchAddressReturn', function (value) {
+      console.log(value)
+      vm.editedItem.address = value
+      // vm.dialog = true
+    })
   },
-
   created () {
     this.initialize()
     this.getUser()
     this.getLands()
-    this.getScs()
+    this.getBCS()
   },
   methods: {
+    async getBCS () {
+      const response = await BcService.fetchBcs({})
+      this.items0 = response.data.bcs
+    },
+    async getMCS (bCode) {
+      const response = await McService.fetchMcsByBCode({
+        bCode: bCode
+      })
+      this.items1 = response.data.mcs
+    },
+    async getSCS (bCode, mCode) {
+      const response = await ScService.fetchScsByBCodeMCode({
+        bCode: bCode,
+        mCode: mCode
+      })
+      this.items2 = response.data.scs
+    },
     async getUser () {
       const response = await UserService.fetchUser(this.userId)
       this.age = response.data.age
@@ -292,10 +362,24 @@ export default {
       })
       this.lands = response.data.lands
       for (var i = 0; i < this.lands.length; i++) {
+        this.lands[i].scsCode = this.lands[i].cropCode.substring(7, 11)
         const response2 = await ScService.fetchCropNameByCropCode({
           cropCode: this.lands[i].cropCode
         })
         this.lands[i].cropCode = response2.data[0].text
+
+        this.lands[i].bcsCode = response2.data[0].bCode
+        const response3 = await BcService.fetchTextByBCode({
+          bCode: response2.data[0].bCode
+        })
+        this.lands[i].bcs = response3.data.bcs[0].text
+
+        this.lands[i].mcsCode = response2.data[0].mCode
+        const response4 = await McService.fetchMcsByBcodeMcode({
+          bCode: response2.data[0].bCode,
+          mCode: response2.data[0].mCode
+        })
+        this.lands[i].mcs = response4.data.mcs[0].text
       }
     },
     async createNewLand () {
@@ -308,6 +392,7 @@ export default {
       })
     },
     async updateLand () {
+      this.cropCode = this.editedItem.bcsCode + this.editedItem.mcsCode + this.editedItem.scsCode
       await LandService.updateLand({
         id: this.editedItem._id,
         name: this.editedItem.name,
@@ -318,16 +403,6 @@ export default {
     },
     async deleteLand (id) {
       await LandService.deleteLand(id)
-    },
-    async getScs () {
-      const response = await ScService.fetchScs({})
-      this.items2 = response.data.scs
-    },
-    async getCropCode () {
-      const response = await ScService.fetchCropCode({
-        text: this.selectedCropName
-      })
-      this.cropCode = response.data[0].bCode + response.data[0].mCode + response.data[0].sCode
     },
     submit () {
       if (this.$refs.form.validate()) {
@@ -353,16 +428,20 @@ export default {
     initialize () {
     },
     editItem (item) {
+      // console.log(item)
       this.editedIndex = this.lands.indexOf(item)
       this.editedItem = Object.assign({}, item)
+      this.editedItem.bcs = item.bcsCode
+      this.getMCS(item.bcsCode)
+      this.editedItem.mcs = item.mcsCode
+      this.getSCS(item.bcsCode, item.mcsCode)
+      this.editedItem.cropCode = item.scsCode
       this.dialog = true
     },
-
     deleteItem (item) {
       const index = this.lands.indexOf(item)
       confirm('이 농장을 지우시겠습니까?') && this.lands.splice(index, 1) && this.deleteLand(item._id)
     },
-
     close () {
       this.dialog = false
       setTimeout(() => {
@@ -370,7 +449,6 @@ export default {
         this.editedIndex = -1
       }, 300)
     },
-
     save () {
       this.$validator.validateAll().then((result) => {
         if (!result) {
@@ -386,10 +464,20 @@ export default {
         this.close()
       }).catch(() => {})
     },
-
+    searchAddr () {
+      bus.$emit('dialogForSearchAddress', 'test')
+    },
+    onChangeBcs: function (event) {
+      // console.log(event)
+      this.getMCS(event)
+    },
+    onChangeMcs: function (event) {
+      // console.log(this.editedItem.bcs + event)
+      this.getSCS(this.editedItem.bcs, event)
+    },
     onChangeSelect2: function (event) {
-      this.selectedCropName = event
-      this.getCropCode()
+      this.cropCode = this.editedItem.bcs + this.editedItem.mcs + event
+      console.log(this.cropCode)
     }
   }
 }
