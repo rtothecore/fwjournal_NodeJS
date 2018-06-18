@@ -5,6 +5,7 @@ const morgan = require('morgan')
 const axios = require('axios')
 const CircularJSON = require('circular-json')
 
+axios.defaults.timeout = 20000;
 
 const app = express()
 app.use(morgan('combined'))
@@ -45,6 +46,56 @@ var Journal = require("../models/journal")
 var Wc = require("../models/workClass")
 
 const serviceKey = '73Jjl5lZRvBRKkGsPnGmZ7EL9JtwsWNi3hhCIN8cpVJzMdRRgyzntwz2lHmTKeR1tp7NWzoihNGGazcDEFgh8w%3D%3D'
+const serviceKeyForPrice = '8d8857fa9186167880dafee9a8c55dda0d2711b96cd4ae893983f7d870941d2e'
+
+function getTodayDate() {
+	var todayDate = new Date()
+	var todayDateValue = ''
+	todayDateValue = leadingZeros(todayDate.getFullYear(), 4) + 
+			   		 leadingZeros(todayDate.getMonth() + 1, 2) +
+			   		 leadingZeros(todayDate.getDate(), 2)
+	return todayDateValue
+}
+
+// Fetch agriculture product price
+// https://data.mafra.go.kr
+// http://211.237.50.150:7080/openapi/8d8857fa9186167880dafee9a8c55dda0d2711b96cd4ae893983f7d870941d2e/xml/Grid_20141221000000000120_1/1/5?PRDLST_NM=%EB%94%B8%EA%B8%B0
+app.get('/getProductPrice/:productName', (req, res) => {
+	var searchText = encodeURIComponent(req.params.searchText)
+	var version = '3.0.0-fwjournal'
+	var domain = 'www.ezinfotech.co.kr'
+	var productCode = ''
+	axios.get('http://211.237.50.150:7080/openapi/' + serviceKeyForPrice +
+		'/json/Grid_20141221000000000120_1/1/5' +
+		'?PRDLST_NM=' + encodeURIComponent(req.params.productName))
+  	.then(function (response) {
+  		// console.log(response.data)
+  		if (0 == response.data.Grid_20141221000000000120_1.totalCnt) {
+  			// console.log('totalCnt is 0')
+  			res.send(false)
+  			return
+  		}
+  		productCode = response.data.Grid_20141221000000000120_1.row[0].PRDLST_CD
+  		// http://211.237.50.150:7080/openapi/8d8857fa9186167880dafee9a8c55dda0d2711b96cd4ae893983f7d870941d2e/xml/Grid_20150401000000000216_1/1/5?AUCNG_DE=20180613&PRDLST_CD=0804
+  		axios.get('http://211.237.50.150:7080/openapi/' + serviceKeyForPrice +
+  			'/json/Grid_20150401000000000216_1/1/5?AUCNG_DE=' + getTodayDate() + 
+  			'&PRDLST_CD=' + productCode)
+  		.then(function (response) {
+  			// console.log(response.data)
+  			if (0 == response.data.Grid_20150401000000000216_1.totalCnt) {
+	  			// console.log('totalCnt is 0')
+	  			res.send(false)
+	  			return
+	  		}
+
+  			res.send(response.data)
+  		}).catch(function (error) {
+  			console.log(error)
+  		})
+  	}).catch(function (error) {
+    	console.log(error)
+  })
+})
 
 // Fetch address
 // https://www.poesis.org/postcodify/guide/appdev

@@ -1,5 +1,6 @@
 <template>
-    <div id="calendar" style="height:900px; width:900px;">
+<div style="position:absolute">
+    <div id="calendar" style="height:900px; width:900px; float:left;">
       <div>
         <!-- <img src="../assets/rain.png"> -->
         <v-layout row>
@@ -115,30 +116,110 @@
           </v-flex>
         </v-layout>
       </div>
+
 	    <full-calendar :config="config" :events="events" @event-selected="eventSelected"/>
       <journalModal></journalModal>
       <journalModalForEdit></journalModalForEdit>
       <addWorkTypeModal></addWorkTypeModal>
     </div>
+    <div style="float: right; display: inline;">
+        <v-data-table
+          :headers="headers"
+          :items="crops"
+          class="elevation-1"
+        >
+          <template slot="headerCell" slot-scope="props">
+            <v-tooltip bottom>
+              <span slot="activator">
+                {{ props.header.text }}
+              </span>
+              <span>
+                {{ props.header.text }}
+              </span>
+            </v-tooltip>
+          </template>
+          <template slot="items" slot-scope="props">
+            <td>{{ props.item.PRDLST_NM }}</td>
+            <td class="text-xs-right">{{ props.item.PBLMNG_WHSAL_MRKT_NM }}</td>
+            <td class="text-xs-right">{{ props.item.GRAD }}</td>
+            <td class="text-xs-right">{{ props.item.DELNGBUNDLE_QY }}{{ props.item.STNDRD }}</td>
+            <td class="text-xs-right">{{ props.item.MUMM_AMT }}</td>
+            <td class="text-xs-right">{{ props.item.AVRG_AMT }}</td>
+            <td class="text-xs-right">{{ props.item.MXMM_AMT }}</td>
+          </template>
+        </v-data-table>
+        <hr/>
+        <v-data-table
+          :headers="headersForPredict"
+          :items="journals"
+          class="elevation-1"
+        >
+          <template slot="headerCell" slot-scope="props">
+            <v-tooltip bottom>
+              <span slot="activator">
+                {{ props.header.text }}
+              </span>
+              <span>
+                {{ props.header.text }}
+              </span>
+            </v-tooltip>
+          </template>
+          <template slot="items" slot-scope="props">
+            <td>{{ props.item.cropName }}</td>
+            <td class="text-xs-right">{{ props.item.date }}</td>
+            <td class="text-xs-right">{{ props.item.workCode }}</td>
+            <td class="text-xs-right">{{ props.item.workContent }}</td>
+            <td class="text-xs-right">{{ props.item.remarks }}</td>
+          </template>
+        </v-data-table>
+    </div>
+</div>
 </template>
 
 <script>
-    // import moment from 'moment'
+    import moment from 'moment'
     import {bus} from '../main'
     import JournalService from '@/services/JournalService'
     import WcService from '@/services/WcService'
     import ScService from '@/services/ScService'
     import LandService from '@/services/LandService'
     import WeatherService from '@/services/WeatherService'
+    import PriceService from '@/services/PriceService'
     import proj4 from 'proj4'
     export default {
-  created () {
-        // this.$refs.calendar.fireMethod('changeView', view)
-        this.getJournal()
-        this.getLocation()
-  },
   data () {
         return {
+          startDate: '',
+          endDate: '',
+          journals: [],
+          headersForPredict: [
+            {
+              text: '작물명',
+              align: 'left',
+              sortable: false,
+              value: 'cropName'
+            },
+            { text: '작년날짜', value: 'date' },
+            { text: '작업분류', value: 'workCode' },
+            { text: '작업내용', value: 'workContent' },
+            { text: '작년특기사항', value: 'remarks' }
+          ],
+          headers: [
+            {
+              text: '품목명',
+              align: 'left',
+              sortable: false,
+              value: 'PRDLST_NM'
+            },
+            { text: '도매시장명', value: 'PBLMNG_WHSAL_MRKT_NM' },
+            { text: '등급', value: 'GRAD' },
+            { text: '거래단량', value: 'DELNGBUNDLE_QY' },
+            { text: '최소가', value: 'MUMM_AMT' },
+            { text: '평균가', value: 'AVRG_AMT' },
+            { text: '최대가', value: 'MXMM_AMT' }
+          ],
+          crops: [],
+          myCrops: [],
           weatherLoc: '',
           todayPm10: '',
           afTomAmSkyImg: '',
@@ -183,6 +264,13 @@
           }
         }
   },
+  created () {
+        // this.$refs.calendar.fireMethod('changeView', view)
+        this.getJournal()
+        this.getLocation()
+        this.getMyCrop()
+        this.getLastYearJournal()
+  },
   mounted () {
         var vm = this
         bus.$on('toJournalForNew', function (value) {
@@ -199,6 +287,28 @@
   methods: {
         eventSelected: function (event, jsEvent, view) {
           bus.$emit('dialogForEdit', event)
+        },
+        async getMyCrop () {
+          this.myCrops = []
+          const response = await LandService.fetchLands({
+            userId: this.userId
+          })
+          for (var i = 0; i < response.data.lands.length; i++) {
+            const response2 = await ScService.fetchCropNameByCropCode({
+              cropCode: response.data.lands[i].cropCode
+            })
+            this.myCrops.push(response2.data[0].text)
+          }
+          // console.log(this.myCrops)
+          for (var j = 0; j < this.myCrops.length; j++) {
+            const response3 = await PriceService.fetchPriceData({
+              productName: this.myCrops[j]
+            })
+            if (response3.data) {
+              // console.log(response3.data)
+              this.crops.push(response3.data.Grid_20150401000000000216_1.row[0])
+            }
+          }
         },
         async getJournal () {
           const response = await JournalService.fetchJournals({
@@ -462,6 +572,39 @@
             default :
               break
           }
+        },
+        async getJournalsByDate () {
+          const response = await JournalService.fetchJournalsByDate({
+            startDate: this.startDate,
+            endDate: this.endDate
+          })
+          var tmpJournals = response.data
+          for (var i = 0; i < response.data.length; i++) {
+            const response2 = await ScService.fetchCropNameByCropCode({
+              cropCode: response.data[i].workCode.substring(0, 11)
+            })
+            tmpJournals[i].cropName = response2.data[0].text
+
+            const response3 = await WcService.fetchTextByCode({
+              code: response.data[i].workCode
+            })
+            tmpJournals[i].workCode = response3.data[0].text
+          }
+          this.journals = tmpJournals
+        },
+        getLastYearJournal: function () {
+          var today = moment()
+          // var today = moment('20190628', 'YYYY-MM-DD')
+          // console.log(today)
+          var lastYear = today.subtract(1, 'year')
+          var lastYearBefore10 = lastYear.subtract(10, 'day')
+          this.startDate = lastYearBefore10.format('YYYY-MM-DD')
+          // console.log(this.startDate)
+          var lastYearAfter10 = lastYear.add(20, 'day')
+          this.endDate = lastYearAfter10.format('YYYY-MM-DD')
+          // console.log(this.endDate)
+
+          this.getJournalsByDate()
         },
         leadingZeros: function (n, digits) {
           var zero = ''
