@@ -1,8 +1,8 @@
 <template>
 <div style="position:absolute">
-    <div id="calendar" style="height:900px; width:900px; float:left;">
-      <div>
-        <!-- <img src="../assets/rain.png"> -->
+    <!-- <div id="calendar" style="height:900px; width:900px; float:left;"> -->
+    <div id="calendar" v-bind:style="{ height: calendarHeight, width: calendarWidth, float: 'left' }">
+      <div v-if="$mq === 'laptop' || $mq === 'desktop'">
         <v-layout row>
           <v-flex xs4 order-md1 order-xs1>
             <v-card color="purple" class="white--text">
@@ -122,7 +122,7 @@
       <journalModalForEdit></journalModalForEdit>
       <addWorkTypeModal></addWorkTypeModal>
     </div>
-    <div style="float: right; display: inline;">
+    <div style="float: right; display: inline;" v-if="$mq === 'laptop' || $mq === 'desktop'">
         <v-data-table
           :headers="headers"
           :items="crops"
@@ -189,6 +189,8 @@
     export default {
   data () {
         return {
+          calendarWidth: '',
+          calendarHeight: '',
           startDate: '',
           endDate: '',
           journals: [],
@@ -270,6 +272,16 @@
         this.getLocation()
         this.getMyCrop()
         this.getLastYearJournal()
+        // media query
+        if (this.$mq === 'desktop') {
+          this.calendarWidth = '900px'
+          this.calendarHeight = '900px'
+          this.config.aspectRatio = 1.5
+        } else {
+          this.calendarWidth = '400px'
+          this.calendarHeight = '400px'
+          this.config.aspectRatio = 1
+        }
   },
   mounted () {
         var vm = this

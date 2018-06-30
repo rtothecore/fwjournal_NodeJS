@@ -13,6 +13,7 @@ import AddWorkTypeModal from './components/AddWorkTypeModal.vue'
 import SearchAddressModal from './components/SearchAddressModal.vue'
 import VeeValidate from 'vee-validate'
 import VueSweetalert2 from 'vue-sweetalert2'
+import VueMq from 'vue-mq'
 // import axios from 'axios'
 
 Vue.component('journalModal', JournalModal)
@@ -24,6 +25,14 @@ Vue.use(Vuetify)
 Vue.use(FullCalendar)
 Vue.use(VeeValidate)
 Vue.use(VueSweetalert2)
+Vue.use(VueMq, {
+  breakpoints: {
+    mobile: 450,
+    tablet: 900,
+    laptop: 1250,
+    desktop: Infinity
+  }
+})
 // Vue.prototype.$http = axios
 
 Vue.config.productionTip = false
