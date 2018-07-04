@@ -126,6 +126,8 @@
         <v-data-table
           :headers="headers"
           :items="crops"
+          :dark="true"
+          :rows-per-page-items=[10]
           class="elevation-1"
         >
           <template slot="headerCell" slot-scope="props">
@@ -152,6 +154,7 @@
         <v-data-table
           :headers="headersForPredict"
           :items="journals"
+          :dark="true"
           class="elevation-1"
         >
           <template slot="headerCell" slot-scope="props">
@@ -189,6 +192,7 @@
     export default {
   data () {
         return {
+          lastYearYM: '',
           calendarWidth: '',
           calendarHeight: '',
           startDate: '',
@@ -261,7 +265,12 @@
             },
             dayClick (date, event, view) {
               // console.log(date.format())
-              bus.$emit('dialog', date.format())
+              var todayDate = moment().format('YYYY-MM-DD')
+              var clickedDate = date.format()
+              if (todayDate < clickedDate) {
+              } else {
+                bus.$emit('dialog', date.format())
+              }
             }
           }
         }
@@ -317,8 +326,13 @@
               productName: this.myCrops[j]
             })
             if (response3.data) {
-              // console.log(response3.data)
-              this.crops.push(response3.data.Grid_20150401000000000216_1.row[0])
+              // console.log(response3.data.Grid_20150401000000000216_1.row)
+              for (var k = 0; k < response3.data.Grid_20150401000000000216_1.row.length; k++) {
+                response3.data.Grid_20150401000000000216_1.row[k].MUMM_AMT = '￦' + this.numberWithCommas(response3.data.Grid_20150401000000000216_1.row[k].MUMM_AMT)
+                response3.data.Grid_20150401000000000216_1.row[k].AVRG_AMT = '￦' + this.numberWithCommas(response3.data.Grid_20150401000000000216_1.row[k].AVRG_AMT)
+                response3.data.Grid_20150401000000000216_1.row[k].MXMM_AMT = '￦' + this.numberWithCommas(response3.data.Grid_20150401000000000216_1.row[k].MXMM_AMT)
+                this.crops.push(response3.data.Grid_20150401000000000216_1.row[k])
+              }
             }
           }
         },
@@ -590,19 +604,37 @@
             startDate: this.startDate,
             endDate: this.endDate
           })
-          var tmpJournals = response.data
-          for (var i = 0; i < response.data.length; i++) {
-            const response2 = await ScService.fetchCropNameByCropCode({
-              cropCode: response.data[i].workCode.substring(0, 11)
-            })
-            tmpJournals[i].cropName = response2.data[0].text
+          if (response.data.length > 0) {
+            var tmpJournals = response.data
+            for (var i = 0; i < response.data.length; i++) {
+              const response2 = await ScService.fetchCropNameByCropCode({
+                cropCode: response.data[i].workCode.substring(0, 11)
+              })
+              tmpJournals[i].cropName = response2.data[0].text
 
-            const response3 = await WcService.fetchTextByCode({
-              code: response.data[i].workCode
+              const response3 = await WcService.fetchTextByCode({
+                code: response.data[i].workCode
+              })
+              tmpJournals[i].workCode = response3.data[0].text
+            }
+            this.journals = tmpJournals
+          } else {
+            const response4 = await JournalService.fetchJournalsByYM({
+              ym: this.lastYearYM
             })
-            tmpJournals[i].workCode = response3.data[0].text
+            var tmpJournals2 = response4.data
+            for (var j = 0; j < response4.data.length; j++) {
+              const response5 = await ScService.fetchCropNameByCropCode({
+                cropCode: response4.data[j].workCode.substring(0, 11)
+              })
+              tmpJournals2[j].cropName = response5.data[0].text
+              const response6 = await WcService.fetchTextByCode({
+                code: response4.data[j].workCode
+              })
+              tmpJournals2[j].workCode = response6.data[0].text
+            }
+            this.journals = tmpJournals2
           }
-          this.journals = tmpJournals
         },
         getLastYearJournal: function () {
           var today = moment()
@@ -615,6 +647,8 @@
           var lastYearAfter10 = lastYear.add(20, 'day')
           this.endDate = lastYearAfter10.format('YYYY-MM-DD')
           // console.log(this.endDate)
+          this.lastYearYM = lastYear.format('YYYY-MM')
+          // console.log(this.lastYearYM)
 
           this.getJournalsByDate()
         },
@@ -728,6 +762,9 @@
             rs['lng'] = alon * RADDEG
           }
           return rs
+        },
+        numberWithCommas: function (x) {
+          return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
         }
   }
 }

@@ -13,6 +13,7 @@ import AddWorkTypeModal from './components/AddWorkTypeModal.vue'
 import SearchAddressModal from './components/SearchAddressModal.vue'
 import VeeValidate from 'vee-validate'
 import VueSweetalert2 from 'vue-sweetalert2'
+// https://alligator.io/vuejs/vue-media-queries/
 import VueMq from 'vue-mq'
 // import axios from 'axios'
 

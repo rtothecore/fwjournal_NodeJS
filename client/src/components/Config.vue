@@ -38,6 +38,7 @@
             :counter="10"
             label="연령"
             required
+            type="number"
           ></v-text-field>
           <v-select
             v-model="select"
@@ -88,6 +89,7 @@
                         required
                         v-validate="'required|max:30'"
                         data-vv-name="address"
+                        :disabled="this.editedIndex !== -1"
                     ></v-text-field>
                   </v-flex>
                   <v-flex xs12 sm6 md4>
@@ -309,6 +311,12 @@ export default {
       vm.editedItem.address = value
       // vm.dialog = true
     })
+    /*
+    if (this.editedIndex === -1) {
+      editedItem.address
+    } else {
+    }
+    */
   },
   created () {
     this.initialize()

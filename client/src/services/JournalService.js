@@ -13,6 +13,10 @@ export default {
     return Api().get('journals/searchBy4/' + params.startDate + '/' + params.endDate + '/' + params.workType + '/' + params.workContent, params)
   },
 
+  fetchJournalsByYM (params) {
+    return Api().get('journals/searchByYM/' + params.ym, params)
+  },
+
   fetchJournalsByDate (params) {
     return Api().get('journals/' + params.startDate + '/' + params.endDate, params)
   },

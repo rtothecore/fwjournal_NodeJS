@@ -55,6 +55,7 @@ export default {
   data () {
     return {
       // Predict_page: moment().format('YYYY년 MM월 DD일'),
+      lastYearYM: '',
       date: moment().format('YYYY-MM-DD'),
       startDate: '',
       endDate: '',
@@ -86,19 +87,36 @@ export default {
         startDate: this.startDate,
         endDate: this.endDate
       })
-      var tmpJournals = response.data
-      for (var i = 0; i < response.data.length; i++) {
-        const response2 = await ScService.fetchCropNameByCropCode({
-          cropCode: response.data[i].workCode.substring(0, 11)
+      if (response.data.length > 0) {
+        var tmpJournals = response.data
+        for (var i = 0; i < response.data.length; i++) {
+          const response2 = await ScService.fetchCropNameByCropCode({
+            cropCode: response.data[i].workCode.substring(0, 11)
+          })
+          tmpJournals[i].cropName = response2.data[0].text
+          const response3 = await WcService.fetchTextByCode({
+            code: response.data[i].workCode
+          })
+          tmpJournals[i].workCode = response3.data[0].text
+        }
+        this.journals = tmpJournals
+      } else {  // 작년 10일이내의 데이터가 없는 경우 작년 해당월의 데이터를 보여줌
+        const response4 = await JournalService.fetchJournalsByYM({
+          ym: this.lastYearYM
         })
-        tmpJournals[i].cropName = response2.data[0].text
-
-        const response3 = await WcService.fetchTextByCode({
-          code: response.data[i].workCode
-        })
-        tmpJournals[i].workCode = response3.data[0].text
+        var tmpJournals2 = response4.data
+        for (var j = 0; j < response4.data.length; j++) {
+          const response5 = await ScService.fetchCropNameByCropCode({
+            cropCode: response4.data[j].workCode.substring(0, 11)
+          })
+          tmpJournals2[j].cropName = response5.data[0].text
+          const response6 = await WcService.fetchTextByCode({
+            code: response4.data[j].workCode
+          })
+          tmpJournals2[j].workCode = response6.data[0].text
+        }
+        this.journals = tmpJournals2
       }
-      this.journals = tmpJournals
     },
     onChangeDate: function (event) {
       var today = moment(event, 'YYYY-MM-DD')
@@ -109,6 +127,8 @@ export default {
       var lastYearAfter10 = lastYear.add(20, 'day')
       this.endDate = lastYearAfter10.format('YYYY-MM-DD')
       // console.log(this.endDate)
+      this.lastYearYM = moment(event, 'YYYY-MM').subtract(1, 'year').format('YYYY-MM')
+      // console.log(this.lastYearYM)
 
       this.getJournalsByDate()
     }

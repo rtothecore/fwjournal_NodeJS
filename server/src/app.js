@@ -497,6 +497,16 @@ app.get('/journals/searchBy4/:startDate/:endDate/:workType/:workContent', (req, 
   })
 })
 
+// Fetch journals by year, month
+app.get('/journals/searchByYM/:ym', (req, res) => {
+  console.log(req.params)
+  Journal.find({}, 'userId date landId workCode workContent workSTime workETime weather remarks', function (error, journals) {
+    if (error) { console.error(error); }
+    res.send(journals)
+  })
+  .where('date').regex(req.params.ym)
+})
+
 // Fetch journals by date
 app.get('/journals/:startDate/:endDate', (req, res) => {
   var db = req.db
