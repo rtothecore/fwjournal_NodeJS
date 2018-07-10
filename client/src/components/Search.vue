@@ -321,7 +321,8 @@ export default {
           { text: '가축>병해충방제', value: 'BALW005' }
       ],
       workContent: '',
-      userId: '5af4fa281a1ee4261039149f',
+      // userId: '5af4fa281a1ee4261039149f',
+      userId: '',
       menu: false,
       menu2: false,
       startDate: null,
@@ -378,7 +379,14 @@ export default {
   mounted () {
     this.$validator.localize('ko', this.dictionary)
   },
+  beforeCreate: function () {
+    if (!this.$session.exists()) {
+      this.$router.push('/login')
+    } else {
+    }
+  },
   created () {
+    this.userId = this.$session.get('userId')
     this.getJournals()
     this.getLands()
   },

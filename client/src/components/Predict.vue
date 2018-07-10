@@ -55,6 +55,7 @@ export default {
   data () {
     return {
       // Predict_page: moment().format('YYYY년 MM월 DD일'),
+      userId: '',
       lastYearYM: '',
       date: moment().format('YYYY-MM-DD'),
       startDate: '',
@@ -81,11 +82,21 @@ export default {
       journals: []
     }
   },
+  beforeCreate: function () {
+    if (!this.$session.exists()) {
+      this.$router.push('/login')
+    } else {
+    }
+  },
+  created: function () {
+    this.userId = this.$session.get('userId')
+  },
   methods: {
     async getJournalsByDate () {
-      const response = await JournalService.fetchJournalsByDate({
+      const response = await JournalService.fetchJournalsByDateNUserId({
         startDate: this.startDate,
-        endDate: this.endDate
+        endDate: this.endDate,
+        userId: this.userId
       })
       if (response.data.length > 0) {
         var tmpJournals = response.data
@@ -101,8 +112,9 @@ export default {
         }
         this.journals = tmpJournals
       } else {  // 작년 10일이내의 데이터가 없는 경우 작년 해당월의 데이터를 보여줌
-        const response4 = await JournalService.fetchJournalsByYM({
-          ym: this.lastYearYM
+        const response4 = await JournalService.fetchJournalsByYMUserId({
+          ym: this.lastYearYM,
+          userId: this.userId
         })
         var tmpJournals2 = response4.data
         for (var j = 0; j < response4.data.length; j++) {

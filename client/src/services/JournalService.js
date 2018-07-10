@@ -17,8 +17,16 @@ export default {
     return Api().get('journals/searchByYM/' + params.ym, params)
   },
 
+  fetchJournalsByYMUserId (params) {
+    return Api().get('journals/searchByYMUserId/' + params.ym + '/' + params.userId, params)
+  },
+
   fetchJournalsByDate (params) {
     return Api().get('journals/' + params.startDate + '/' + params.endDate, params)
+  },
+
+  fetchJournalsByDateNUserId (params) {
+    return Api().get('journals/' + params.startDate + '/' + params.endDate + '/' + params.userId, params)
   },
 
   fetchJournals (params) {

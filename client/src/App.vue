@@ -23,6 +23,11 @@
         <router-link to="/" tag="span" style="cursor: pointer">
         {{ appTitle }}
         </router-link>
+
+        <v-btn flat icon color="pink" @click="logout()" v-show="btnLogOutSeen">
+          <v-icon>fas fa-sign-out-alt</v-icon>
+        </v-btn>
+
       </v-toolbar-title>
 
       <v-spacer></v-spacer>
@@ -42,6 +47,20 @@
       <router-view></router-view>
     </v-content>
     
+    <v-footer
+      dark
+      height="auto"
+    >
+      <v-card
+        class="flex"
+        flat
+        tile
+      >
+        <v-card-actions class="grey darken-3 justify-center">
+          &copy;2018 — <strong>Ezinfotech</strong>
+        </v-card-actions>
+      </v-card>
+    </v-footer>
   </v-app>
 </template>
 
@@ -49,6 +68,7 @@
   export default {
     data () {
       return {
+        btnLogOutSeen: false,
         appTitle: '영농일지',
         sidebar: false,
         menuItems: [
@@ -62,7 +82,20 @@
     },
     created () {
     },
+    updated () {
+      if (!this.$session.exists()) {
+        this.btnLogOutSeen = false
+        this.$router.push('/login')
+      } else {
+        this.btnLogOutSeen = true
+      }
+    },
     methods: {
+      logout: function () {
+        this.$session.destroy()
+        this.btnLogOutSeen = false
+        this.$router.push('/login')
+      }
     }
   }
 </script>

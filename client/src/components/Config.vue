@@ -231,7 +231,7 @@ export default {
     cropCode: '',
     selectedCropName: '',
     dbPassword: '',
-    userId: '5af4fa281a1ee4261039149f',
+    userId: '',
     user: '',
     valid: true,
     valid2: true,
@@ -318,7 +318,14 @@ export default {
     }
     */
   },
+  beforeCreate: function () {
+    if (!this.$session.exists()) {
+      this.$router.push('/login')
+    } else {
+    }
+  },
   created () {
+    this.userId = this.$session.get('userId')
     this.initialize()
     this.getUser()
     this.getLands()

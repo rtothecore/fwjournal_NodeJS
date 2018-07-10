@@ -238,7 +238,8 @@
           tomorrowPmT1h: '',
           tomorrowAmT1h: '',
           todayT1h: '',
-          userId: '5af4fa281a1ee4261039149f',
+          // userId: '5af4fa281a1ee4261039149f',
+          userId: '',
           events: [
             /*
             {
@@ -275,7 +276,14 @@
           }
         }
   },
+  beforeCreate: function () {
+        if (!this.$session.exists()) {
+          this.$router.push('/login')
+        } else {
+        }
+  },
   created () {
+        this.userId = this.$session.get('userId')
         // this.$refs.calendar.fireMethod('changeView', view)
         this.getJournal()
         this.getLocation()
@@ -600,9 +608,10 @@
           }
         },
         async getJournalsByDate () {
-          const response = await JournalService.fetchJournalsByDate({
+          const response = await JournalService.fetchJournalsByDateNUserId({
             startDate: this.startDate,
-            endDate: this.endDate
+            endDate: this.endDate,
+            userId: this.userId
           })
           if (response.data.length > 0) {
             var tmpJournals = response.data
@@ -619,8 +628,9 @@
             }
             this.journals = tmpJournals
           } else {
-            const response4 = await JournalService.fetchJournalsByYM({
-              ym: this.lastYearYM
+            const response4 = await JournalService.fetchJournalsByYMUserId({
+              ym: this.lastYearYM,
+              userId: this.userId
             })
             var tmpJournals2 = response4.data
             for (var j = 0; j < response4.data.length; j++) {

@@ -49,6 +49,7 @@ import moment from 'moment'
 export default {
   data () {
     return {
+      userId: '',
       Stats_page: moment().format('YYYY년') + ' 1월 1일 ~ ' + moment().format('YYYY년 MM월 DD일'),
       valid: true,
       name: '',
@@ -77,6 +78,15 @@ export default {
         }
       ]
     }
+  },
+  beforeCreate: function () {
+    if (!this.$session.exists()) {
+      this.$router.push('/login')
+    } else {
+    }
+  },
+  created: function () {
+    this.userId = this.$session.get('userId')
   },
   methods: {
     submit () {

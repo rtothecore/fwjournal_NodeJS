@@ -15,6 +15,8 @@ import VeeValidate from 'vee-validate'
 import VueSweetalert2 from 'vue-sweetalert2'
 // https://alligator.io/vuejs/vue-media-queries/
 import VueMq from 'vue-mq'
+// https://www.npmjs.com/package/vue-session
+import VueSession from 'vue-session'
 // import axios from 'axios'
 
 Vue.component('journalModal', JournalModal)
@@ -34,6 +36,7 @@ Vue.use(VueMq, {
     desktop: Infinity
   }
 })
+Vue.use(VueSession)
 // Vue.prototype.$http = axios
 
 Vue.config.productionTip = false

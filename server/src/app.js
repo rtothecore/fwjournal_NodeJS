@@ -507,6 +507,17 @@ app.get('/journals/searchByYM/:ym', (req, res) => {
   .where('date').regex(req.params.ym)
 })
 
+// Fetch journals by year, month, userId
+app.get('/journals/searchByYMUserId/:ym/:userId', (req, res) => {
+  console.log(req.params)
+  Journal.find({}, 'userId date landId workCode workContent workSTime workETime weather remarks', function (error, journals) {
+    if (error) { console.error(error); }
+    res.send(journals)
+  })
+  .where('date').regex(req.params.ym)
+  .where('userId').equals(req.params.userId)
+})
+
 // Fetch journals by date
 app.get('/journals/:startDate/:endDate', (req, res) => {
   var db = req.db
@@ -516,6 +527,17 @@ app.get('/journals/:startDate/:endDate', (req, res) => {
     res.send(journals)
   })
   .where('date').gte(req.params.startDate).lte(req.params.endDate)
+})
+
+// Fetch journals by date & userId
+app.get('/journals/:startDate/:endDate/:userId', (req, res) => {
+  console.log(req.params)
+  Journal.find({}, 'userId date landId workCode workContent workSTime workETime weather remarks', function (error, journals) {
+    if (error) { console.error(error); }
+    res.send(journals)
+  })
+  .where('date').gte(req.params.startDate).lte(req.params.endDate)
+  .where('userId').equals(req.params.userId)
 })
 
 // Fetch journals by userId
@@ -853,4 +875,14 @@ app.put('/userPassword/:id', (req, res) => {
       })
     })
   })
+})
+
+// Fetch user by email & pw
+app.get('/user/:email/:pw', (req, res) => {
+  User.find({}, '_id', function (error, user) {
+    if (error) { console.error(error); }
+    res.send(user)
+  })
+  .where('email').equals(req.params.email)
+  .where('password').equals(req.params.pw)
 })
