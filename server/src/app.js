@@ -808,8 +808,7 @@ app.delete('/lands/:id', (req, res) => {
 })
 
 // Add new user
-app.post('/user', (req, res) => {
-  var db = req.db;
+app.post('/user', (req, res) => {  
   var email = req.body.email;
   var password = req.body.password;
   var age = req.body.age;
@@ -875,6 +874,15 @@ app.put('/userPassword/:id', (req, res) => {
       })
     })
   })
+})
+
+// Fetch user by email
+app.get('/user/byEmail/:email', (req, res) => {
+  User.find({}, '_id', function (error, user) {
+    if (error) { console.error(error); }
+    res.send(user)
+  })
+  .where('email').equals(req.params.email)
 })
 
 // Fetch user by email & pw

@@ -41,10 +41,11 @@
                 label="비밀번호"
                 data-vv-name="password"
                 counter
+                v-on:keyup.enter="login"
               ></v-text-field>
               
               <p class="text-lg-right">
-                <v-btn color="warning">회원가입</v-btn>
+                <v-btn color="warning" @click="goToRegister()">회원가입</v-btn>
                 <v-btn color="success" @click="login()">로그인</v-btn>
               </p>
             </form>
@@ -54,10 +55,14 @@
         </v-layout>
       </v-container>
     </v-card>
+
+    <registerModal></registerModal>
+
   </div>
 </template>
 
 <script>
+import {bus} from '../main'
 import UserService from '@/services/UserService'
 export default {
   $_veeValidate: {
@@ -116,6 +121,9 @@ export default {
         }
         this.getUserByEmailNPw()
       }).catch(() => {})
+    },
+    goToRegister () {
+      bus.$emit('dialogForRegister')
     }
   },
   computed: {
