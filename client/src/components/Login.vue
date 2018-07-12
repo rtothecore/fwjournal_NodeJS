@@ -1,64 +1,66 @@
 <template>
-   <div
-    id="e3"
-    style="max-width: 400px; margin: auto;"
-    class="grey lighten-3"
-  >
-    <v-toolbar
-      color="blue"
-      dark
+  <v-layout align-center justify-center fill-height>
+    <div
+      id="e3"
+      style="max-width: 400px; margin: auto;"
+      class="grey lighten-3"
     >
-      <v-icon>fas fa-key</v-icon>
-      <v-toolbar-title>로그인</v-toolbar-title>
-      <v-spacer></v-spacer>
-    </v-toolbar>
-
-    <v-card>
-      <v-container
-        fluid
-        grid-list-lg
+      <v-toolbar
+        color="blue"
+        dark
       >
-        <v-layout row wrap>
+        <v-icon>fas fa-key</v-icon>
+        <v-toolbar-title>로그인</v-toolbar-title>
+        <v-spacer></v-spacer>
+      </v-toolbar>
 
-          <v-flex xs12>
-            
-            <form>
-              <v-text-field
-                prepend-icon="fas fa-envelope"
-                v-validate="'required'"
-                v-model="email"
-                :error-messages="errors.collect('email')"
-                label="이메일"
-                data-vv-name="email"
-              ></v-text-field>
+      <v-card>
+        <v-container
+          fluid
+          grid-list-lg
+        >
+          <v-layout row wrap>
 
-              <v-text-field
-                prepend-icon="fas fa-lock"
-                v-validate="'required'"
-                v-model="password"
-                :error-messages="errors.collect('password')"
-                :type="'password'"
-                label="비밀번호"
-                data-vv-name="password"
-                counter
-                v-on:keyup.enter="login"
-              ></v-text-field>
+            <v-flex xs12>
               
-              <p class="text-lg-right">
-                <v-btn color="warning" @click="goToRegister()">회원가입</v-btn>
-                <v-btn color="success" @click="login()">로그인</v-btn>
-              </p>
-            </form>
+              <form>
+                <v-text-field
+                  prepend-icon="fas fa-envelope"
+                  v-validate="'required'"
+                  v-model="email"
+                  :error-messages="errors.collect('email')"
+                  label="이메일"
+                  data-vv-name="email"
+                ></v-text-field>
 
-          </v-flex> 
+                <v-text-field
+                  prepend-icon="fas fa-lock"
+                  v-validate="'required'"
+                  v-model="password"
+                  :error-messages="errors.collect('password')"
+                  :type="'password'"
+                  label="비밀번호"
+                  data-vv-name="password"
+                  counter
+                  v-on:keyup.enter="login"
+                ></v-text-field>
+                
+                <p class="text-lg-right">
+                  <v-btn color="warning" @click="goToRegister()">회원가입</v-btn>
+                  <v-btn color="success" @click="login()">로그인</v-btn>
+                </p>
+              </form>
 
-        </v-layout>
-      </v-container>
-    </v-card>
+            </v-flex> 
 
-    <registerModal></registerModal>
+          </v-layout>
+        </v-container>
+      </v-card>
 
-  </div>
+      <registerModal></registerModal>
+
+    </div>
+  </v-layout>
 </template>
 
 <script>
@@ -89,29 +91,33 @@ export default {
   },
   methods: {
     async getUserByEmailNPw () {
-      const response = await UserService.fetchUserByEmailNPw({
-        email: this.email,
-        pw: this.password
-      })
-      if (response.data.length > 0) {
-        this.$swal({
-          type: 'success',
-          title: '로그인 성공',
-          showConfirmButton: false,
-          timer: 777
-        }).then((result) => {
-          this.$session.start()
-          this.$session.set('userId', response.data[0]._id)
-          this.$router.push('/')
+      try {
+        const response = await UserService.fetchUserByEmailNPw({
+          email: this.email,
+          pw: this.password
         })
-      } else {
-        this.$swal({
-          type: 'warning',
-          title: '로그인 실패',
-          showConfirmButton: false,
-          timer: 777
-        }).then((result) => {
-        })
+        if (response.data.length > 0) {
+          this.$swal({
+            type: 'success',
+            title: '로그인 성공',
+            showConfirmButton: false,
+            timer: 777
+          }).then((result) => {
+            this.$session.start()
+            this.$session.set('userId', response.data[0]._id)
+            this.$router.push('/')
+          })
+        } else {
+          this.$swal({
+            type: 'warning',
+            title: '로그인 실패',
+            showConfirmButton: false,
+            timer: 777
+          }).then((result) => {
+          })
+        }
+      } catch (e) {
+        alert(e)
       }
     },
     login () {

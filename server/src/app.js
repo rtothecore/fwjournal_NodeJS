@@ -5,32 +5,42 @@ const morgan = require('morgan')
 const axios = require('axios')
 const CircularJSON = require('circular-json')
 
-axios.defaults.timeout = 20000;
-
-const app = express()
-app.use(morgan('combined'))
-app.use(bodyParser.json())
-app.use(cors())
-
-app.listen(process.env.PORT || 8081)
-
 //////////////////////////////////////////////FOR HTTPS
 // http://blog.saltfactory.net/implements-nodejs-based-https-server/
 // https://coderwall.com/p/yo4mqw/creating-a-nodejs-express-https-server
-/*
-const fs = require('fs')
+var http = require('http'),
+	https = require('https'),
+	fs = require('fs')
+
+axios.defaults.timeout = 20000;
+
 var httpsOptions = {
 	key: fs.readFileSync('key.pem')
 	, cert: fs.readFileSync('cert.pem')
 }
 
-const appSecure = express(httpsOptions)
-appSecure.listen(443)
-*/
+var port1 = 8081
+var port2 = 443
+
+var app = express()
+// app.use(express.urlencoded())
+app.use(morgan('combined'))
+app.use(bodyParser.json())
+app.use(cors())
+
+http.createServer(app).listen(port1, function () {
+	console.log('Http server listening on port ' + port1)
+})
+
+https.createServer(httpsOptions, app).listen(port2, function () {
+	console.log('Https server listening on port ' + port2)
+})
+
 ///////////////////////////////////////////////////////
 
 var mongoose = require('mongoose')
-mongoose.connect('mongodb://localhost:27017/fwjournal')
+// mongoose.connect('mongodb://localhost:27017/fwjournal')
+mongoose.connect('mongodb://192.168.0.73:27017/fwjournal')
 var db = mongoose.connection
 db.on("error", console.error.bind(console, "connection error"));
 db.once("open", function(callback){
@@ -887,6 +897,7 @@ app.get('/user/byEmail/:email', (req, res) => {
 
 // Fetch user by email & pw
 app.get('/user/:email/:pw', (req, res) => {
+  console.log(req.params)
   User.find({}, '_id', function (error, user) {
     if (error) { console.error(error); }
     res.send(user)
