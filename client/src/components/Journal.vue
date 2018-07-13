@@ -3,7 +3,7 @@
     <!-- <div id="calendar" style="height:900px; width:900px; float:left;"> -->
     <div id="calendar" v-bind:style="{ height: calendarHeight, width: calendarWidth, float: 'left' }">
       <div v-if="$mq === 'laptop' || $mq === 'desktop'">
-        <v-layout row>
+        <v-layout row ma-2>
           <v-flex xs4 order-md1 order-xs1>
             <v-card color="purple" class="white--text">
                 <v-container fluid grid-list-lg>
@@ -107,6 +107,78 @@
                       <v-card-media
                         :src="afTomPmSkyImg"
                         height="100px"
+                        contain
+                      ></v-card-media>
+                    </v-flex>
+                  </v-layout>
+                </v-container>
+              </v-card>
+          </v-flex>
+        </v-layout>
+      </div>
+      <!-- For Mobile -->
+      <div v-else>  
+        <v-layout row ma-1>
+          <v-flex xs4 order-md1 order-xs1>
+            <v-card color="purple" class="white--text">
+                <v-container fluid grid-list-lg>
+                  <v-layout row>
+                    <v-flex xs7>
+                      <div>
+                        <div class="body-2">오늘</div>
+                        <div class="title">{{ todayT1h }}</div>
+                        <!-- <div class="caption">{{ todayPm10 }}</div> -->
+                        <!-- <div class="body-2">{{ weatherLoc }}</div> -->
+                      </div>
+                    </v-flex>
+                    <v-flex xs5>
+                      <v-card-media
+                        :src="todaySkyImg"
+                        height="50px"
+                        contain
+                      ></v-card-media>
+                    </v-flex>
+                  </v-layout>
+                </v-container>
+              </v-card>
+          </v-flex>
+
+          <v-flex xs4 order-md2 order-xs2>
+            <v-card color="cyan darken-2" class="white--text">
+                <v-container fluid grid-list-lg>
+                  <v-layout row>
+                    <v-flex xs7>
+                      <div>
+                        <div class="body-2">내일오전</div>
+                        <div class="title">{{ tomorrowAmT1h }}</div>
+                      </div>
+                    </v-flex>
+                    <v-flex xs5>
+                      <v-card-media
+                        :src="tomAmSkyImg"
+                        height="50px"
+                        contain
+                      ></v-card-media>
+                    </v-flex>
+                  </v-layout>
+                </v-container>
+              </v-card>
+          </v-flex>
+
+          <v-flex xs4 order-md2 order-xs2>
+            <v-card color="cyan darken-2" class="white--text">
+                <v-container fluid grid-list-lg>
+                  <v-layout row>
+                    <v-flex xs7>
+                      <div>
+                        <div class="body-2">내일오후</div>
+                        <div class="title">{{ tomorrowPmT1h }}</div>
+                      </div>
+                    </v-flex>
+                    <v-flex xs5>
+                      <v-card-media
+                        :src="tomPmSkyImg"
+                        height="50px"
                         contain
                       ></v-card-media>
                     </v-flex>

@@ -21,6 +21,22 @@ export default {
     return Api().get('wc/' + params.bCode + '/' + params.mCode + '/' + params.sCode, params)
   },
 
+  fetchDistinctBCPText (params) {
+    return Api().get('wc/getBCP', params)
+  },
+
+  fetchBCPDataByText (params) {
+    return Api().get('wc/getBCPDetail/' + params.bcpText, params)
+  },
+
+  fetchDistinctBALText (params) {
+    return Api().get('wc/getBAL', params)
+  },
+
+  fetchBALDataByText (params) {
+    return Api().get('wc/getBALDetail/' + params.balText, params)
+  },
+
   createWc (params) {
     return Api().post('wc', params)
   }

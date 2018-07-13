@@ -2,10 +2,10 @@
   <v-container fluid>
     <v-layout row wrap justify-center>
       <v-flex xs12 class="text-xs-center" mt-5>
-        <h1>Search page</h1>
+        <h1>일지 검색</h1>
       </v-flex>
       
-       <v-flex xs12 sm6 md2>
+       <v-flex xs6 sm6 md2>
         <v-menu
           ref="menu"
           :close-on-content-click="false"
@@ -36,7 +36,7 @@
         </v-menu>
       </v-flex>
 
-      <v-flex xs12 sm6 md2>
+      <v-flex xs6 sm6 md2>
         <v-menu
           ref="menu2"
           :close-on-content-click="false"
@@ -67,7 +67,7 @@
         </v-menu>
       </v-flex>
 
-      <v-flex xs12 sm6 md2>
+      <v-flex xs6 sm6 md2>
         <!-- 
         <v-text-field
             v-model="workType"
@@ -86,7 +86,7 @@
         ></v-select>
       </v-flex>
 
-      <v-flex xs12 sm6 md2>
+      <v-flex xs6 sm6 md2>
         <v-text-field
             v-model="workContent"
             label="작업내용 입력"
@@ -304,6 +304,7 @@ export default {
       selectedWorkType: '',
       e2: null,
       WorkTypeitems: [
+        /*
           { text: '작물>출하', value: 'BCPW000' },
           { text: '작물>관수', value: 'BCPW001' },
           { text: '작물>비료사용', value: 'BCPW002' },
@@ -319,6 +320,7 @@ export default {
           { text: '가축>청소', value: 'BALW003' },
           { text: '가축>기타', value: 'BALW004' },
           { text: '가축>병해충방제', value: 'BALW005' }
+        */
       ],
       workContent: '',
       // userId: '5af4fa281a1ee4261039149f',
@@ -389,6 +391,7 @@ export default {
     this.userId = this.$session.get('userId')
     this.getJournals()
     this.getLands()
+    this.getWorkTypeItems()
   },
   watch: {
     loader () {
@@ -414,6 +417,29 @@ export default {
     }
   },
   methods: {
+    async getWorkTypeItems () {
+      const response = await WcService.fetchDistinctBCPText({})
+      for (var i = 0; i < response.data.length; i++) {
+        const response2 = await WcService.fetchBCPDataByText({
+          bcpText: response.data[i]
+        })
+        var tmpItem = {}
+        tmpItem.text = '작물>' + response2.data.text
+        tmpItem.value = response2.data.bCode + response2.data.wCode
+        this.WorkTypeitems.push(tmpItem)
+      }
+
+      const response3 = await WcService.fetchDistinctBALText({})
+      for (var j = 0; j < response3.data.length; j++) {
+        const response4 = await WcService.fetchBALDataByText({
+          balText: response3.data[j]
+        })
+        var tmpItem2 = {}
+        tmpItem2.text = '가축>' + response4.data.text
+        tmpItem2.value = response4.data.bCode + response4.data.wCode
+        this.WorkTypeitems.push(tmpItem2)
+      }
+    },
     async getLands () {
       const response = await LandService.fetchLands({
         userId: this.userId

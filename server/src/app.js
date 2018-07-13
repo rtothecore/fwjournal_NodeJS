@@ -39,6 +39,8 @@ https.createServer(httpsOptions, app).listen(port2, function () {
 ///////////////////////////////////////////////////////
 
 var mongoose = require('mongoose')
+// https://www.zerocho.com/category/MongoDB/post/59b6228e92f5830019d41ac4
+mongoose.Promise = global.Promise;
 // mongoose.connect('mongodb://localhost:27017/fwjournal')
 mongoose.connect('mongodb://192.168.0.73:27017/fwjournal')
 var db = mongoose.connection
@@ -396,6 +398,38 @@ app.get('/wc/:bCode/:mCode/:sCode', (req, res) => {
   .where('mCode').equals(req.params.mCode)
   .where('sCode').equals(req.params.sCode)
   .sort({wCode:-1})
+})
+
+// Fetch workClass with BCP
+app.get('/wc/getBCP', (req, res) => {	  
+  Wc.distinct('text', {bCode:'BCP'}, function  (error, wcs) {
+  	if (error) { console.error(error); }
+  	res.send(wcs)
+  })
+})
+
+// Fetch BCP detail
+app.get('/wc/getBCPDetail/:bcpText', (req, res) => {	  
+	Wc.findOne({bCode:'BCP', text: req.params.bcpText}, 'bCode mCode sCode wCode text', function (error, wcs) {
+		if (error) { console.error(error) }
+		res.send(wcs)
+	})
+})
+
+// Fetch workClass with BAL
+app.get('/wc/getBAL', (req, res) => {	  
+  Wc.distinct('text', {bCode:'BAL'}, function  (error, wcs) {
+  	if (error) { console.error(error); }
+  	res.send(wcs)
+  })
+})
+
+// Fetch BAL detail
+app.get('/wc/getBALDetail/:balText', (req, res) => {	  
+	Wc.findOne({bCode:'BAL', text: req.params.balText}, 'bCode mCode sCode wCode text', function (error, wcs) {
+		if (error) { console.error(error) }
+		res.send(wcs)
+	})
 })
 
 // Add new workClass
