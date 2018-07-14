@@ -8,7 +8,7 @@
         <v-card-text>
           <v-container grid-list-md>
             <v-layout wrap>
-              <v-flex xs12 sm6 md4>
+              <v-flex xs6 sm6 md6>
                 <v-select
                   v-validate="'required'"
                   :items="landItems"
@@ -22,7 +22,7 @@
                   item-value="_id"
                 ></v-select>
               </v-flex>
-              <v-flex xs12 sm6 md4>
+              <v-flex xs6 sm6 md6>
                 <v-text-field
                   v-model="cropName"
                   label="작물명" 
@@ -31,7 +31,7 @@
                   required
                   ></v-text-field>
               </v-flex>
-              <v-flex xs12 sm6 md4>
+              <v-flex xs6 sm6 md6>
                 <v-select
                   v-validate="'required'"
                   :items="workType"
@@ -47,10 +47,10 @@
                   persistent-hint                  
                 ></v-select>
               </v-flex>
-              <v-flex xs12>
+              <v-flex xs6 sm6 md6>
                 <v-text-field v-model="workContent" label="작업내용"></v-text-field>
               </v-flex>
-              <v-flex xs12 sm6 md6>
+              <v-flex xs6 sm6 md6>
                 <!-- <v-text-field label="작업시간" type="password" required></v-text-field> -->
                 <v-menu
                   lazy
@@ -77,7 +77,7 @@
                   <v-time-picker v-model="e6" format="24hr" autosave></v-time-picker>
                 </v-menu>
               </v-flex>
-              <v-flex xs12 sm6 md6>
+              <v-flex xs6 sm6 md6>
                 <!-- <v-text-field label="작업시간" type="password" required></v-text-field> -->
                 <v-menu
                   lazy
@@ -104,7 +104,7 @@
                   <v-time-picker v-model="e7" format="24hr" autosave></v-time-picker>
                 </v-menu>
               </v-flex>
-              <v-flex xs12 sm6 md3>
+              <v-flex xs3 sm6 md3>
                 <v-text-field
                   v-model="weatherSky"
                   label="날씨" 
@@ -114,7 +114,7 @@
                   disabled
                   ></v-text-field>
               </v-flex>
-              <v-flex xs12 sm6 md3>
+              <v-flex xs3 sm6 md3>
                 <v-text-field
                   v-model="weatherT1h"
                   label="온도" 
@@ -124,7 +124,7 @@
                   disabled
                   ></v-text-field>
               </v-flex>
-              <v-flex xs12 sm6 md3>
+              <v-flex xs3 sm6 md3>
                 <v-text-field
                   v-model="weatherReh"
                   label="습도" 
@@ -134,7 +134,7 @@
                   disabled
                   ></v-text-field>
               </v-flex>
-              <v-flex xs12 sm6 md3>
+              <v-flex xs3 sm6 md3>
                 <v-text-field
                   v-model="weatherRn1"
                   label="강수량" 

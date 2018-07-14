@@ -1,12 +1,12 @@
 <template>
   <v-container fluid>
     <v-layout row wrap justify-center>
-      <v-flex xs12 class="text-xs-center" mt-5>
+      <v-flex xs12 class="text-xs-center" mt-1>
         <!-- <h1>{{Predict_page}}</h1> -->
         <v-date-picker v-model="date" locale="kr" show-current="2013-07-13" v-on:change="onChangeDate"></v-date-picker>
       </v-flex>
       
-      <div>
+      <div v-if="$mq === 'laptop' || $mq === 'desktop'">
         <v-data-table
           :headers="headers"
           :items="journals"
@@ -42,6 +42,44 @@
         </div>
       </div>
 
+      <div v-else>
+        <br/>
+        <v-card>
+          <v-card-title>
+            작년 작업내역
+            <v-spacer></v-spacer>
+          </v-card-title>
+          <v-data-table
+            :headers="headersForMobile"
+            :items="journals"
+            :search="search"
+            :pagination.sync="pagination"
+            hide-actions
+            class="elevation-1"
+          >
+            <template slot="headerCell" slot-scope="props">
+              <v-tooltip bottom>
+                <span slot="activator">
+                  {{ props.header.text }}
+                </span>
+                <span>
+                  {{ props.header.text }}
+                </span>
+              </v-tooltip>
+            </template>
+            <template slot="items" slot-scope="props">
+              <td>{{ props.item.cropName }}</td>
+              <td class="text-xs-right">{{ props.item.date }}</td>
+              <td class="text-xs-right">{{ props.item.workCode }}</td>
+              <td class="text-xs-right">{{ props.item.workContent }}</td>
+            </template>
+          </v-data-table>
+          <div class="text-xs-center pt-2">
+            <v-pagination v-model="pagination.page" :length="pages"></v-pagination>
+          </div>
+        </v-card>
+      </div>
+      <br/><br/><br/>
     </v-layout>
   </v-container>
 </template>
@@ -78,6 +116,17 @@ export default {
         { text: '작년온도', value: 't1h' },
         { text: '작년습도', value: 'reh' },
         { text: '작년강수량', value: 'rn1' }
+      ],
+      headersForMobile: [
+        {
+          text: '작물명',
+          align: 'left',
+          sortable: false,
+          value: 'cropName'
+        },
+        { text: '날짜', value: 'date' },
+        { text: '작업분류', value: 'workCode' },
+        { text: '작업내용', value: 'workContent' }
       ],
       journals: []
     }

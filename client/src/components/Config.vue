@@ -59,7 +59,7 @@
 
       <searchAddressModal></searchAddressModal>
 
-      <div>
+      <!-- <div> -->
         <v-dialog v-model="dialog" max-width="500px">
           <v-btn slot="activator" color="primary" dark class="mb-2">새 농장</v-btn>
           <v-card>
@@ -80,7 +80,7 @@
                         data-vv-name="landName"
                     ></v-text-field>
                   </v-flex>
-                  <v-flex xs12 sm6 md8>
+                  <v-flex xs8 sm6 md8>
                     <v-text-field 
                         v-model="editedItem.address"
                         :counter="30"
@@ -92,7 +92,7 @@
                         :disabled="this.editedIndex !== -1"
                     ></v-text-field>
                   </v-flex>
-                  <v-flex xs12 sm6 md4>
+                  <v-flex xs4 sm6 md4>
                      <v-btn outline color="indigo" @click.native="searchAddr">주소찾기</v-btn>
                   </v-flex>
                   <v-flex xs12 sm6 md12>
@@ -106,7 +106,7 @@
                         data-vv-name="size"
                     ></v-text-field>
                   </v-flex>
-                  <v-flex xs12 sm6 md4>
+                  <v-flex xs4 sm6 md4>
                     <v-select
                       :items="items0"
                       v-model="editedItem.bcs"
@@ -121,7 +121,7 @@
                       item-value="bCode"
                     ></v-select>
                   </v-flex>
-                  <v-flex xs12 sm6 md4>
+                  <v-flex xs4 sm6 md4>
                     <v-select
                       :items="items1"
                       v-model="editedItem.mcs"
@@ -136,7 +136,7 @@
                       item-value="mCode"
                     ></v-select>
                   </v-flex>
-                  <v-flex xs12 sm6 md4>
+                  <v-flex xs4 sm6 md4>
                     <!-- <v-text-field v-model="editedItem.cropCode" label="작물,가축명"></v-text-field> -->
                     <v-select
                       :items="items2"
@@ -162,6 +162,7 @@
             </v-card-actions>
           </v-card>
         </v-dialog>
+      <div v-if="$mq === 'laptop' || $mq === 'desktop'">
         <v-data-table
           :headers="headers"
           :items="lands"
@@ -187,7 +188,33 @@
           </template>
         </v-data-table>
       </div>
+
+      <div v-else>
+        <v-data-table
+          :headers="headersForMobile"
+          :items="lands"
+          hide-actions
+          class="elevation-1"
+        >
+          <template slot="items" slot-scope="props">
+            <td>{{ props.item.name }}</td>
+            <td class="text-xs-right">{{ props.item.cropCode }}</td>
+            <td class="justify-center layout px-0">
+              <v-btn icon class="mx-0" @click="editItem(props.item)">
+                <v-icon color="teal">edit</v-icon>
+              </v-btn>
+              <v-btn icon class="mx-0" @click="deleteItem(props.item)">
+                <v-icon color="pink">delete</v-icon>
+              </v-btn>
+            </td>
+          </template>
+          <template slot="no-data">
+            <v-btn color="primary" @click="initialize">Reset</v-btn>
+          </template>
+        </v-data-table>
+      </div>
     </v-layout>
+    <br/><br/><br/>
   </v-container>
 </template>
 
@@ -269,6 +296,16 @@ export default {
       },
       { text: '주소', value: 'address' },
       { text: '규모', value: 'size' },
+      { text: '작물,가축명', value: 'cropCode' },
+      { text: 'Actions', value: 'name', sortable: false }
+    ],
+    headersForMobile: [
+      {
+        text: '농장명',
+        align: 'left',
+        sortable: false,
+        value: 'name'
+      },
       { text: '작물,가축명', value: 'cropCode' },
       { text: 'Actions', value: 'name', sortable: false }
     ],

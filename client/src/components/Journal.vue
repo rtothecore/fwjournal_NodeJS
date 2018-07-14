@@ -5,7 +5,7 @@
       <div v-if="$mq === 'laptop' || $mq === 'desktop'">
         <v-layout row ma-2>
           <v-flex xs4 order-md1 order-xs1>
-            <v-card color="purple" class="white--text">
+            <v-card color="white" class="black--text">
                 <v-container fluid grid-list-lg>
                   <v-layout row>
                     <v-flex xs7>
@@ -28,7 +28,7 @@
               </v-card>
           </v-flex>
           <v-flex xs4 order-md2 order-xs2>
-            <v-card color="cyan darken-2" class="white--text">
+            <v-card color="white" class="black--text">
                 <v-container fluid grid-list-lg>
                   <v-layout row>
                     <v-flex xs7>
@@ -50,7 +50,7 @@
           </v-flex>
 
           <v-flex xs4 order-md2 order-xs2>
-            <v-card color="cyan darken-2" class="white--text">
+            <v-card color="white" class="black--text">
                 <v-container fluid grid-list-lg>
                   <v-layout row>
                     <v-flex xs7>
@@ -72,7 +72,7 @@
           </v-flex>
 
           <v-flex xs4 order-md3 order-xs3>
-            <v-card color="orange darken-2" class="white--text">
+            <v-card color="white" class="black--text">
                 <v-container fluid grid-list-lg>
                   <v-layout row>
                     <v-flex xs7>
@@ -94,7 +94,7 @@
           </v-flex>
 
           <v-flex xs4 order-md3 order-xs3>
-            <v-card color="orange darken-2" class="white--text">
+            <v-card color="white" class="black--text">
                 <v-container fluid grid-list-lg>
                   <v-layout row>
                     <v-flex xs7>
@@ -120,23 +120,23 @@
       <div v-else>  
         <v-layout row ma-1>
           <v-flex xs4 order-md1 order-xs1>
-            <v-card color="purple" class="white--text">
+            <v-card color="white" class="black--text">
                 <v-container fluid grid-list-lg>
                   <v-layout row>
                     <v-flex xs7>
                       <div>
-                        <div class="body-2">오늘</div>
+                        <div class="subheading">오늘</div>
                         <div class="title">{{ todayT1h }}</div>
-                        <!-- <div class="caption">{{ todayPm10 }}</div> -->
-                        <!-- <div class="body-2">{{ weatherLoc }}</div> -->
+                        <div>
+                          <v-card-media
+                            :src="todaySkyImg"
+                            height="35px"
+                            contain
+                          ></v-card-media>
+                        </div>
+                        <div class="caption">{{ todayPm10 }}</div>
+                        <div class="body-2">{{ weatherLoc }}</div>
                       </div>
-                    </v-flex>
-                    <v-flex xs5>
-                      <v-card-media
-                        :src="todaySkyImg"
-                        height="50px"
-                        contain
-                      ></v-card-media>
                     </v-flex>
                   </v-layout>
                 </v-container>
@@ -144,52 +144,111 @@
           </v-flex>
 
           <v-flex xs4 order-md2 order-xs2>
-            <v-card color="cyan darken-2" class="white--text">
+            <v-card color="white" class="black--text">
                 <v-container fluid grid-list-lg>
                   <v-layout row>
                     <v-flex xs7>
                       <div>
-                        <div class="body-2">내일오전</div>
+                        <div class="subheading">내일</div>
+                        <div class="body-1"><span style="white-space:nowrap">오전&nbsp;<img :src="tomAmSkyImg" height="30" width="30"/></span></div>
                         <div class="title">{{ tomorrowAmT1h }}</div>
-                      </div>
-                    </v-flex>
-                    <v-flex xs5>
-                      <v-card-media
-                        :src="tomAmSkyImg"
-                        height="50px"
-                        contain
-                      ></v-card-media>
-                    </v-flex>
-                  </v-layout>
-                </v-container>
-              </v-card>
-          </v-flex>
 
-          <v-flex xs4 order-md2 order-xs2>
-            <v-card color="cyan darken-2" class="white--text">
-                <v-container fluid grid-list-lg>
-                  <v-layout row>
-                    <v-flex xs7>
-                      <div>
-                        <div class="body-2">내일오후</div>
+                        <div class="body-1"><span style="white-space:nowrap">오후&nbsp;<img :src="tomPmSkyImg" height="30" width="30"/></span></div>
                         <div class="title">{{ tomorrowPmT1h }}</div>
                       </div>
                     </v-flex>
-                    <v-flex xs5>
-                      <v-card-media
-                        :src="tomPmSkyImg"
-                        height="50px"
-                        contain
-                      ></v-card-media>
+                  </v-layout>
+                </v-container>
+              </v-card>
+          </v-flex>
+
+          <v-flex xs4 order-md3 order-xs3>
+            <v-card color="white" class="black--text">
+                <v-container fluid grid-list-lg>
+                  <v-layout row>
+                    <v-flex xs7>
+                      <div>
+                        <div class="subheading">모레</div>
+                        <div class="body-1"><span style="white-space:nowrap">오전&nbsp;<img :src="afTomAmSkyImg" height="30" width="30"/></span></div>
+                        <div class="title">{{ afterTomorrowAmT1h }}</div>
+
+                        <div class="body-1"><span style="white-space:nowrap">오후&nbsp;<img :src="afTomAmSkyImg" height="30" width="30"/></span></div>
+                        <div class="title">{{ afterTomorrowPmT1h }}</div>
+                      </div>
                     </v-flex>
                   </v-layout>
                 </v-container>
               </v-card>
           </v-flex>
         </v-layout>
+
+        <v-layout row ma-1>
+          <v-card>
+            <v-card-title>
+              품목별 가격정보
+              <v-spacer></v-spacer>
+            </v-card-title>
+            <v-data-table
+              :headers="headersForMobile"
+              :items="crops"
+              :rows-per-page-items=[5]
+              class="elevation-1"
+            >
+              <template slot="headerCell" slot-scope="props">
+                <v-tooltip bottom>
+                  <span slot="activator">
+                    {{ props.header.text }}
+                  </span>
+                  <span>
+                    {{ props.header.text }}
+                  </span>
+                </v-tooltip>
+              </template>
+              <template slot="items" slot-scope="props">
+                <td>{{ props.item.PRDLST_NM }}</td>
+                <td class="text-xs-right">{{ props.item.PBLMNG_WHSAL_MRKT_NM }}</td>
+                <td class="text-xs-right">{{ props.item.DELNGBUNDLE_QY }}{{ props.item.STNDRD }}</td>
+                <td class="text-xs-right">{{ props.item.AVRG_AMT }}</td>
+              </template>
+            </v-data-table>
+          </v-card>
+        </v-layout>
+          
+        <v-layout row ma-1>
+          <v-card>
+            <v-card-title>
+                작업 예측
+                <v-spacer></v-spacer>
+              </v-card-title>
+            <v-data-table
+              :headers="headersForPredictMobile"
+              :items="journals"
+              :rows-per-page-items=[5]
+              class="elevation-1"
+            >
+              <template slot="headerCell" slot-scope="props">
+                <v-tooltip bottom>
+                  <span slot="activator">
+                    {{ props.header.text }}
+                  </span>
+                  <span>
+                    {{ props.header.text }}
+                  </span>
+                </v-tooltip>
+              </template>
+              <template slot="items" slot-scope="props">
+                <td>{{ props.item.cropName }}</td>
+                <td class="text-xs-right">{{ props.item.date }}</td>
+                <td class="text-xs-right">{{ props.item.workCode }}</td>
+                <td class="text-xs-right">{{ props.item.workContent }}</td>
+              </template>
+            </v-data-table>
+          </v-card>
+        </v-layout>
       </div>
 
 	    <full-calendar :config="config" :events="events" @event-selected="eventSelected"/>
+      <br/><br/><br/>
       <journalModal></journalModal>
       <journalModalForEdit></journalModalForEdit>
       <addWorkTypeModal></addWorkTypeModal>
@@ -198,7 +257,6 @@
         <v-data-table
           :headers="headers"
           :items="crops"
-          :dark="true"
           :rows-per-page-items=[10]
           class="elevation-1"
         >
@@ -226,7 +284,7 @@
         <v-data-table
           :headers="headersForPredict"
           :items="journals"
-          :dark="true"
+          :rows-per-page-items=[10]
           class="elevation-1"
         >
           <template slot="headerCell" slot-scope="props">
@@ -282,6 +340,17 @@
             { text: '작업내용', value: 'workContent' },
             { text: '작년특기사항', value: 'remarks' }
           ],
+          headersForPredictMobile: [
+            {
+              text: '작물명',
+              align: 'left',
+              sortable: false,
+              value: 'cropName'
+            },
+            { text: '작년날짜', value: 'date' },
+            { text: '작업분류', value: 'workCode' },
+            { text: '작업내용', value: 'workContent' }
+          ],
           headers: [
             {
               text: '품목명',
@@ -295,6 +364,17 @@
             { text: '최소가', value: 'MUMM_AMT' },
             { text: '평균가', value: 'AVRG_AMT' },
             { text: '최대가', value: 'MXMM_AMT' }
+          ],
+          headersForMobile: [
+            {
+              text: '품목명',
+              align: 'left',
+              sortable: false,
+              value: 'PRDLST_NM'
+            },
+            { text: '도매시장명', value: 'PBLMNG_WHSAL_MRKT_NM' },
+            { text: '거래단량', value: 'DELNGBUNDLE_QY' },
+            { text: '평균가', value: 'AVRG_AMT' }
           ],
           crops: [],
           myCrops: [],
@@ -330,6 +410,11 @@
           ],
           config: {
             // height: 500,
+            header: { // https://jsfiddle.net/amitavroy/7Lew1zm3/
+              left: 'prev,next',
+              center: 'title',
+              right: 'today'
+            },
             aspectRatio: 1.5,
             locale: 'ko',
             defaultView: 'month',
@@ -745,9 +830,18 @@
           }
           return zero + n
         },
+        locationError: function (err) {
+          alert(err.code + '-' + err.message)
+        },
         getLocation: function () {
           if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(this.showPosition)
+            // navigator.geolocation.getCurrentPosition(this.showPosition)
+            var options = {
+              enableHighAccuracy: true,
+              timeout: 5000,
+              maximumAge: 0
+            }
+            navigator.geolocation.getCurrentPosition(this.showPosition, this.locationError, options)
           } else {
             console.log('Geolocation is not supported by this browser.')
           }

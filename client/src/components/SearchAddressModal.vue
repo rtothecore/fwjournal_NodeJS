@@ -8,7 +8,7 @@
         <v-card-text>
           <v-container grid-list-md>
             <v-layout wrap>
-              <v-flex xs12 sm6 md8>
+              <v-flex xs8 sm6 md8>
                 <v-text-field 
                   v-validate="'required'"
                   v-model="searchText" 
@@ -19,7 +19,7 @@
                   v-on:keyup.enter="searchAddr">
                 </v-text-field>
               </v-flex>
-              <v-flex xs12 sm6 md4>
+              <v-flex xs4 sm6 md4>
                 <v-btn outline color="indigo" @click.native="searchAddr">검색</v-btn>
               </v-flex>
 

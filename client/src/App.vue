@@ -50,6 +50,7 @@
     <v-footer
       dark
       height="auto"
+      v-if="$mq === 'laptop' || $mq === 'desktop'"
     >
       <v-card
         class="flex"
