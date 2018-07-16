@@ -9,18 +9,20 @@ const CircularJSON = require('circular-json')
 // http://blog.saltfactory.net/implements-nodejs-based-https-server/
 // https://coderwall.com/p/yo4mqw/creating-a-nodejs-express-https-server
 var http = require('http'),
-	https = require('https'),
+	// https = require('https'),
 	fs = require('fs')
 
 axios.defaults.timeout = 20000;
 
+/*
 var httpsOptions = {
 	key: fs.readFileSync('key.pem')
 	, cert: fs.readFileSync('cert.pem')
 }
+*/
 
 var port1 = 8081
-var port2 = 443
+// var port2 = 443
 
 var app = express()
 // app.use(express.urlencoded())
@@ -32,9 +34,11 @@ http.createServer(app).listen(port1, function () {
 	console.log('Http server listening on port ' + port1)
 })
 
+/*
 https.createServer(httpsOptions, app).listen(port2, function () {
 	console.log('Https server listening on port ' + port2)
 })
+*/
 
 ///////////////////////////////////////////////////////
 

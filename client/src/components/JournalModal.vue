@@ -158,7 +158,7 @@ import ScService from '@/services/ScService'
 import WcService from '@/services/WcService'
 import JournalService from '@/services/JournalService'
 import WeatherService from '@/services/WeatherService'
-var async = require('async')
+var async = require('async')  // https://caolan.github.io/async/
 export default {
   $_veeValidate: {
     validator: 'new'
@@ -210,6 +210,7 @@ export default {
     this.$validator.localize('ko', this.dictionary)
     var vm = this
     bus.$on('dialog', function (value) {
+      Object.assign(vm.$data, vm.$options.data.call(vm))  // initialize this data
       vm.User_Profile = '영농일지 작성 - ' + value
       vm.selectLand = ''
       vm.cropName = ''
@@ -219,6 +220,8 @@ export default {
       vm.e7 = null
       vm.remarks = ''
       vm.dialog = true
+      vm.getLocation()
+      vm.getLands()
     })
   },
   created () {
@@ -366,6 +369,28 @@ export default {
       return zero + n
     },
     getLocation: function () {
+      this.getLandsByUserId()
+    },
+    async getLandsByUserId () {
+      var vm = this
+      const response = await LandService.fetchLands({
+        userId: this.userId
+      })
+      // Do geo coding
+      // https://github.com/googlemaps/google-maps-services-js
+      var googleMapsClient = require('@google/maps').createClient({
+        key: 'AIzaSyAbcu_ORn9DV9mv0GFbxwX3FrYFMyL-nRA'
+      })
+      googleMapsClient.geocode({
+        address: response.data.lands[0].address
+      }, function (err, response) {
+        if (!err) {
+          vm.convertedXY = vm.dfs_xy_conv('toXY', response.json.results[0].geometry.location.lat, response.json.results[0].geometry.location.lng)
+        }
+      })
+    },
+    /* OLD VERSION WITH "navigator.geolocation"
+    getLocation: function () {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(this.showPosition)
       } else {
@@ -375,6 +400,7 @@ export default {
     showPosition: function (position) {
       this.convertedXY = this.dfs_xy_conv('toXY', position.coords.latitude, position.coords.longitude)
     },
+    */
     dfs_xy_conv: function (code, v1, v2) { // http://fronteer.kr/service/kmaxy - 37.579871128849334, 126.98935225645432 => 60, 127
       var RE = 6371.00877 // 지구 반경(km)
       var GRID = 5.0 // 격자 간격(km)

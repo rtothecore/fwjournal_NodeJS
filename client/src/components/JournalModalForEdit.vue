@@ -222,10 +222,12 @@ export default {
     this.$validator.localize('ko', this.dictionary)
     var vm = this
     bus.$on('dialogForEdit', function (value) {
+      Object.assign(vm.$data, vm.$options.data.call(vm))  // initialize this data
       vm.journalId = value.journalId
       vm.eventIndex = value.eventIndex
       vm.dialog = true
       vm.getJournal()
+      vm.getLands()
     })
   },
   created () {

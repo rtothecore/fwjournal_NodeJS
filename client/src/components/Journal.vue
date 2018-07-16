@@ -467,7 +467,11 @@
           vm.events.push(value)
         })
         bus.$on('toJournalForDel', function (value) {
-          vm.events.splice(value, 1)
+          for (var i = 0; i < vm.events.length; i++) {
+            if (vm.events[i].eventIndex === value) {
+              vm.events.splice(i, 1)
+            }
+          }
         })
   },
   methods: {
@@ -830,6 +834,39 @@
           }
           return zero + n
         },
+        getLocation: function () {
+          this.getLandsByUserId()
+        },
+        async getLandsByUserId () {
+          var vm = this
+          const response = await LandService.fetchLands({
+            userId: this.userId
+          })
+          // Do geo coding
+          // https://github.com/googlemaps/google-maps-services-js
+          var googleMapsClient = require('@google/maps').createClient({
+            key: 'AIzaSyAbcu_ORn9DV9mv0GFbxwX3FrYFMyL-nRA'
+          })
+          googleMapsClient.geocode({
+            address: response.data.lands[0].address
+          }, function (err, response) {
+            if (!err) {
+              vm.weatherLoc = response.json.results[0].address_components[0].short_name
+
+              var convertedXY = vm.dfs_xy_conv('toXY', response.json.results[0].geometry.location.lat, response.json.results[0].geometry.location.lng)
+              vm.fetchTodayWeather(convertedXY.x, convertedXY.y)
+              vm.fetchWeatherForecast(convertedXY.x, convertedXY.y)
+
+              // https://www.npmjs.com/package/proj4
+              // http://www.gisdeveloper.co.kr/?p=1854
+              var firstProjection = '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs'
+              var secondProjection = '+proj=longlat +ellps=bessel +towgs84=-146.43,507.89,681.46 +no_defs'
+              var tmXY = proj4(firstProjection, secondProjection, [convertedXY.y, convertedXY.x])
+              vm.fetchAirData(tmXY[0], tmXY[1])
+            }
+          })
+        },
+        /* OLD VERSION WITH "navigator.geolocation"
         locationError: function (err) {
           alert(err.code + '-' + err.message)
         },
@@ -874,6 +911,7 @@
           var tmXY = proj4(firstProjection, secondProjection, [convertedXY.y, convertedXY.x])
           this.fetchAirData(tmXY[0], tmXY[1])
         },
+        */
         dfs_xy_conv: function (code, v1, v2) { // http://fronteer.kr/service/kmaxy - 37.579871128849334, 126.98935225645432 => 60, 127
           var RE = 6371.00877 // 지구 반경(km)
           var GRID = 5.0 // 격자 간격(km)

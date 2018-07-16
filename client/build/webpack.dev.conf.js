@@ -31,7 +31,7 @@ const devWebpackConfig = merge(baseWebpackConfig, {
     },
     hot: true,
     // https://webpack.js.org/configuration/dev-server/#devserver-https
-    https: true,
+    // https: true,
     contentBase: false, // since we use CopyWebpackPlugin.
     compress: true,
     host: HOST || config.dev.host,
