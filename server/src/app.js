@@ -47,6 +47,8 @@ var mongoose = require('mongoose')
 mongoose.Promise = global.Promise;
 // mongoose.connect('mongodb://localhost:27017/fwjournal')
 mongoose.connect('mongodb://192.168.0.73:27017/fwjournal')
+// http://mongoosejs.com/docs/connections.html
+// mongoose.connect('mongodb://journal:journal**@192.168.66.30:27017/fwjournal')
 var db = mongoose.connection
 db.on("error", console.error.bind(console, "connection error"));
 db.once("open", function(callback){
