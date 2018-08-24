@@ -45,6 +45,7 @@
       <div v-else>
         <br/>
         <v-card>
+          <v-flex xs12 sm12 md8>
           <v-card-title>
             작년 작업내역
             <v-spacer></v-spacer>
@@ -70,13 +71,13 @@
             <template slot="items" slot-scope="props">
               <td>{{ props.item.cropName }}</td>
               <td class="text-xs-right">{{ props.item.date }}</td>
-              <td class="text-xs-right">{{ props.item.workCode }}</td>
               <td class="text-xs-right">{{ props.item.workContent }}</td>
             </template>
           </v-data-table>
           <div class="text-xs-center pt-2">
             <v-pagination v-model="pagination.page" :length="pages"></v-pagination>
           </div>
+          </v-flex>
         </v-card>
       </div>
       <br/><br/><br/>
@@ -125,7 +126,6 @@ export default {
           value: 'cropName'
         },
         { text: '날짜', value: 'date' },
-        { text: '작업분류', value: 'workCode' },
         { text: '작업내용', value: 'workContent' }
       ],
       journals: []

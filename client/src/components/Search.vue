@@ -1,10 +1,13 @@
 <template>
-  <v-container fluid>
-    <v-layout row wrap justify-center>
+<v-container fluid>
+  <v-container grid-list-md text-xs-center fluid>
+    <v-layout row wrap>
       <v-flex xs12 class="text-xs-center" mt-5>
         <h1>일지 검색</h1>
       </v-flex>
-      
+
+      <v-flex v-if="$mq === 'laptop' || $mq === 'desktop'" md2 />
+
        <v-flex xs6 sm6 md2>
         <v-menu
           ref="menu"
@@ -15,7 +18,6 @@
           lazy
           transition="scale-transition"
           offset-y
-          min-width="290px"
         >
           <v-text-field
             slot="activator"
@@ -46,7 +48,6 @@
           lazy
           transition="scale-transition"
           offset-y
-          min-width="290px"
         >
           <v-text-field
             slot="activator"
@@ -67,7 +68,7 @@
         </v-menu>
       </v-flex>
 
-      <v-flex xs6 sm6 md2>
+      <v-flex xs4 sm4 md2>
         <!-- 
         <v-text-field
             v-model="workType"
@@ -85,16 +86,18 @@
           v-on:change="onChangeWorkType"
         ></v-select>
       </v-flex>
-
+      <!--
       <v-flex xs6 sm6 md2>
         <v-text-field
             v-model="workContent"
             label="작업내용 입력"
             required
+            outline
           ></v-text-field>
       </v-flex>
+      -->
 
-      <v-flex xs12 sm6 md2>
+      <v-flex xs8 sm8 md2 class="text-xs-left">
         <v-btn
           :loading="loading"
           :disabled="loading"
@@ -105,21 +108,23 @@
           검색
         </v-btn>
         <v-btn
-          color="light-blue"
+          color="orange lighten-3"
           class="white--text"
           @click.native="searchReset"
         >
-          리셋
+          초기화
         </v-btn>
       </v-flex>
       
+      <v-flex v-if="$mq === 'laptop' || $mq === 'desktop'" md2 />
+
       <!-- <div> -->
       
       <v-dialog v-model="dialog" max-width="500px">
       <!-- <v-btn slot="activator" color="primary" dark class="mb-2">New Item</v-btn> -->
-      <v-card>
+      <v-card color="teal">
         <v-card-title>
-          <span class="headline">{{ formTitle }}</span>
+          <span class="headline" style="color:white">{{ formTitle }}</span>
         </v-card-title>
         <v-card-text>
           <v-container grid-list-md>
@@ -134,6 +139,7 @@
                   v-on:change="onChangeLand"
                   item-text="name"
                   item-value="_id"
+                  solo
                 ></v-select>
               </v-flex>
               <v-flex xs6 sm6 md4>
@@ -144,6 +150,7 @@
                   hint="농장명을 선택하면 자동입력됩니다"
                   persistent-hint
                   required
+                  solo
                   ></v-text-field>
               </v-flex>
               <v-flex xs6 sm6 md4>
@@ -157,11 +164,12 @@
                   item-text="text"
                   item-value="_id"
                   hint="작물명에 따른 작업분류 선택"
-                  persistent-hint                  
+                  persistent-hint
+                  solo                  
                 ></v-select>
               </v-flex>
               <v-flex xs6 sm12 md12>
-                <v-text-field v-model="editedItem.workContent" label="작업내용"></v-text-field>
+                <v-text-field v-model="editedItem.workContent" label="작업내용" solo></v-text-field>
               </v-flex>
               <v-flex xs6 sm6 md6>
                 <!-- <v-text-field v-model="editedItem.workSTime" label="시작시간"></v-text-field> -->
@@ -183,6 +191,7 @@
                     readonly
                     v-on:change="onChangeWSTime"
                     disabled
+                    solo
                   ></v-text-field>
                   <!-- <v-time-picker v-model="e6" format="24hr" autosave></v-time-picker> -->
                 </v-menu>
@@ -207,36 +216,49 @@
                     readonly
                     v-on:change="onChangeWETime"
                     disabled
+                    solo
                   ></v-text-field>
                   <!-- <v-time-picker v-model="e7" format="24hr" autosave></v-time-picker> -->
                 </v-menu>
               </v-flex>
                <v-flex xs3 sm6 md3>
-                <v-text-field v-model="editedItem.sky" label="날씨" disabled></v-text-field>
+                <v-text-field v-model="editedItem.sky" label="날씨" disabled solo></v-text-field>
               </v-flex>
               <v-flex xs3 sm6 md3>
-                <v-text-field v-model="editedItem.t1h" label="온도" disabled></v-text-field>
+                <v-text-field v-model="editedItem.t1h" label="온도" disabled solo></v-text-field>
               </v-flex>
               <v-flex xs3 sm6 md3>
-                <v-text-field v-model="editedItem.reh" label="습도" disabled></v-text-field>
+                <v-text-field v-model="editedItem.reh" label="습도" disabled solo></v-text-field>
               </v-flex>
               <v-flex xs3 sm6 md3>
-                <v-text-field v-model="editedItem.rn1" label="강수량" disabled></v-text-field>
+                <v-text-field v-model="editedItem.rn1" label="강수량" disabled solo></v-text-field>
               </v-flex>
               <v-flex xs12>
-                <v-text-field v-model="editedItem.remarks" label="특기사항"></v-text-field>
+                <v-text-field v-model="editedItem.remarks" label="특기사항" solo></v-text-field>
               </v-flex>
             </v-layout>
           </v-container>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="blue darken-1" flat @click.native="save">수정</v-btn>
-          <v-btn color="blue darken-1" flat @click.native="close">닫기</v-btn>
+          <v-btn outline color="white" flat @click.native="save">수정</v-btn>
+          <v-btn outline color="white" flat @click.native="close">닫기</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
-      <div v-if="$mq === 'laptop' || $mq === 'desktop'">
+    
+    </v-layout>
+  </v-container>
+
+  <v-container fluid pa-0>
+    <v-layout row wrap>
+    
+    <v-flex v-if="$mq === 'laptop' || $mq === 'desktop'" md2 />
+
+    <v-flex xs12 sm12 md8>
+      <!-- <div v-if="$mq === 'laptop' || $mq === 'desktop'" ml-5> -->
+        <div v-if="$mq === 'laptop' || $mq === 'desktop'">
+        
         <v-data-table
           :headers="headers"
           :items="journals"
@@ -245,6 +267,7 @@
           hide-actions
           class="elevation-1"
         >
+
           <template slot="headerCell" slot-scope="props">
             <v-tooltip bottom>
               <span slot="activator">
@@ -256,12 +279,11 @@
             </v-tooltip>
           </template>
           <template slot="items" slot-scope="props">
-            <td>{{ props.item.date }}</td>
-            <td class="text-xs-right">{{ props.item.cropName }}</td>
-            <td class="text-xs-right">{{ props.item.workType }}</td>
-            <td class="text-xs-right">{{ props.item.workContent }}</td>
-            <td class="text-xs-right">{{ props.item.workSTime }}</td>
-            <td class="text-xs-right">{{ props.item.remarks }}</td>
+            <td class="text-xs-left">{{ props.item.date }}</td>
+            <td class="text-xs-left">{{ props.item.cropName }}</td>
+            <td class="text-xs-left">{{ props.item.workType }}</td>
+            <td class="text-xs-left">{{ props.item.workContent }}</td>
+            <td class="text-xs-left">{{ props.item.remarks }}</td>
             <td class="justify-center layout px-0">
               <v-btn icon class="mx-0" @click="editItem(props.item)">
                 <v-icon color="teal">edit</v-icon>
@@ -275,6 +297,7 @@
         <div class="text-xs-center pt-2">
           <v-pagination v-model="pagination.page" :length="pages"></v-pagination>
         </div>
+        
       </div>
       <!-- For Mobile -->
       <div v-else>
@@ -297,9 +320,9 @@
             </v-tooltip>
           </template>
           <template slot="items" slot-scope="props">
-            <td>{{ props.item.date }}</td>
-            <td class="text-xs-right">{{ props.item.cropName }}</td>
-            <td class="text-xs-right">{{ props.item.workType }}</td>
+            <td class="text-xs-left">{{ props.item.date }}</td>
+            <td class="text-xs-left">{{ props.item.cropName }}</td>
+            <td class="text-xs-left">{{ props.item.workType }}</td>
             <td class="justify-center layout px-0">
               <v-btn icon class="mx-0" @click="editItem(props.item)">
                 <v-icon color="teal">edit</v-icon>
@@ -314,8 +337,11 @@
           <v-pagination v-model="pagination.page" :length="pages"></v-pagination>
         </div>
       </div>
+    </v-flex>
+    <v-flex v-if="$mq === 'laptop' || $mq === 'desktop'" md2 />
     </v-layout>
   </v-container>
+</v-container>
 </template>
 
 <script>
@@ -380,14 +406,14 @@ export default {
           text: '날짜',
           align: 'left',
           sortable: false,
-          value: 'date'
+          value: 'date',
+          width: '15%'
         },
-        { text: '작물명', value: 'cropName' },
-        { text: '작업분류', value: 'workType' },
-        { text: '작업내용', value: 'workContent' },
-        { text: '시작시간', value: 'workSTime' },
-        { text: '특기사항', value: 'remarks' },
-        { text: 'Actions', value: 'name', sortable: false }
+        { text: '작물명', value: 'cropName', align: 'left', width: '5%' },
+        { text: '작업분류', value: 'workType', align: 'left', width: '5%' },
+        { text: '작업내용', value: 'workContent', align: 'left', width: '30%' },
+        { text: '특기사항', value: 'remarks', align: 'left', width: '30%' },
+        { text: '관리', value: 'name', sortable: false, align: 'left', width: '5%' }
       ],
       headersForMobile: [
         {
@@ -396,9 +422,9 @@ export default {
           sortable: false,
           value: 'date'
         },
-        { text: '작물명', value: 'cropName' },
-        { text: '작업분류', value: 'workType' },
-        { text: 'Actions', value: 'name', sortable: false }
+        { text: '작물명', value: 'cropName', algin: 'left' },
+        { text: '작업분류', value: 'workType', algin: 'left' },
+        { text: 'Actions', value: 'name', sortable: false, algin: 'left' }
       ],
       editedIndex: -1,
       editedItem: {
@@ -528,7 +554,6 @@ export default {
       if (!tmpWorkContent) {
         tmpWorkContent = 0
       }
-
       const response = await JournalService.fetchJournalsBy4({
         startDate: this.startDate,
         endDate: this.endDate,

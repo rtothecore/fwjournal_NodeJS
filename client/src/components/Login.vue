@@ -19,7 +19,7 @@
           fluid
           grid-list-lg
         >
-          <v-layout row wrap>
+          <v-layout row wrap justify-center>
 
             <v-flex xs12>
               

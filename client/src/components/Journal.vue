@@ -181,11 +181,22 @@
               </v-card>
           </v-flex>
         </v-layout>
+      </div>
 
-        <v-layout row ma-1>
+      <div>
+	    <full-calendar :config="config" :events="events" @event-selected="eventSelected"/>
+      <!-- <br/><br/><br/> -->
+      <journalModal></journalModal>
+      <journalModalForEdit></journalModalForEdit>
+      <addWorkTypeModal></addWorkTypeModal>
+      </div>
+      <!-- FOR MOBILE -->
+    <div v-if="$mq === 'mobile'">  
+        
+        <v-layout row ma-1 justify-center>
           <v-card>
             <v-card-title>
-              품목별 가격정보
+              <v-spacer></v-spacer><b class="headline">- 품목별 가격정보 -</b>
               <v-spacer></v-spacer>
             </v-card-title>
             <v-data-table
@@ -205,19 +216,18 @@
                 </v-tooltip>
               </template>
               <template slot="items" slot-scope="props">
-                <td>{{ props.item.PRDLST_NM }}</td>
-                <td class="text-xs-right">{{ props.item.PBLMNG_WHSAL_MRKT_NM }}</td>
-                <td class="text-xs-right">{{ props.item.DELNGBUNDLE_QY }}{{ props.item.STNDRD }}</td>
-                <td class="text-xs-right">{{ props.item.AVRG_AMT }}</td>
+                <td class="text-xs-left">{{ props.item.PRDLST_NM }}</td>
+                <td class="text-xs-left">{{ props.item.PBLMNG_WHSAL_MRKT_NM }}</td>
+                <td class="text-xs-left">{{ props.item.AVRG_AMT }}</td>
               </template>
             </v-data-table>
           </v-card>
         </v-layout>
           
-        <v-layout row ma-1>
+        <v-layout row ma-1 justify-center>
           <v-card>
             <v-card-title>
-                작업 예측
+                <v-spacer></v-spacer><b class="headline">- 작업 예측 -</b>
                 <v-spacer></v-spacer>
               </v-card-title>
             <v-data-table
@@ -237,22 +247,17 @@
                 </v-tooltip>
               </template>
               <template slot="items" slot-scope="props">
-                <td>{{ props.item.cropName }}</td>
-                <td class="text-xs-right">{{ props.item.date }}</td>
-                <td class="text-xs-right">{{ props.item.workCode }}</td>
-                <td class="text-xs-right">{{ props.item.workContent }}</td>
+                <td class="text-xs-left">{{ props.item.cropName }}</td>
+                <td class="text-xs-left">{{ props.item.date }}</td>
+                <td class="text-xs-left">{{ props.item.workCode }}</td>
               </template>
             </v-data-table>
           </v-card>
         </v-layout>
       </div>
 
-	    <full-calendar :config="config" :events="events" @event-selected="eventSelected"/>
-      <br/><br/><br/>
-      <journalModal></journalModal>
-      <journalModalForEdit></journalModalForEdit>
-      <addWorkTypeModal></addWorkTypeModal>
     </div>
+
     <div style="float: right; display: inline;" v-if="$mq === 'laptop' || $mq === 'desktop'">
         <v-data-table
           :headers="headers"
@@ -348,8 +353,7 @@
               value: 'cropName'
             },
             { text: '작년날짜', value: 'date' },
-            { text: '작업분류', value: 'workCode' },
-            { text: '작업내용', value: 'workContent' }
+            { text: '작업분류', value: 'workCode' }
           ],
           headers: [
             {
@@ -373,7 +377,6 @@
               value: 'PRDLST_NM'
             },
             { text: '도매시장명', value: 'PBLMNG_WHSAL_MRKT_NM' },
-            { text: '거래단량', value: 'DELNGBUNDLE_QY' },
             { text: '평균가', value: 'AVRG_AMT' }
           ],
           crops: [],

@@ -5,7 +5,9 @@
         <h1>설정</h1>
       </v-flex>
 
-      <v-flex xs12 class="text-xs-center" mt-3>
+      <v-flex v-if="$mq === 'laptop' || $mq === 'desktop'" md5 />
+
+      <v-flex xs12 md2 class="text-xs-center" mt-3>
         <v-form ref="form" v-model="valid" lazy-validation>
           <v-text-field
             v-model="cPass"
@@ -30,7 +32,11 @@
         </v-form>
       </v-flex>
 
-      <v-flex xs12 class="text-xs-center" mt-3>
+      <v-flex v-if="$mq === 'laptop' || $mq === 'desktop'" md5 />
+
+      <v-flex v-if="$mq === 'laptop' || $mq === 'desktop'" md5 />
+
+      <v-flex xs12 md2 class="text-xs-center" mt-3>
         <v-form ref="form2" v-model="valid2" lazy-validation>
           <v-text-field
             v-model="age"
@@ -56,6 +62,10 @@
           <v-btn @click="clear2">지우기</v-btn>
         </v-form>
       </v-flex>
+
+      <v-flex v-if="$mq === 'laptop' || $mq === 'desktop'" md5 />
+
+      <div/>
 
       <searchAddressModal></searchAddressModal>
 

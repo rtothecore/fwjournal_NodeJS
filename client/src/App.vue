@@ -58,7 +58,9 @@
         tile
       >
         <v-card-actions class="grey darken-3 justify-center">
-          &copy;2018 — <strong>Ezinfotech</strong>
+          (690-833) 제주특별자치도 제주시 고마로88(일도2동 378-19) 향천빌딩 2층<br/>
+          TEL.064-753-6677   FAX.064-753-6676   MAIL.eziceo@gmail.com<br/>
+          Copyright ⓒ EZ Information technology co.,Ltd. All right Reseved.
         </v-card-actions>
       </v-card>
     </v-footer>

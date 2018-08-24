@@ -1,9 +1,9 @@
 <template>
   <v-layout row justify-center>
     <v-dialog v-model="dialog" persistent max-width="500px">
-      <v-card>
+      <v-card color="teal">
         <v-card-title>
-          <span class="headline">{{User_Profile}}</span>
+          <span class="headline" style="color:white">{{User_Profile}}</span>
         </v-card-title>
         <v-card-text>
           <v-container grid-list-md>
@@ -20,6 +20,7 @@
                   v-on:change="onChangeLand"
                   item-text="name"
                   item-value="_id"
+                  solo
                 ></v-select>
               </v-flex>
               <v-flex xs6 sm6 md3>
@@ -29,6 +30,7 @@
                   hint="농장명을 선택하면 자동입력됩니다"
                   persistent-hint
                   required
+                  solo
                   ></v-text-field>
               </v-flex>
               <v-flex xs6 sm6 md3>
@@ -42,14 +44,15 @@
                   required
                   v-on:change="onChangeWorkType"
                   hint="작물명에 따른 작업분류 선택"
-                  persistent-hint                  
+                  persistent-hint
+                  solo                  
                 ></v-select>
               </v-flex>
               <v-flex xs6 sm6 md3>
-                <v-btn outline color="indigo" @click.native="addWorkType">작업추가</v-btn>
+                <v-btn outline color="white" @click.native="addWorkType">작업추가</v-btn>
               </v-flex>
               <v-flex xs12>
-                <v-text-field v-model="workContent" label="작업내용"></v-text-field>
+                <v-text-field v-model="workContent" label="작업내용" solo></v-text-field>
               </v-flex>
               <v-flex xs6 sm6 md6>
                 <!-- <v-text-field label="작업시간" type="password" required></v-text-field> -->
@@ -72,6 +75,7 @@
                     prepend-icon="access_time"
                     readonly
                     v-on:change="onChangeWSTime"
+                    solo
                   ></v-text-field>
                   <v-time-picker v-model="e6" format="24hr" autosave></v-time-picker>
                 </v-menu>
@@ -97,6 +101,7 @@
                     prepend-icon="access_time"
                     readonly
                     v-on:change="onChangeWETime"
+                    solo
                   ></v-text-field>
                   <v-time-picker v-model="e7" format="24hr" autosave></v-time-picker>
                 </v-menu>
@@ -106,7 +111,8 @@
                   label="날씨" 
                   hint="자동입력"
                   persistent-hint
-                  required
+                  readonly
+                  solo
                   ></v-text-field>
               </v-flex>
               <v-flex xs3 sm6 md3>
@@ -114,7 +120,8 @@
                   label="온도" 
                   hint="자동입력"
                   persistent-hint
-                  required
+                  readonly
+                  solo
                   ></v-text-field>
               </v-flex>
               <v-flex xs3 sm6 md3>
@@ -122,7 +129,8 @@
                   label="습도" 
                   hint="자동입력"
                   persistent-hint
-                  required
+                  readonly
+                  solo
                   ></v-text-field>
               </v-flex>
               <v-flex xs3 sm6 md3>
@@ -130,11 +138,12 @@
                   label="강수량" 
                   hint="자동입력"
                   persistent-hint
-                  required
+                  readonly
+                  solo
                   ></v-text-field>
               </v-flex>
               <v-flex xs12>
-                <v-text-field v-model="remarks" label="특기사항"></v-text-field>
+                <v-text-field v-model="remarks" label="특기사항" solo></v-text-field>
               </v-flex>
             </v-layout>
           </v-container>
@@ -142,9 +151,9 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="blue darken-1" flat @click.native="dialog = false">취소</v-btn>
+          <v-btn outline color="white" flat @click.native="dialog = false">취소</v-btn>
           <!-- <v-btn color="blue darken-1" flat @click.native="dialog = false" :disabled="!valid">작성</v-btn> -->
-          <v-btn color="blue darken-1" flat @click.native="save">작성</v-btn>
+          <v-btn outline color="white" flat @click.native="save">작성</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>

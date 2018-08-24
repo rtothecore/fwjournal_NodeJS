@@ -1,9 +1,9 @@
 <template>
   <v-layout row justify-center>
     <v-dialog v-model="dialog" persistent max-width="500px">
-      <v-card>
+      <v-card color="teal">
         <v-card-title>
-          <span class="headline">{{User_Profile}}</span>
+          <span class="headline" style="color:white">{{User_Profile}}</span>
         </v-card-title>
         <v-card-text>
           <v-container grid-list-md>
@@ -20,6 +20,7 @@
                   v-on:change="onChangeLand"
                   item-text="name"
                   item-value="_id"
+                  solo
                 ></v-select>
               </v-flex>
               <v-flex xs6 sm6 md6>
@@ -29,6 +30,7 @@
                   hint="농장명을 선택하면 자동입력됩니다"
                   persistent-hint
                   required
+                  solo
                   ></v-text-field>
               </v-flex>
               <v-flex xs6 sm6 md6>
@@ -44,11 +46,12 @@
                   item-text="text"
                   item-value="_id"
                   hint="작물명에 따른 작업분류 선택"
-                  persistent-hint                  
+                  persistent-hint
+                  solo                  
                 ></v-select>
               </v-flex>
               <v-flex xs6 sm6 md6>
-                <v-text-field v-model="workContent" label="작업내용"></v-text-field>
+                <v-text-field v-model="workContent" label="작업내용" solo></v-text-field>
               </v-flex>
               <v-flex xs6 sm6 md6>
                 <!-- <v-text-field label="작업시간" type="password" required></v-text-field> -->
@@ -73,6 +76,7 @@
                     readonly
                     v-on:change="onChangeWSTime"
                     disabled
+                    solo
                   ></v-text-field>
                   <v-time-picker v-model="e6" format="24hr" autosave></v-time-picker>
                 </v-menu>
@@ -100,6 +104,7 @@
                     readonly
                     v-on:change="onChangeWETime"
                     disabled
+                    solo
                   ></v-text-field>
                   <v-time-picker v-model="e7" format="24hr" autosave></v-time-picker>
                 </v-menu>
@@ -112,6 +117,7 @@
                   persistent-hint
                   required
                   disabled
+                  solo
                   ></v-text-field>
               </v-flex>
               <v-flex xs3 sm6 md3>
@@ -122,6 +128,7 @@
                   persistent-hint
                   required
                   disabled
+                  solo
                   ></v-text-field>
               </v-flex>
               <v-flex xs3 sm6 md3>
@@ -132,6 +139,7 @@
                   persistent-hint
                   required
                   disabled
+                  solo
                   ></v-text-field>
               </v-flex>
               <v-flex xs3 sm6 md3>
@@ -142,10 +150,11 @@
                   persistent-hint
                   required
                   disabled
+                  solo
                   ></v-text-field>
               </v-flex>
               <v-flex xs12>
-                <v-text-field v-model="remarks" label="특기사항"></v-text-field>
+                <v-text-field v-model="remarks" label="특기사항" solo></v-text-field>
               </v-flex>
             </v-layout>
           </v-container>
@@ -153,9 +162,9 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="blue darken-1" flat @click.native="deleteJ">삭제</v-btn>
-          <v-btn color="blue darken-1" flat @click.native="save">수정</v-btn>
-          <v-btn color="blue darken-1" flat @click.native="dialog = false">닫기</v-btn>
+          <v-btn outline color="white" flat @click.native="deleteJ">삭제</v-btn>
+          <v-btn outline color="white" flat @click.native="save">수정</v-btn>
+          <v-btn outline color="white" flat @click.native="dialog = false">닫기</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
