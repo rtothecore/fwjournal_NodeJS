@@ -1,5 +1,6 @@
 <template>
   <v-app>
+    <!--
     <v-navigation-drawer v-model="sidebar" app>
       <v-list>
         <v-list-tile
@@ -13,40 +14,54 @@
         </v-list-tile>
       </v-list>
     </v-navigation-drawer>
-
-    <v-toolbar app>
+    -->
+    <!-- https://pt.stackoverflow.com/questions/293349/background-image-com-vuetify -->
+    <v-toolbar class="back" app>
+      <!--
       <span class="hidden-sm-and-up">
         <v-toolbar-side-icon @click="sidebar = !sidebar">
         </v-toolbar-side-icon>
       </span>
+      -->
       <v-toolbar-title>
+        <!-- 
         <router-link to="/" tag="span" style="cursor: pointer">
         {{ appTitle }}
         </router-link>
-
+        -->
+        <!--
         <v-btn flat icon color="pink" @click="logout()" v-show="btnLogOutSeen">
           <v-icon>fas fa-sign-out-alt</v-icon>
         </v-btn>
+        -->
       </v-toolbar-title>
 
       <v-spacer></v-spacer>
       <v-toolbar-items class="hidden-xs-only">
 
+        <v-btn flat icon color="white" @click="logout()" v-show="btnLogOutSeen">
+          <v-icon>fas fa-sign-out-alt</v-icon>
+        </v-btn>
+
         <v-btn          
           flat
           v-for="item in menuItems"
           :key="item.title"
-          :to="item.path">
+          :to="item.path"
+          :class="item.class">
+          <!--
           <v-icon left dark>{{ item.icon }}</v-icon>
           {{ item.title }}
+          -->
         </v-btn>
 
         <v-menu open-on-hover top offset-y>
           <v-btn
             slot="activator"
             flat
+            class="statsImg"
           >
-            <v-icon left dark>assessment</v-icon>통계
+            <!-- <v-icon left dark>assessment</v-icon>통계 -->
           </v-btn>
 
           <v-list>
@@ -63,7 +78,7 @@
       </v-toolbar-items>
     </v-toolbar>
     
-    <v-content>
+    <v-content class="loginBack">
       <router-view></router-view>
     </v-content>
     
@@ -95,11 +110,11 @@
         appTitle: '영농일지',
         sidebar: false,
         menuItems: [
-          {title: '영농일지', path: '/', icon: 'assignment_turned_in'},
-          {title: '일지검색', path: '/search', icon: 'assignment'},
-          {title: '작업예측', path: '/predict', icon: 'assignment_late'},
+          {title: '영농일지', path: '/', icon: 'assignment_turned_in', class: 'homeImg'},
+          {title: '일지검색', path: '/search', icon: 'assignment', class: 'searchImg'},
+          {title: '작업예측', path: '/predict', icon: 'assignment_late', class: 'predictImg'},
           /* {title: '통계', path: '/stats', icon: 'assessment'}, */
-          {title: '설정', path: '/config', icon: 'build'}
+          {title: '설정', path: '/config', icon: 'build', class: 'setImg'}
         ],
         subMenuItems: [
           { title: '작업시간', path: '/workTime' },
