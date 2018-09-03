@@ -9,7 +9,9 @@ const routerOptions = [
   { path: '/search', component: 'Search' },
   { path: '/predict', component: 'Predict' },
   { path: '/stats', component: 'Stats' },
-  { path: '/config', component: 'Config' }
+  { path: '/config', component: 'Config' },
+  { path: '/workTime', component: 'WorkTime' },
+  { path: '/environment', component: 'Environment' }
 ]
 
 const routes = routerOptions.map(route => {

@@ -46,9 +46,9 @@ var mongoose = require('mongoose')
 // https://www.zerocho.com/category/MongoDB/post/59b6228e92f5830019d41ac4
 mongoose.Promise = global.Promise;
 // mongoose.connect('mongodb://localhost:27017/fwjournal')
-mongoose.connect('mongodb://192.168.0.73:27017/fwjournal')
+// mongoose.connect('mongodb://192.168.0.73:27017/fwjournal')
 // http://mongoosejs.com/docs/connections.html
-// mongoose.connect('mongodb://journal:journal**@192.168.66.30:27017/fwjournal')
+mongoose.connect('mongodb://journal:journal**@192.168.66.30:27017/fwjournal')
 var db = mongoose.connection
 db.on("error", console.error.bind(console, "connection error"));
 db.once("open", function(callback){
@@ -62,9 +62,98 @@ var Mc = require("../models/mediumClass")
 var Bc = require("../models/bigClass")
 var Journal = require("../models/journal")
 var Wc = require("../models/workClass")
+var SsData = require("../models/sensorData")
+var WcData = require("../models/wcData")
 
 const serviceKey = '73Jjl5lZRvBRKkGsPnGmZ7EL9JtwsWNi3hhCIN8cpVJzMdRRgyzntwz2lHmTKeR1tp7NWzoihNGGazcDEFgh8w%3D%3D'
 const serviceKeyForPrice = '8d8857fa9186167880dafee9a8c55dda0d2711b96cd4ae893983f7d870941d2e'
+
+// Fetch wcData with aggregate
+app.get('/wcData/getAggData/:startDate/:endDate', (req, res) => {
+	// http://www.fun-coding.org/mongodb_advanced5.html
+	// https://stackoverflow.com/questions/18785707/mongodb-aggregate-embedded-document-values
+	// https://stackoverflow.com/questions/39158286/mongoose-aggregate-with-unwind-before-group
+	WcData.aggregate([
+		{
+			"$unwind" : "$currentData"
+		},
+        {
+            "$group" : {
+                "_id" : { "$substr" : [ "$currentData.insertDate", 0, 10 ] },
+                "t1hMin" : { "$min" : "$currentData.weather.t1h" },
+	            "t1hMax" : { "$max" : "$currentData.weather.t1h" },
+	            "t1hAvg" : { "$avg" : "$currentData.weather.t1h" },
+	            "rehMin" : { "$min" : "$currentData.weather.reh" },
+	            "rehMax" : { "$max" : "$currentData.weather.reh" },
+	            "rehAvg" : { "$avg" : "$currentData.weather.reh" }
+            }
+        },
+        {
+            "$match" : {
+                "_id" : { "$gte" : req.params.startDate, "$lte" : req.params.endDate }
+            }
+        },
+        {
+        	"$sort" : { "_id": 1 } 
+        }
+    ], function (err, result) {
+        if (err) {
+            next(err);
+        } else {
+            res.send(result);
+        }
+    });
+})
+
+// Fetch sensorData with aggregate
+app.get('/ssData/getAggData/:startDate/:endDate', (req, res) => {
+	console.log(req.body);
+	// http://www.fun-coding.org/mongodb_advanced5.html
+	// https://stackoverflow.com/questions/18785707/mongodb-aggregate-embedded-document-values
+	// https://stackoverflow.com/questions/39158286/mongoose-aggregate-with-unwind-before-group
+	SsData.aggregate([
+        {
+            "$group" : {
+                "_id" : { "$substr" : [ "$date", 0, 8 ] },
+                "temMin" : { "$min" : "$temperature" },
+	            "temMax" : { "$max" : "$temperature" },
+	            "temAvg" : { "$avg" : "$temperature" },
+	            "humMin" : { "$min" : "$humidity" },
+	            "humMax" : { "$max" : "$humidity" },
+	            "humAvg" : { "$avg" : "$humidity" },
+	            "co2Min" : { "$min" : "$co2" },
+	            "co2Max" : { "$max" : "$co2" },
+	            "co2Avg" : { "$avg" : "$co2" }
+            }
+        },
+        {
+            "$match" : {
+                "_id" : { "$gte" : req.params.startDate, "$lte" : req.params.endDate }
+            }
+        },
+        {
+        	"$sort" : { "_id": 1 } 
+        }
+    ], function (err, result) {
+        if (err) {
+            next(err);
+        } else {
+            res.send(result);
+        }
+    });
+})
+
+// Fetch sensorData
+app.get('/ssData/lastOne', (req, res) => {
+	// https://stackoverflow.com/questions/4421207/mongodb-how-to-get-the-last-n-records
+	// db.getCollection("sensordatas").find().skip(db.getCollection("sensordatas").count() - 1)
+	SsData.count({}, function( err, count){
+	    SsData.find({}, 'index temperature humidity co2 date', function (error, sensorDatas) {
+	    	res.send(sensorDatas)
+	    })
+	    .skip(count - 1)
+	})
+})
 
 function getTodayDate() {
 	var todayDate = new Date()
@@ -517,6 +606,32 @@ app.delete('/journals/:id', (req, res) => {
 			success: true
 		})
 	})
+})
+
+// Fetch journals by userId, startDate, endDate, landId
+app.get('/journals/searchWorktime/:userId/:startDate/:endDate/:landId', (req, res) => {  
+  // console.log(req.params)
+  var query = Journal.find({})
+  if(0 != req.params.startDate) {
+  	query.where('date').gte(req.params.startDate)
+  }
+  if(0 != req.params.endDate) {
+  	query.where('date').lte(req.params.endDate)
+  }
+
+  var userId = req.params.userId
+  var landId = req.params.landId
+ 
+  if(0 != userId) {
+  	query.where('userId').equals(userId)
+  }
+  if(0 != landId) {
+  	query.where('landId').equals(landId)
+  }
+
+  query.exec().then(result => {
+  	res.send(result)
+  })
 })
 
 // Fetch journals by date, workType, workContent

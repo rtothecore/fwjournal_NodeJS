@@ -6,7 +6,7 @@
           v-for="item in menuItems"
           :key="item.title"
           :to="item.path">
-          <v-list-tile-action>
+          <v-list-tile-action slot="activator">
             <v-icon>{{ item.icon }}</v-icon>
           </v-list-tile-action>
           <v-list-tile-content>{{ item.title }}</v-list-tile-content>
@@ -27,12 +27,12 @@
         <v-btn flat icon color="pink" @click="logout()" v-show="btnLogOutSeen">
           <v-icon>fas fa-sign-out-alt</v-icon>
         </v-btn>
-
       </v-toolbar-title>
 
       <v-spacer></v-spacer>
       <v-toolbar-items class="hidden-xs-only">
-        <v-btn
+
+        <v-btn          
           flat
           v-for="item in menuItems"
           :key="item.title"
@@ -40,6 +40,26 @@
           <v-icon left dark>{{ item.icon }}</v-icon>
           {{ item.title }}
         </v-btn>
+
+        <v-menu open-on-hover top offset-y>
+          <v-btn
+            slot="activator"
+            flat
+          >
+            <v-icon left dark>assessment</v-icon>통계
+          </v-btn>
+
+          <v-list>
+            <v-list-tile
+              v-for="(item, index) in subMenuItems"
+              :key="index"
+              @click="moveTo(item.path)"
+            >
+              <v-list-tile-title>{{ item.title }}</v-list-tile-title>
+            </v-list-tile>
+          </v-list>
+        </v-menu>
+
       </v-toolbar-items>
     </v-toolbar>
     
@@ -78,8 +98,12 @@
           {title: '영농일지', path: '/', icon: 'assignment_turned_in'},
           {title: '일지검색', path: '/search', icon: 'assignment'},
           {title: '작업예측', path: '/predict', icon: 'assignment_late'},
-          {title: '통계', path: '/stats', icon: 'assessment'},
+          /* {title: '통계', path: '/stats', icon: 'assessment'}, */
           {title: '설정', path: '/config', icon: 'build'}
+        ],
+        subMenuItems: [
+          { title: '작업시간', path: '/workTime' },
+          { title: '환경모니터링', path: '/environment' }
         ]
       }
     },
@@ -98,6 +122,9 @@
         this.$session.destroy()
         this.btnLogOutSeen = false
         this.$router.push('/login')
+      },
+      moveTo: function (val) {
+        this.$router.push(val)
       }
     }
   }
