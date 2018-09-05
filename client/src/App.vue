@@ -1,41 +1,7 @@
 <template>
-  <v-app>
-    <!--
-    <v-navigation-drawer v-model="sidebar" app>
-      <v-list>
-        <v-list-tile
-          v-for="item in menuItems"
-          :key="item.title"
-          :to="item.path">
-          <v-list-tile-action slot="activator">
-            <v-icon>{{ item.icon }}</v-icon>
-          </v-list-tile-action>
-          <v-list-tile-content>{{ item.title }}</v-list-tile-content>
-        </v-list-tile>
-      </v-list>
-    </v-navigation-drawer>
-    -->
+  <v-app v-if="$mq === 'laptop' || $mq === 'desktop'">
     <!-- https://pt.stackoverflow.com/questions/293349/background-image-com-vuetify -->
     <v-toolbar class="back" app>
-      <!--
-      <span class="hidden-sm-and-up">
-        <v-toolbar-side-icon @click="sidebar = !sidebar">
-        </v-toolbar-side-icon>
-      </span>
-      -->
-      <v-toolbar-title>
-        <!-- 
-        <router-link to="/" tag="span" style="cursor: pointer">
-        {{ appTitle }}
-        </router-link>
-        -->
-        <!--
-        <v-btn flat icon color="pink" @click="logout()" v-show="btnLogOutSeen">
-          <v-icon>fas fa-sign-out-alt</v-icon>
-        </v-btn>
-        -->
-      </v-toolbar-title>
-
       <v-spacer></v-spacer>
       <v-toolbar-items class="hidden-xs-only">
 
@@ -78,7 +44,8 @@
       </v-toolbar-items>
     </v-toolbar>
     
-    <v-content class="loginBack">
+    <!-- <v-content class="loginBack"> -->
+    <v-content v-bind:class="{ loginBack: isBackImgActive }">
       <router-view></router-view>
     </v-content>
     
@@ -100,12 +67,26 @@
       </v-card>
     </v-footer>
   </v-app>
-</template>
+  <!-- For Mobile -->
+  <v-app v-else>
+    <v-toolbar class="backMobile" app>
+      <v-spacer></v-spacer>
+        <v-btn flat icon color="white" @click="logout()" v-show="btnLogOutSeen">
+          <v-icon>fas fa-sign-out-alt</v-icon>
+        </v-btn>
+    </v-toolbar>
+    <!-- <v-content class="loginBackMobile"> -->
+    <v-content v-bind:class="{ loginBackMobile: isBackImgActive }">
+      <router-view></router-view>
+    </v-content>
+  </v-app>
 
+</template>
 <script>
   export default {
     data () {
       return {
+        isBackImgActive: false,
         btnLogOutSeen: false,
         appTitle: '영농일지',
         sidebar: false,
@@ -127,18 +108,22 @@
     updated () {
       if (!this.$session.exists()) {
         this.btnLogOutSeen = false
+        this.isBackImgActive = true
         this.$router.push('/login')
       } else {
         this.btnLogOutSeen = true
+        this.isBackImgActive = false
       }
     },
     methods: {
       logout: function () {
         this.$session.destroy()
         this.btnLogOutSeen = false
+        this.isBackImgActive = true
         this.$router.push('/login')
       },
       moveTo: function (val) {
+        console.log(val)
         this.$router.push(val)
       }
     }

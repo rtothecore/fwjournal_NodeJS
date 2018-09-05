@@ -1,11 +1,40 @@
 <template>
   <v-container fluid>
     <v-layout row wrap justify-center>
-      <v-flex xs12 class="text-xs-center" mt-1>
+      <v-flex xs12 class="text-xs-center" mt-5>
         <!-- <h1>{{Predict_page}}</h1> -->
-        <v-date-picker v-model="date" locale="kr" show-current="2013-07-13" v-on:change="onChangeDate"></v-date-picker>
+        <h1>작업예측</h1>
+        <!-- <v-date-picker v-model="date" locale="kr" show-current="2013-07-13" v-on:change="onChangeDate"></v-date-picker> -->
       </v-flex>
       
+      <v-flex xs12 class="text-xs-center" mt-1>
+        <v-layout row ma-2 justify-center>
+          <v-flex xs6 md2>
+            <v-menu
+              :close-on-content-click="false"
+              v-model="menu1"
+              :nudge-right="40"
+              lazy
+              transition="scale-transition"
+              offset-y
+              full-width
+              max-width="290px"
+              min-width="290px"
+            >
+              <v-text-field
+                slot="activator"
+                v-model="computedDateFormatted"
+                label="기준날짜"
+                persistent-hint
+                prepend-icon="event"
+                readonly
+              ></v-text-field>
+              <v-date-picker v-model="sDate" no-title @input="menu1 = false" v-on:change="onChangeDate"></v-date-picker>
+            </v-menu>
+          </v-flex>       
+        </v-layout>
+      </v-flex>
+
       <div v-if="$mq === 'laptop' || $mq === 'desktop'">
         <v-data-table
           :headers="headers"
@@ -94,6 +123,9 @@ export default {
   data () {
     return {
       // Predict_page: moment().format('YYYY년 MM월 DD일'),
+      startDate2: null,
+      sDate: null,
+      menu1: false,
       userId: '',
       lastYearYM: '',
       date: moment().format('YYYY-MM-DD'),
@@ -184,12 +216,12 @@ export default {
       var lastYear = today.subtract(1, 'year')
       var lastYearBefore10 = lastYear.subtract(10, 'day')
       this.startDate = lastYearBefore10.format('YYYY-MM-DD')
-      // console.log(this.startDate)
+      console.log(this.startDate)
       var lastYearAfter10 = lastYear.add(20, 'day')
       this.endDate = lastYearAfter10.format('YYYY-MM-DD')
-      // console.log(this.endDate)
+      console.log(this.endDate)
       this.lastYearYM = moment(event, 'YYYY-MM').subtract(1, 'year').format('YYYY-MM')
-      // console.log(this.lastYearYM)
+      console.log(this.lastYearYM)
 
       this.getJournalsByDate()
     }
@@ -201,6 +233,10 @@ export default {
       ) return 0
 
       return Math.ceil(this.pagination.totalItems / this.pagination.rowsPerPage)
+    },
+    computedDateFormatted () {
+      // console.log(this.sDate)
+      return this.sDate
     }
   }
 }
