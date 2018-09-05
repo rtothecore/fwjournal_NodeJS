@@ -63,7 +63,7 @@
         </v-menu>
       </v-flex>
 
-      <v-flex xs4 sm4 md2>
+      <v-flex xs8 sm4 md2>
         <v-select
           :items="landItems"
           v-model="e2"
@@ -80,7 +80,7 @@
         ></v-select>
       </v-flex>
 
-      <v-flex xs8 sm8 md2 class="text-xs-left">
+      <v-flex xs4 sm8 md2 class="text-xs-left">
         <v-btn
           :loading="loading"
           :disabled="loading"
@@ -94,10 +94,10 @@
       
       <v-flex v-if="$mq === 'laptop' || $mq === 'desktop'" md2 />
 
+      <div v-if="$mq === 'laptop' || $mq === 'desktop'" id="chartContainer" style="height: 360px; width: 70%;" />
+      <!-- For Mobile -->
+      <div v-else id="chartContainer" style="height: 260px; width: 100%;" />
       
-      <div id="chartContainer" style="height: 360px; width: 70%;"></div>
-      
-
     </v-layout>
   </v-container>
 </template>

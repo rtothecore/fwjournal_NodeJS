@@ -5,75 +5,9 @@
         <h1>환경모니터링</h1>
       </v-flex>
 
-      <!--
       <v-flex xs12 class="text-xs-center" mt-1>
         <v-layout row ma-2 justify-center>
-          <v-flex xs2 order-md1 order-xs1>
-            <v-card color="white" class="black--text">
-                <v-container fluid grid-list-lg>
-                  <v-layout row>
-                    <v-flex xs7>
-                      <div>
-                        <div class="subheading">현재 날씨</div>
-                        <div class="body-2">{{ todayT1h }}</div>
-                        <div class="body-2">{{ todayREH }}</div>
-                        <div class="body-2">{{ todaySky }}</div>
-                      </div>
-                    </v-flex>
-                  </v-layout>
-                </v-container>
-              </v-card>
-          </v-flex>
-          <v-flex xs2 order-md2 order-xs2>
-            <v-card color="white" class="black--text">
-                <v-container fluid grid-list-lg>
-                  <v-layout row>
-                    <v-flex xs7>
-                      <div>
-                        <div class="subheading">현재 내부환경</div>
-                        <div class="body-2">{{ innerT1h }}</div>
-                        <div class="body-2">{{ innerREH }}</div>
-                        <div class="body-2">{{ innerCo2 }}</div>
-                      </div>
-                    </v-flex>
-                  </v-layout>
-                </v-container>
-              </v-card>
-          </v-flex>    
-        </v-layout>
-      </v-flex>
-      -->
-
-      <v-flex xs12 class="text-xs-center" mt-1>
-        <v-layout row ma-2 justify-center>
-          <v-flex xs1 order-md1 order-xs1>
-            <!-- <v-menu
-              ref="menu"
-              :close-on-content-click="false"
-              v-model="menu"
-              :nudge-right="40"
-              :return-value.sync="startDate"
-              lazy
-              transition="scale-transition"
-              offset-y
-            >
-              <v-text-field
-                slot="activator"
-                v-model="startDate"
-                :error-messages="errors.collect('startDate')" 
-                label="시작날짜"
-                prepend-icon="event"
-                readonly
-                required=""
-                v-validate="'required'" 
-                data-vv-name="startDate"
-              ></v-text-field>
-              <v-date-picker v-model="startDate" no-title scrollable>
-                <v-spacer></v-spacer>
-                <v-btn flat color="primary" @click="menu = false">Cancel</v-btn>
-                <v-btn flat color="primary" @click="$refs.menu.save(startDate)">OK</v-btn>
-              </v-date-picker>
-            </v-menu> -->
+          <v-flex xs4 md1 order-md1 order-xs1>
             <v-menu
               :close-on-content-click="false"
               v-model="menu1"
@@ -100,36 +34,7 @@
               <v-date-picker v-model="sDate" no-title @input="menu1 = false"></v-date-picker>
             </v-menu>
           </v-flex>
-          <v-flex xs1 order-md2 order-xs2>
-            <!--
-            <v-menu
-              ref="menu2"
-              :close-on-content-click="false"
-              v-model="menu2"
-              :nudge-right="40"
-              :return-value.sync="endDate"
-              lazy
-              transition="scale-transition"
-              offset-y
-            >
-              <v-text-field
-                slot="activator"
-                v-model="endDate"
-                :error-messages="errors.collect('endDate')" 
-                label="종료날짜"
-                prepend-icon="event"
-                readonly
-                required=""
-                v-validate="'required'" 
-                data-vv-name="endDate"
-              ></v-text-field>
-              <v-date-picker v-model="endDate" no-title scrollable>
-                <v-spacer></v-spacer>
-                <v-btn flat color="primary" @click="menu2 = false">Cancel</v-btn>
-                <v-btn flat color="primary" @click="$refs.menu2.save(endDate)">OK</v-btn>
-              </v-date-picker>
-            </v-menu>
-            -->
+          <v-flex xs4 md1 order-md2 order-xs2>
             <v-menu
               :close-on-content-click="false"
               v-model="menu2"
@@ -156,7 +61,7 @@
               <v-date-picker v-model="eDate" no-title @input="menu2 = false"></v-date-picker>
             </v-menu>
           </v-flex>
-          <v-flex xs1 order-md3 order-xs3>
+          <v-flex xs4 md1 order-md3 order-xs3>
             <v-btn
               :loading="loading"
               :disabled="loading"
@@ -172,7 +77,7 @@
 
       <v-flex xs12 class="text-xs-center" mt-1>
         <v-layout row ma-2 justify-center>
-          <v-flex xs2 order-md1 order-xs1>
+          <v-flex xs8 md2 order-md1 order-xs1>
             <v-radio-group v-model="radioRow" row>
               <v-radio label="온도" value="radio-1" @change='radioChanged' checked></v-radio>
               <v-radio label="습도" value="radio-2" @change='radioChanged'></v-radio>
@@ -182,9 +87,16 @@
         </v-layout>
       </v-flex>
 
-      <div id="chartContainerForWeather" style="height: 360px; width: 70%;"></div>
-      <div id="chartContainerForSensorData" style="height: 360px; width: 70%;"></div>
+      <div v-if="$mq === 'laptop' || $mq === 'desktop'" id="chartContainerForWeather" style="height: 360px; width: 70%;" />
+      <!-- For Mobile -->
+      <div v-else id="chartContainerForWeather" style="height: 260px; width: 100%;" />
 
+      <div v-if="$mq === 'laptop' || $mq === 'desktop'" id="chartContainerForSensorData" style="height: 360px; width: 70%;" />
+      <!-- Form Mobile -->
+      <div v-else id="chartContainerForSensorData" style="height: 260px; width: 100%;" />
+
+      <!-- dummy -->
+      <div style="height: 50px; width: 100%;" />
     </v-layout>
   </v-container>
 </template>
@@ -244,6 +156,8 @@ export default {
         data: [
           {
             type: 'column',
+            showInLegend: true,
+            legendText: "최소값",
             dataPoints: [
             { x: new Date('2018-01-01'), y: 30 },
             { x: new Date('2018-01-02'), y: 31 },
@@ -258,6 +172,8 @@ export default {
           },
           {
             type: 'column',
+            showInLegend: true,
+            legendText: "최대값",
             dataPoints: [
             { x: new Date('2018-01-01'), y: 32 },
             { x: new Date('2018-01-02'), y: 33 },
@@ -272,6 +188,8 @@ export default {
           },
           {
             type: 'column',
+            showInLegend: true,
+            legendText: "평균값",
             dataPoints: [
             { x: new Date('2018-01-01'), y: 31 },
             { x: new Date('2018-01-02'), y: 32 },
@@ -297,6 +215,8 @@ export default {
         data: [
           {
             type: 'column',
+            showInLegend: true,
+            legendText: "최소값",
             dataPoints: [
             { x: new Date('2018-01-01'), y: 30 },
             { x: new Date('2018-01-02'), y: 31 },
@@ -311,6 +231,8 @@ export default {
           },
           {
             type: 'column',
+            showInLegend: true,
+            legendText: "최대값",
             dataPoints: [
             { x: new Date('2018-01-01'), y: 32 },
             { x: new Date('2018-01-02'), y: 33 },
@@ -325,6 +247,8 @@ export default {
           },
           {
             type: 'column',
+            showInLegend: true,
+            legendText: "평균값",
             dataPoints: [
             { x: new Date('2018-01-01'), y: 31 },
             { x: new Date('2018-01-02'), y: 32 },
