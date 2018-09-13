@@ -68,6 +68,41 @@ var WcData = require("../models/wcData")
 const serviceKey = '73Jjl5lZRvBRKkGsPnGmZ7EL9JtwsWNi3hhCIN8cpVJzMdRRgyzntwz2lHmTKeR1tp7NWzoihNGGazcDEFgh8w%3D%3D'
 const serviceKeyForPrice = '8d8857fa9186167880dafee9a8c55dda0d2711b96cd4ae893983f7d870941d2e'
 
+// Fetch all data of wcData with aggregate
+app.get('/wcData/getAllDataOfAggData/:startDate/:endDate', (req, res) => {
+	WcData.aggregate([
+		{
+			"$unwind" : "$currentData"
+		},
+        {
+            "$group" : {
+                "_id" : { "$concat" : [ "$currentData.weather.baseDate", " ", "$currentData.weather.baseTime" ] },
+                "baseDate": { "$first": '$currentData.weather.baseDate' },
+			  	"baseTime": { "$first": '$currentData.weather.baseTime' },
+              	"t1h": { "$first": '$currentData.weather.t1h' },
+              	"reh": { "$first": '$currentData.weather.reh' },
+              	"rn1": { "$first": '$currentData.weather.rn1' },
+              	"pty": { "$first": '$currentData.weather.pty' },
+              	"sky": { "$first": '$currentData.weather.sky' }
+            }
+        },
+        {
+            "$match" : {
+                "_id" : { "$gte" : req.params.startDate, "$lte" : req.params.endDate }
+            }
+        },
+        {
+        	"$sort" : { "_id": 1 } 
+        }
+    ], function (err, result) {
+        if (err) {
+            next(err);
+        } else {
+            res.send(result);
+        }
+    });
+})
+
 // Fetch wcData with aggregate
 app.get('/wcData/getAggData/:startDate/:endDate', (req, res) => {
 	// http://www.fun-coding.org/mongodb_advanced5.html
@@ -104,6 +139,16 @@ app.get('/wcData/getAggData/:startDate/:endDate', (req, res) => {
         }
     });
 })
+
+// Fetch all data of sensorData with aggregate
+app.get('/ssData/getAllDataOfAggData/:startDate/:endDate', (req, res) => {
+	SsData.find({}, '', function (error, result) {
+		if (error) { console.error(error); }
+	    res.send(result)
+	})
+	.where('date').gte(req.params.startDate + " 00:00:00").lte(req.params.endDate + " 23:59:59")
+})
+
 
 // Fetch sensorData with aggregate
 app.get('/ssData/getAggData/:startDate/:endDate', (req, res) => {
@@ -423,7 +468,6 @@ app.get('/Airdata/:tmX/:tmY', (req, res) => {
 
 // Fetch workCode by _id
 app.get('/wc/getWCById/:id', (req, res) => {
-  var db = req.db
   Wc.find({}, '_id text bCode mCode sCode wCode', function (error, wcs) {
     if (error) { console.error(error); }
     res.send(wcs[0].bCode + wcs[0].mCode + wcs[0].sCode + wcs[0].wCode)

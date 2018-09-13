@@ -91,6 +91,9 @@
       <!-- For Mobile -->
       <div v-else id="chartContainerForWeather" style="height: 260px; width: 100%;" />
 
+      <!-- dummy -->
+      <div style="height: 50px; width: 100%;" />
+
       <div v-if="$mq === 'laptop' || $mq === 'desktop'" id="chartContainerForSensorData" style="height: 360px; width: 70%;" />
       <!-- Form Mobile -->
       <div v-else id="chartContainerForSensorData" style="height: 260px; width: 100%;" />
@@ -157,7 +160,7 @@ export default {
           {
             type: 'column',
             showInLegend: true,
-            legendText: "최소값",
+            legendText: '최소값',
             dataPoints: [
             { x: new Date('2018-01-01'), y: 30 },
             { x: new Date('2018-01-02'), y: 31 },
@@ -173,7 +176,7 @@ export default {
           {
             type: 'column',
             showInLegend: true,
-            legendText: "최대값",
+            legendText: '최대값',
             dataPoints: [
             { x: new Date('2018-01-01'), y: 32 },
             { x: new Date('2018-01-02'), y: 33 },
@@ -189,7 +192,7 @@ export default {
           {
             type: 'column',
             showInLegend: true,
-            legendText: "평균값",
+            legendText: '평균값',
             dataPoints: [
             { x: new Date('2018-01-01'), y: 31 },
             { x: new Date('2018-01-02'), y: 32 },
@@ -204,7 +207,7 @@ export default {
           }
         ],
         axisY: {
-          title: '온도'
+          title: '온도(℃)'
         }
       },
       chart: null,
@@ -216,7 +219,7 @@ export default {
           {
             type: 'column',
             showInLegend: true,
-            legendText: "최소값",
+            legendText: '최소값',
             dataPoints: [
             { x: new Date('2018-01-01'), y: 30 },
             { x: new Date('2018-01-02'), y: 31 },
@@ -232,7 +235,7 @@ export default {
           {
             type: 'column',
             showInLegend: true,
-            legendText: "최대값",
+            legendText: '최대값',
             dataPoints: [
             { x: new Date('2018-01-01'), y: 32 },
             { x: new Date('2018-01-02'), y: 33 },
@@ -248,7 +251,7 @@ export default {
           {
             type: 'column',
             showInLegend: true,
-            legendText: "평균값",
+            legendText: '평균값',
             dataPoints: [
             { x: new Date('2018-01-01'), y: 31 },
             { x: new Date('2018-01-02'), y: 32 },
@@ -263,7 +266,7 @@ export default {
           }
         ],
         axisY: {
-          title: '온도'
+          title: '온도(℃)'
         }
       },
       chart2: null
@@ -393,7 +396,7 @@ export default {
             tmpDataPoints.push(tmpWeatherData)
           }
           this.chartOptions.data[i].dataPoints = tmpDataPoints
-          this.chartOptions.axisY.title = '온도'
+          this.chartOptions.axisY.title = '온도(℃)'
         }
       } else if (this.selectedRadio === 'radio-2') {
         for (var k = 0; k < 3; k++) {
@@ -411,10 +414,10 @@ export default {
             tmpDataPoints.push(tmpWeatherData)
           }
           this.chartOptions.data[k].dataPoints = tmpDataPoints
-          this.chartOptions.axisY.title = '습도'
+          this.chartOptions.axisY.title = '습도(%)'
         }
       } else if (this.selectedRadio === 'radio-3') {
-        this.chartOptions.axisY.title = 'Co2'
+        this.chartOptions.axisY.title = 'Co2(ppm)'
       }
       this.chart.render()
     },
@@ -450,7 +453,7 @@ export default {
             tmpDataPoints.push(tmpSensorData)
           }
           this.chartOptions2.data[i].dataPoints = tmpDataPoints
-          this.chartOptions2.axisY.title = '온도'
+          this.chartOptions2.axisY.title = '온도(℃)'
         }
       } else if (this.selectedRadio === 'radio-2') {
         for (i = 0; i < 3; i++) {
@@ -468,7 +471,7 @@ export default {
             tmpDataPoints.push(tmpSensorData)
           }
           this.chartOptions2.data[i].dataPoints = tmpDataPoints
-          this.chartOptions2.axisY.title = '습도'
+          this.chartOptions2.axisY.title = '습도(%)'
         }
       } else if (this.selectedRadio === 'radio-3') {
         for (i = 0; i < 3; i++) {
@@ -486,7 +489,7 @@ export default {
             tmpDataPoints.push(tmpSensorData)
           }
           this.chartOptions2.data[i].dataPoints = tmpDataPoints
-          this.chartOptions2.axisY.title = 'Co2'
+          this.chartOptions2.axisY.title = 'Co2(ppm)'
         }
       }
       this.chart2.render()

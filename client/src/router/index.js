@@ -11,7 +11,8 @@ const routerOptions = [
   { path: '/stats', component: 'Stats' },
   { path: '/config', component: 'Config' },
   { path: '/workTime', component: 'WorkTime' },
-  { path: '/environment', component: 'Environment' }
+  { path: '/environment', component: 'Environment' },
+  { path: '/qtest', component: 'QueryTest' }
 ]
 
 const routes = routerOptions.map(route => {

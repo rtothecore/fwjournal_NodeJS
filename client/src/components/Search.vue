@@ -397,7 +397,11 @@ export default {
       loader: null,
       loading: false,
       search: '',
-      pagination: {},
+      pagination: {
+        // https://github.com/vuetifyjs/vuetify/issues/442
+        sortBy: 'date',
+        descending: true
+      },
       selected: [],
       dialog: false,
       formTitle: '',

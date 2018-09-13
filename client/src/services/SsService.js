@@ -7,5 +7,9 @@ export default {
 
   fetchSensorDataAgg (params) {
     return Api().get('ssData/getAggData/' + params.startDate + '/' + params.endDate, params)
+  },
+
+  fetchAllDataOfSensorDataAgg (params) {
+    return Api().get('ssData/getAllDataOfAggData/' + params.startDate + '/' + params.endDate, params)
   }
 }

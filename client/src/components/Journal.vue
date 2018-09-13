@@ -135,7 +135,7 @@
                           ></v-card-media>
                         </div>
                         <div class="caption">{{ todayPm10 }}</div>
-                        <div class="body-2">{{ weatherLoc }}</div>
+                        <!-- <div class="body-2">{{ weatherLoc }}</div> -->
                       </div>
                     </v-flex>
                   </v-layout>
