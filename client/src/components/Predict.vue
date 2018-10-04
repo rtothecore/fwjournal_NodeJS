@@ -29,7 +29,7 @@
                 prepend-icon="event"
                 readonly
               ></v-text-field>
-              <v-date-picker v-model="sDate" no-title @input="menu1 = false" v-on:change="onChangeDate"></v-date-picker>
+              <v-date-picker v-model="sDate" no-title @input="menu1 = false" v-on:change="onChangeDate" locale='euc-kr'></v-date-picker>
             </v-menu>
           </v-flex>       
         </v-layout>

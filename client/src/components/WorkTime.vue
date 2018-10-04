@@ -31,7 +31,7 @@
             v-validate="'required'" 
             data-vv-name="startDate"
           ></v-text-field>
-          <v-date-picker v-model="sDate" no-title @input="menu1 = false"></v-date-picker>
+          <v-date-picker v-model="sDate" no-title @input="menu1 = false" locale='euc-kr'></v-date-picker>
         </v-menu>
       </v-flex>
 
@@ -59,7 +59,7 @@
             v-validate="'required'" 
             data-vv-name="endDate"
           ></v-text-field>
-          <v-date-picker v-model="eDate" no-title @input="menu2 = false"></v-date-picker>
+          <v-date-picker v-model="eDate" no-title @input="menu2 = false" locale='euc-kr'></v-date-picker>
         </v-menu>
       </v-flex>
 

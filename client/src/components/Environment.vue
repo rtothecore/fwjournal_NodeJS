@@ -31,7 +31,7 @@
                 v-validate="'required'" 
                 data-vv-name="startDate"
               ></v-text-field>
-              <v-date-picker v-model="sDate" no-title @input="menu1 = false"></v-date-picker>
+              <v-date-picker v-model="sDate" no-title @input="menu1 = false" locale='euc-kr'></v-date-picker>
             </v-menu>
           </v-flex>
           <v-flex xs4 md1 order-md2 order-xs2>
@@ -58,7 +58,7 @@
                 v-validate="'required'" 
                 data-vv-name="endDate"
               ></v-text-field>
-              <v-date-picker v-model="eDate" no-title @input="menu2 = false"></v-date-picker>
+              <v-date-picker v-model="eDate" no-title @input="menu2 = false" locale='euc-kr'></v-date-picker>
             </v-menu>
           </v-flex>
           <v-flex xs4 md1 order-md3 order-xs3>
@@ -161,6 +161,9 @@ export default {
             type: 'column',
             showInLegend: true,
             legendText: '최소값',
+            indexLabel: '{y}',
+            indexLabelPlacement: 'outside',
+            indexLabelOrientation: 'horizontal',
             dataPoints: [
             { x: new Date('2018-01-01'), y: 30 },
             { x: new Date('2018-01-02'), y: 31 },
@@ -177,6 +180,9 @@ export default {
             type: 'column',
             showInLegend: true,
             legendText: '최대값',
+            indexLabel: '{y}',
+            indexLabelPlacement: 'outside',
+            indexLabelOrientation: 'horizontal',
             dataPoints: [
             { x: new Date('2018-01-01'), y: 32 },
             { x: new Date('2018-01-02'), y: 33 },
@@ -193,6 +199,9 @@ export default {
             type: 'column',
             showInLegend: true,
             legendText: '평균값',
+            indexLabel: '{y}',
+            indexLabelPlacement: 'outside',
+            indexLabelOrientation: 'horizontal',
             dataPoints: [
             { x: new Date('2018-01-01'), y: 31 },
             { x: new Date('2018-01-02'), y: 32 },
@@ -220,6 +229,9 @@ export default {
             type: 'column',
             showInLegend: true,
             legendText: '최소값',
+            indexLabel: '{y}',
+            indexLabelPlacement: 'outside',
+            indexLabelOrientation: 'horizontal',
             dataPoints: [
             { x: new Date('2018-01-01'), y: 30 },
             { x: new Date('2018-01-02'), y: 31 },
@@ -236,6 +248,9 @@ export default {
             type: 'column',
             showInLegend: true,
             legendText: '최대값',
+            indexLabel: '{y}',
+            indexLabelPlacement: 'outside',
+            indexLabelOrientation: 'horizontal',
             dataPoints: [
             { x: new Date('2018-01-01'), y: 32 },
             { x: new Date('2018-01-02'), y: 33 },
@@ -252,6 +267,9 @@ export default {
             type: 'column',
             showInLegend: true,
             legendText: '평균값',
+            indexLabel: '{y}',
+            indexLabelPlacement: 'outside',
+            indexLabelOrientation: 'horizontal',
             dataPoints: [
             { x: new Date('2018-01-01'), y: 31 },
             { x: new Date('2018-01-02'), y: 32 },

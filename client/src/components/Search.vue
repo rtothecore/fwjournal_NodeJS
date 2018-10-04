@@ -30,7 +30,7 @@
             v-validate="'required'" 
             data-vv-name="startDate"
           ></v-text-field>
-          <v-date-picker v-model="startDate" no-title scrollable>
+          <v-date-picker v-model="startDate" no-title scrollable locale='euc-kr'>
             <v-spacer></v-spacer>
             <v-btn flat color="primary" @click="menu = false">Cancel</v-btn>
             <v-btn flat color="primary" @click="$refs.menu.save(startDate)">OK</v-btn>
@@ -60,7 +60,7 @@
             v-validate="'required'" 
             data-vv-name="endDate"
           ></v-text-field>
-          <v-date-picker v-model="endDate" no-title scrollable>
+          <v-date-picker v-model="endDate" no-title scrollable locale='euc-kr'>
             <v-spacer></v-spacer>
             <v-btn flat color="primary" @click="menu2 = false">Cancel</v-btn>
             <v-btn flat color="primary" @click="$refs.menu2.save(endDate)">OK</v-btn>
@@ -221,6 +221,7 @@
                   <!-- <v-time-picker v-model="e7" format="24hr" autosave></v-time-picker> -->
                 </v-menu>
               </v-flex>
+              <!--
                <v-flex xs3 sm6 md3>
                 <v-text-field v-model="editedItem.sky" label="날씨" disabled solo></v-text-field>
               </v-flex>
@@ -233,6 +234,7 @@
               <v-flex xs3 sm6 md3>
                 <v-text-field v-model="editedItem.rn1" label="강수량" disabled solo></v-text-field>
               </v-flex>
+              -->
               <v-flex xs12>
                 <v-text-field v-model="editedItem.remarks" label="특기사항" solo></v-text-field>
               </v-flex>

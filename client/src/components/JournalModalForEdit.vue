@@ -109,6 +109,7 @@
                   <v-time-picker v-model="e7" format="24hr" autosave></v-time-picker>
                 </v-menu>
               </v-flex>
+              <!--
               <v-flex xs3 sm6 md3>
                 <v-text-field
                   v-model="weatherSky"
@@ -153,6 +154,7 @@
                   solo
                   ></v-text-field>
               </v-flex>
+              -->
               <v-flex xs12>
                 <v-text-field v-model="remarks" label="특기사항" solo></v-text-field>
               </v-flex>

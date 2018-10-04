@@ -76,46 +76,63 @@
       </v-flex>
 
       <v-flex xs12 class="text-xs-center" mt-1>
-        <v-toolbar-title>WCDATAS({{wcdatasCount}}개) - {{wcdatasTime}}ms</v-toolbar-title>
-        <v-data-table
-          :headers="wcHeaders"
-          :items="wcdatas"
-          hide-actions
-          class="elevation-1"
-        >
-          <template slot="items" slot-scope="props">
-            <td>{{ props.item._id }}</td>
-            <td class="text-xs-left">{{ props.item.baseDate }}</td>
-            <td class="text-xs-left">{{ props.item.baseTime }}</td>
-            <td class="text-xs-left">{{ props.item.pty }}</td>
-            <td class="text-xs-left">{{ props.item.reh }}</td>
-            <td class="text-xs-left">{{ props.item.rn1 }}</td>
-            <td class="text-xs-left">{{ props.item.sky }}</td>
-            <td class="text-xs-left">{{ props.item.t1h }}</td>
-          </template>
-        </v-data-table>
+        <v-layout row ma-2 justify-center>
+          <v-flex xs8 md2 order-md1 order-xs1>
+            <v-radio-group v-model="radioRow" row>
+              <v-radio label="WCDATAS" value="radio-1" @change='radioChanged' checked></v-radio>
+              <v-radio label="SENSORDATAS" value="radio-2" @change='radioChanged'></v-radio>
+            </v-radio-group>
+          </v-flex>
+        </v-layout>
       </v-flex>
+
+      <!-- <div id="wcdatasDiv" style="display:block"> -->
+        <v-flex v-if="selectedRadio === 'radio-1'" xs12 class="text-xs-center" mt-1>
+          <v-toolbar-title>WCDATAS({{wcdatasCount}}개) - {{wcdatasTime}}ms</v-toolbar-title>
+          <v-data-table
+            :headers="wcHeaders"
+            :items="wcdatas"
+            hide-actions
+            class="elevation-1"
+          >
+           
+            <template slot="items" slot-scope="props">
+              <td>{{ props.item._id }}</td>
+              <td class="text-xs-left">{{ props.item.baseDate }}</td>
+              <td class="text-xs-left">{{ props.item.baseTime }}</td>
+              <td class="text-xs-left">{{ props.item.pty }}</td>
+              <td class="text-xs-left">{{ props.item.reh }}</td>
+              <td class="text-xs-left">{{ props.item.rn1 }}</td>
+              <td class="text-xs-left">{{ props.item.sky }}</td>
+              <td class="text-xs-left">{{ props.item.t1h }}</td>
+              <td class="text-xs-left">{{ props.item.time }}</td>
+            </template>
+          </v-data-table>
+        </v-flex>
+      <!-- </div> -->
 
       <!-- dummy -->
       <div style="height: 50px; width: 100%;" />
 
-      <v-flex xs12 class="text-xs-center" mt-1>
-        <v-toolbar-title>SENSORDATAS({{ssdatasCount}}개) - {{ssdatasTime}}ms</v-toolbar-title>
-        <v-data-table
-          :headers="ssHeaders"
-          :items="ssdatas"
-          hide-actions
-          class="elevation-1"
-        >
-          <template slot="items" slot-scope="props">
-            <td>{{ props.item._id }}</td>
-            <td class="text-xs-left">{{ props.item.date }}</td>
-            <td class="text-xs-left">{{ props.item.temperature }}</td>
-            <td class="text-xs-left">{{ props.item.humidity }}</td>
-            <td class="text-xs-left">{{ props.item.co2 }}</td>
-          </template>
-        </v-data-table>
-      </v-flex>
+      <!-- <div id="sensordatasDiv" style="display:none"> -->
+        <v-flex v-if="selectedRadio === 'radio-2'" xs12 class="text-xs-center" mt-1>
+          <v-toolbar-title>SENSORDATAS({{ssdatasCount}}개) - {{ssdatasTime}}ms</v-toolbar-title>
+          <v-data-table
+            :headers="ssHeaders"
+            :items="ssdatas"
+            hide-actions
+            class="elevation-1"
+          >
+            <template slot="items" slot-scope="props">
+              <td>{{ props.item._id }}</td>
+              <td class="text-xs-left">{{ props.item.date }}</td>
+              <td class="text-xs-left">{{ props.item.temperature }}</td>
+              <td class="text-xs-left">{{ props.item.humidity }}</td>
+              <td class="text-xs-left">{{ props.item.co2 }}</td>
+            </template>
+          </v-data-table>
+        </v-flex>
+      <!-- </div> -->
 
       <!-- dummy -->
       <div style="height: 50px; width: 100%;" />
@@ -139,6 +156,7 @@ export default {
       ssdatasTime: '',
       queryStartTime: '',
       queryEndTime: '',
+      queryRunTime: '',
       ssHeaders: [
         {
           text: '_id',
@@ -165,7 +183,8 @@ export default {
         { text: 'reh', value: 'reh' },
         { text: 'rn1', value: 'rn1' },
         { text: 'sky', value: 'sky' },
-        { text: 't1h', value: 't1h' }
+        { text: 't1h', value: 't1h' },
+        { text: 'time', value: 'time' }
       ],
       wcdatas: [],
       userId: '',
@@ -194,7 +213,9 @@ export default {
             required: '종료날짜를 입력해주세요'
           }
         }
-      }
+      },
+      radioRow: 'radio-1',
+      selectedRadio: 'radio-1'
     }
   },
   mounted () {
@@ -211,8 +232,8 @@ export default {
     this.sDate = moment().format('YYYY-MM-DD')
     // this.startDate = '2018-08-27'
     this.eDate = moment().format('YYYY-MM-DD')
-    this.getWcDataAgg()
-    this.getSsDataAgg()
+    // this.getWcDataAgg()
+    // this.getSsDataAgg()
   },
   computed: {
     computedDateFormatted () {
@@ -225,29 +246,38 @@ export default {
     }
   },
   watch: {
+    /*
     loader () {
       const l = this.loader
       this[l] = !this[l]
       setTimeout(() => (this[l] = false), 1000)
       this.loader = null
     }
+    */
   },
   methods: {
     searchJournals () {
-      this.loader = 'loading'
+      // this.loader = 'loading'
       this.$validator.validateAll().then((result) => {
         if (!result) {
           return
         }
-        this.getWcDataAgg()
-        this.getSsDataAgg()
+        if (this.selectedRadio === 'radio-1') {
+          this.getWcDataAgg()
+        } else {
+          this.getSsDataAgg()
+        }
       }).catch(() => {})
     },
+    checkTime: function () {
+      return moment()
+    },
     getWcDataAgg: function () {
+      this.wcdatas = []
       this.getWeatherCrawlerDataAgg()
     },
     async getWeatherCrawlerDataAgg () {
-      this.queryStartTime = moment().milliseconds()
+      this.queryStartTime = moment()
       console.log(this.queryStartTime)
 
       const response = await WcDataService.fetchAllDataOfWcDataAgg({
@@ -257,9 +287,12 @@ export default {
 
       // console.log(response.data)
       this.wcdatas = response.data
+      for (var i = 0; i < response.data.length; i++) {
+        this.wcdatas[i].time = this.checkTime()
+      }
       this.wcdatasCount = response.data.length
 
-      this.queryEndTime = moment().milliseconds()
+      this.queryEndTime = moment()
       console.log(this.queryEndTime)
 
       var queryRunTime = this.queryEndTime - this.queryStartTime
@@ -267,10 +300,11 @@ export default {
       this.wcdatasTime = queryRunTime
     },
     getSsDataAgg: function () {
+      this.ssdatas = []
       this.getSensorDataAgg()
     },
     async getSensorDataAgg () {
-      this.queryStartTime = moment().milliseconds()
+      this.queryStartTime = moment()
       console.log(this.queryStartTime)
 
       const response = await SsService.fetchAllDataOfSensorDataAgg({
@@ -282,12 +316,20 @@ export default {
       this.ssdatas = response.data
       this.ssdatasCount = response.data.length
 
-      this.queryEndTime = moment().milliseconds()
+      /*
+      this.queryEndTime = moment()
       console.log(this.queryEndTime)
 
       var queryRunTime = this.queryEndTime - this.queryStartTime
       console.log('ssdatas runTime : ' + queryRunTime)
       this.ssdatasTime = queryRunTime
+      */
+    },
+    radioChanged: function (event) {
+      // console.log(event)
+      this.selectedRadio = event
+      // this.getWeatherCrawlerDataAgg()
+      // this.getSensorDataAgg()
     }
   }
 }

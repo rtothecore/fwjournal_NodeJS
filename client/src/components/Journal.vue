@@ -1,7 +1,7 @@
 <template>
 <div style="position:absolute">
     <!-- <div id="calendar" style="height:900px; width:900px; float:left;"> -->
-    <div id="calendar" v-bind:style="{ height: calendarHeight, width: calendarWidth, float: 'left' }">
+    <div id="calendar" v-bind:style="{ height: calendarHeight, width: calendarWidth, float: 'left'}">
       <div v-if="$mq === 'laptop' || $mq === 'desktop'">
         <v-layout row ma-2>
           <v-flex xs4 order-md1 order-xs1>
@@ -13,17 +13,21 @@
                         <div class="subheading">오늘</div>
                         <div class="title">{{ todayT1h }}</div>
                         <div class="caption">{{ todayPm10 }}</div>
-                        <div class="body-2">{{ weatherLoc }}</div>
                       </div>
                     </v-flex>
                     <v-flex xs5>
                       <v-card-media
                         :src="todaySkyImg"
-                        height="100px"
+                        height="50px"
                         contain
                       ></v-card-media>
                     </v-flex>
                   </v-layout>
+
+                  <v-layout>
+                    <div class="body-2">{{ weatherLoc }}</div>
+                  </v-layout>
+
                 </v-container>
               </v-card>
           </v-flex>
@@ -135,7 +139,7 @@
                           ></v-card-media>
                         </div>
                         <div class="caption">{{ todayPm10 }}</div>
-                        <!-- <div class="body-2">{{ weatherLoc }}</div> -->
+                        <div class="body-2">{{ weatherLoc }}</div>
                       </div>
                     </v-flex>
                   </v-layout>
@@ -258,7 +262,7 @@
 
     </div>
 
-    <div style="float: right; display: inline;" v-if="$mq === 'laptop' || $mq === 'desktop'">
+    <div style="float: right; display: inline; width: 50%" v-if="$mq === 'laptop' || $mq === 'desktop'">
         <v-data-table
           :headers="headers"
           :items="crops"
@@ -451,7 +455,8 @@
         this.getLastYearJournal()
         // media query
         if (this.$mq === 'desktop') {
-          this.calendarWidth = '900px'
+          // this.calendarWidth = '900px'
+          this.calendarWidth = '49%'
           this.calendarHeight = '900px'
           this.config.aspectRatio = 1.5
         } else {
