@@ -1,12 +1,30 @@
 var mongoose = require("mongoose")
 var Schema = mongoose.Schema
 
-var WeatherSchema = new Schema({
-	baseTime: String,
-	sky: String,
-	t1h: String,
-	reh: String,
-	rn1: String
+var WeatherSchema = new Schema({	
+	minT1H: String,
+	maxT1H: String,
+	avgT1H: String,
+	minREH: String,
+	maxREH: String,
+	avgREH: String,
+	avgRN1: String,
+	sky: String
+})
+
+var CooSchema = Schema({
+	category: String,
+	cost: String
+})
+
+var DetailSchema = Schema({
+	amount: String,
+	detail: String
+})
+
+var UsageSchema = Schema({
+	itemName: String,
+	usage: String
 })
 
 var JournalSchema = new Schema({
@@ -15,10 +33,18 @@ var JournalSchema = new Schema({
 	landId: String,
 	workCode: String,
 	workContent: String,
-	workSTime: String,
-	workETime: String,
-	weather: [WeatherSchema],
-	remarks: String
+	workTime: String,
+	workerNumber: String,
+	weather: WeatherSchema,
+	remarks: String,
+	COO: [CooSchema],
+	shipment: DetailSchema,
+	income: DetailSchema,
+	usage: [UsageSchema],
+	output: DetailSchema,
+	pictureA: String,
+	pictureB: String,
+	pictureC: String
 })
 
 var Journal = mongoose.model("Journal", JournalSchema)

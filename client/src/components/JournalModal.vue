@@ -1,161 +1,527 @@
 <template>
   <v-layout row justify-center>
-    <v-dialog v-model="dialog" persistent max-width="500px">
-      <v-card color="teal">
-        <v-card-title>
-          <span class="headline" style="color:white">{{User_Profile}}</span>
-        </v-card-title>
-        <v-card-text>
-          <v-container grid-list-md>
-            <v-layout wrap>
-              <v-flex xs6 sm6 md3>
-                <v-select
-                  v-validate="'required'"
-                  :items="landItems"
-                  v-model="selectLand"
-                  :error-messages="errors.collect('selectLand')"
-                  label="농장명"
-                  data-vv-name="selectLand"
-                  required
-                  v-on:change="onChangeLand"
-                  item-text="name"
-                  item-value="_id"
-                  solo
-                ></v-select>
-              </v-flex>
-              <v-flex xs6 sm6 md3>
-                <v-text-field
-                  v-model="cropName"
-                  label="작물명" 
-                  hint="농장명을 선택하면 자동입력됩니다"
-                  persistent-hint
-                  required
-                  solo
-                  ></v-text-field>
-              </v-flex>
-              <v-flex xs6 sm6 md3>
-                <v-select
-                  v-validate="'required'"
-                  :items="workType"
-                  v-model="selectWorkType"
-                  :error-messages="errors.collect('selectWorkType')"
-                  label="작업분류"
-                  data-vv-name="selectWorkType"
-                  required
-                  v-on:change="onChangeWorkType"
-                  hint="작물명에 따른 작업분류 선택"
-                  persistent-hint
-                  solo                  
-                ></v-select>
-              </v-flex>
-              <v-flex xs6 sm6 md3>
-                <v-btn outline color="white" @click.native="addWorkType">작업추가</v-btn>
-              </v-flex>
-              <v-flex xs12>
-                <v-text-field v-model="workContent" label="작업내용" solo></v-text-field>
-              </v-flex>
-              <v-flex xs6 sm6 md6>
-                <!-- <v-text-field label="작업시간" type="password" required></v-text-field> -->
-                <v-menu
-                  lazy
-                  :close-on-content-click="false"
-                  v-model="menu2"
-                  transition="scale-transition"
-                  offset-y
-                  :nudge-left="40"
-                >
-                  <v-text-field
-                    v-validate="'required'"
-                    v-model="e6"
-                    :error-messages="errors.collect('e6')"
-                    label="작업시작 시간"
-                    data-vv-name="e6"
-                    required
-                    slot="activator"
-                    prepend-icon="access_time"
-                    readonly
-                    v-on:change="onChangeWSTime"
-                    solo
-                  ></v-text-field>
-                  <v-time-picker v-model="e6" format="24hr" autosave></v-time-picker>
-                </v-menu>
-              </v-flex>
-              <v-flex xs6 sm6 md6>
-                <!-- <v-text-field label="작업시간" type="password" required></v-text-field> -->
-                <v-menu
-                  lazy
-                  :close-on-content-click="false"
-                  v-model="menu3"
-                  transition="scale-transition"
-                  offset-y
-                  :nudge-left="40"
-                >
-                  <v-text-field
-                    v-validate="'required'"
-                    v-model="e7"
-                    :error-messages="errors.collect('e7')"
-                    label="작업종료 시간"
-                    data-vv-name="e7"
-                    required
-                    slot="activator"
-                    prepend-icon="access_time"
-                    readonly
-                    v-on:change="onChangeWETime"
-                    solo
-                  ></v-text-field>
-                  <v-time-picker v-model="e7" format="24hr" autosave></v-time-picker>
-                </v-menu>
-              </v-flex>
-              <v-flex xs3 sm6 md3>
-                <v-text-field 
-                  label="날씨" 
-                  hint="자동입력"
-                  persistent-hint
-                  readonly
-                  solo
-                  ></v-text-field>
-              </v-flex>
-              <v-flex xs3 sm6 md3>
-                <v-text-field 
-                  label="온도" 
-                  hint="자동입력"
-                  persistent-hint
-                  readonly
-                  solo
-                  ></v-text-field>
-              </v-flex>
-              <v-flex xs3 sm6 md3>
-                <v-text-field 
-                  label="습도" 
-                  hint="자동입력"
-                  persistent-hint
-                  readonly
-                  solo
-                  ></v-text-field>
-              </v-flex>
-              <v-flex xs3 sm6 md3>
-                <v-text-field 
-                  label="강수량" 
-                  hint="자동입력"
-                  persistent-hint
-                  readonly
-                  solo
-                  ></v-text-field>
-              </v-flex>
-              <v-flex xs12>
-                <v-text-field v-model="remarks" label="특기사항" solo></v-text-field>
-              </v-flex>
-            </v-layout>
-          </v-container>
-          <small>*필수 입력 사항입니다</small>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn outline color="white" flat @click.native="dialog = false">취소</v-btn>
-          <!-- <v-btn color="blue darken-1" flat @click.native="dialog = false" :disabled="!valid">작성</v-btn> -->
-          <v-btn outline color="white" flat @click.native="save">작성</v-btn>
-        </v-card-actions>
-      </v-card>
+    <v-dialog v-model="dialog" persistent max-width="1024px" height="768px" fullscreen hide-overlay transition="dialog-bottom-transition">
+
+       <v-tabs
+          v-model="active"
+          color="cyan"
+          dark
+          slider-color="yellow"
+       >
+          <v-tab            
+            :key="1"
+            ripple
+          >
+            작업일지
+          </v-tab>
+
+          <v-tab            
+            :key="2"
+            ripple
+          >
+            자재일지
+          </v-tab>
+
+          <!-- 작 업 일 지 -->
+          <v-tab-item            
+            :key="1"
+          >
+          <v-card color="white">
+            <v-card-title>
+              <span class="headline" style="color:black">{{User_Profile}}</span> <v-btn outline color="black" flat @click.native="dialog = false">닫기</v-btn>
+            </v-card-title>
+            <v-card-text>
+              <v-container grid-list-md>
+                <v-layout wrap>
+                  <v-flex xs6 sm6 md6>
+                    <v-text-field
+                      v-model="skyStatus"
+                      label="날씨"
+                      placeholder="날씨"
+                      hint="자동입력"
+                      disabled
+                    ></v-text-field>
+                  </v-flex>
+                  <v-flex xs6 sm6 md6>
+                    <v-text-field
+                      v-model="RN1"
+                      label="강수량"
+                      placeholder="강수량"
+                      hint="자동입력"
+                      disabled
+                    ></v-text-field>
+                  </v-flex>
+
+                  <v-flex xs6 sm6 md4>
+                    <v-text-field
+                      v-model="avgT1H"
+                      label="평균온도"
+                      placeholder="평균온도"
+                      hint="자동입력"
+                      disabled
+                    ></v-text-field>
+                  </v-flex>
+                  <v-flex xs6 sm6 md4>
+                    <v-text-field
+                      v-model="maxT1H"
+                      label="최대온도"
+                      placeholder="최대온도"
+                      hint="자동입력"
+                      disabled
+                    ></v-text-field>
+                  </v-flex>
+                  <v-flex xs6 sm6 md4>
+                    <v-text-field
+                      v-model="minT1H"
+                      label="최소온도"
+                      placeholder="최소온도"
+                      hint="자동입력"
+                      disabled
+                    ></v-text-field>
+                  </v-flex>
+
+                  <v-flex xs6 sm6 md4>
+                    <v-text-field
+                      v-model="avgREH"
+                      label="평균습도"
+                      placeholder="평균습도"
+                      hint="자동입력"
+                      disabled
+                    ></v-text-field>
+                  </v-flex>
+                  <v-flex xs6 sm6 md4>
+                    <v-text-field
+                      v-model="maxREH"
+                      label="최대습도"
+                      placeholder="최대습도"
+                      hint="자동입력"
+                      disabled
+                    ></v-text-field>
+                  </v-flex>
+                  <v-flex xs6 sm6 md4>
+                    <v-text-field
+                      v-model="minREH"
+                      label="최소습도"
+                      placeholder="최소습도"
+                      hint="자동입력"
+                      disabled
+                    ></v-text-field>
+                  </v-flex>
+
+                  <v-flex xs6 sm6 md3>
+                    <v-select
+                      v-validate="'required'"
+                      :items="landItems"
+                      v-model="selectLand"
+                      :error-messages="errors.collect('selectLand')"
+                      label="농장명"
+                      data-vv-name="selectLand"
+                      required
+                      v-on:change="onChangeLand"
+                      item-text="name"
+                      item-value="_id"                      
+                    ></v-select>
+                  </v-flex>
+                  <v-flex xs6 sm6 md3>
+                    <v-text-field
+                      v-model="cropName"
+                      label="작물명" 
+                      hint="농장명을 선택하면 자동입력됩니다"
+                      persistent-hint
+                      required                      
+                      ></v-text-field>
+                  </v-flex>
+                  <v-flex xs6 sm6 md3>
+                    <v-select
+                      v-validate="'required'"
+                      :items="workType"
+                      v-model="selectWorkType"
+                      :error-messages="errors.collect('selectWorkType')"
+                      label="작업분류"
+                      data-vv-name="selectWorkType"
+                      required
+                      v-on:change="onChangeWorkType"
+                      item-text="text"
+                      item-value="wCode"   
+                      hint="작물명에 따른 작업분류 선택"
+                      persistent-hint                                        
+                    ></v-select>
+                  </v-flex>
+                  <v-flex xs6 sm6 md3>
+                    <!-- <v-btn outline color="black" @click.native="addWorkType">작업추가</v-btn> -->
+                  </v-flex>
+
+                  <v-flex xs6 sm6 md6>
+                    <v-text-field
+                      v-model="workTime"
+                      label="작업시간"
+                      placeholder="1시간 단위"
+                      type="number"
+                    ></v-text-field>
+                  </v-flex>
+                  <v-flex xs6 sm6 md6>
+                    <v-text-field
+                      v-model="workerNumber"
+                      label="작업인원"
+                      placeholder="작업인원"
+                      type="number"
+                    ></v-text-field>
+                  </v-flex>                  
+
+                  <v-flex xs12>
+                    <div slot="label">
+                      발생비용 <small>(optional)</small>
+                      <v-btn outline color="black" flat @click.native="addCooRow">추가</v-btn>
+                      <v-btn outline color="black" flat @click.native="deleteCooRow">삭제</v-btn>
+                    </div>
+                  </v-flex>
+                  
+                  <template v-for="(item, index) in cooItems">
+                    <v-flex xs6 sm6 md6 :key="'A' + index">
+                      <v-text-field
+                        label="발생분류"                      
+                        v-model="item.category"
+                      ></v-text-field>
+                    </v-flex>
+                    <v-flex xs6 sm6 md6 :key="'B' + index">
+                      <v-text-field
+                        label="발생비용"
+                        v-model="item.cost"
+                        v-on:change="onChangeItemCost"
+                        type="number"
+                      ></v-text-field>
+                    </v-flex> 
+                  </template>                                                     
+
+                  <v-flex xs6 sm6 md6>                    
+                  </v-flex>
+                  <v-flex xs6 sm6 md6>
+                    <v-text-field
+                      v-model="CooTotal"
+                      label="총 발생비용"
+                      placeholder="Placeholder"
+                      disabled
+                    ></v-text-field>
+                  </v-flex>    
+
+                  <template v-if='showShipment'>
+                    <v-flex xs6 sm6 md6>
+                      <v-text-field
+                        v-model="shipmentAmount"
+                        label="출하량"
+                        placeholder="Placeholder"
+                      ></v-text-field>
+                    </v-flex>
+                    <v-flex xs6 sm6 md6>
+                      <v-text-field
+                        v-model="shipmentDetail"
+                        label="출하량 상세"
+                        placeholder="Placeholder"
+                      ></v-text-field>
+                    </v-flex>
+                  </template>
+
+                  <template v-if='showIncome'>
+                    <v-flex xs6 sm6 md6>
+                      <v-text-field
+                        v-model="incomeAmount"
+                        label="수입량"
+                        placeholder="Placeholder"
+                      ></v-text-field>
+                    </v-flex>
+                    <v-flex xs6 sm6 md6>
+                      <v-text-field
+                        v-model="incomeDetail"
+                        label="수입량 상세"
+                        placeholder="Placeholder"
+                      ></v-text-field>
+                    </v-flex>
+                  </template>
+
+                  <template v-if='showUsage'>
+                    <v-flex xs12>
+                      <div slot="label">
+                        사용량 <small>(optional)</small>
+                        <v-btn outline color="black" flat @click.native="addUsageRow">추가</v-btn>
+                        <v-btn outline color="black" flat @click.native="deleteUsageRow">삭제</v-btn>
+                      </div>
+                    </v-flex>
+
+                    <template v-for="(item, index) in usageItems">
+                      <v-flex xs6 sm6 md6 :key="'C' + index">
+                        <v-select                          
+                          :items="itemNames"
+                          v-model="item.itemName"
+                          :error-messages="errors.collect('item.itemName')"
+                          label="품목명"
+                          data-vv-name="item.itemName"
+                          required                           
+                          hint="품목명 선택"
+                          persistent-hint                                        
+                        ></v-select>
+                      </v-flex>
+                      <v-flex xs6 sm6 md6 :key="'D' + index">
+                        <v-text-field
+                          label="사용량"
+                          v-model="item.usage"
+                        ></v-text-field>
+                      </v-flex>
+                    </template>
+                  </template>                  
+
+                  <template v-if='showOutput'>
+                    <v-flex xs6 sm6 md6>
+                      <v-text-field
+                        v-model="outputAmount"
+                        label="생산량"
+                        placeholder="Placeholder"
+                      ></v-text-field>
+                    </v-flex>
+                    <v-flex xs6 sm6 md6>
+                      <v-text-field
+                        v-model="outputDetail"
+                        label="생산량 상세"
+                        placeholder="Placeholder"
+                      ></v-text-field>
+                    </v-flex>
+                  </template>
+                  
+                  <v-flex xs12 sm12 md12>
+                    <v-textarea
+                      v-model="workContent"
+                      auto-grow
+                      box
+                      color="deep-purple"
+                      label="작업내용"
+                      rows="3"
+                    ></v-textarea>
+                  </v-flex>
+
+                  <v-flex xs12 sm12 md12>
+                    <v-textarea
+                      v-model="remarks"
+                      auto-grow
+                      box
+                      color="deep-purple"
+                      label="특이사항"
+                      rows="3"
+                    ></v-textarea>
+                  </v-flex>
+
+                  <v-flex xs4 sm4 md4>                    
+                    <!-- https://medium.freecodecamp.org/how-to-build-a-flexible-image-uploader-component-using-vue-js-2-0-5ee7fc77516 -->
+                    <image-input v-model="avatar">
+                      <div slot="activator">
+                        <v-avatar size="150px" v-ripple v-if="!avatar" class="grey lighten-3 mb-3">
+                          <span>사진 추가</span>
+                        </v-avatar>
+                        <v-avatar size="150px" v-ripple v-else class="mb-3">
+                          <img :src="avatar.imageURL" alt="avatar">
+                        </v-avatar>
+                      </div>
+                    </image-input>                    
+                  </v-flex>
+
+                  <v-flex xs4 sm4 md4>                    
+                    <!-- https://medium.freecodecamp.org/how-to-build-a-flexible-image-uploader-component-using-vue-js-2-0-5ee7fc77516 -->
+                    <image-input v-model="avatar2">
+                      <div slot="activator">
+                        <v-avatar size="150px" v-ripple v-if="!avatar2" class="grey lighten-3 mb-3">
+                          <span>사진 추가</span>
+                        </v-avatar>
+                        <v-avatar size="150px" v-ripple v-else class="mb-3">
+                          <img :src="avatar2.imageURL" alt="avatar2">
+                        </v-avatar>
+                      </div>
+                    </image-input>                    
+                  </v-flex>
+
+                  <v-flex xs4 sm4 md4>                    
+                    <!-- https://medium.freecodecamp.org/how-to-build-a-flexible-image-uploader-component-using-vue-js-2-0-5ee7fc77516 -->
+                    <image-input v-model="avatar3">
+                      <div slot="activator">
+                        <v-avatar size="150px" v-ripple v-if="!avatar3" class="grey lighten-3 mb-3">
+                          <span>사진 추가</span>
+                        </v-avatar>
+                        <v-avatar size="150px" v-ripple v-else class="mb-3">
+                          <img :src="avatar3.imageURL" alt="avatar3">
+                        </v-avatar>
+                      </div>
+                    </image-input>                    
+                  </v-flex>
+                  
+                </v-layout>
+              </v-container>
+              <small>*필수 입력 사항입니다</small>
+            </v-card-text>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn outline color="black" flat @click.native="dialog = false">취소</v-btn>
+              <!-- <v-btn color="blue darken-1" flat @click.native="dialog = false" :disabled="!valid">작성</v-btn> -->
+              <v-btn outline color="black" flat @click.native="save">작성</v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-tab-item>
+        <!-- 작 업 일 지 -->
+
+        <!-- 자 재 일 지 -->
+        <v-tab-item            
+            :key="2"
+          >
+          <v-card color="white">
+            <v-card-title>
+              <span class="headline" style="color:black">{{Item_User_Profile}}</span> <v-btn outline color="black" flat @click.native="dialog = false">닫기</v-btn>
+            </v-card-title>
+            <v-card-text>
+              <v-container grid-list-md>
+                <v-layout wrap>
+
+                  <v-flex xs6 sm6 md3>
+                    <v-select
+                      :items="iLandItems"
+                      v-model="iSelectLand"
+                      :error-messages="errors.collect('iSelectLand')"
+                      label="농장명"
+                      data-vv-name="iSelectLand"
+                      required
+                      v-on:change="onChangeILand"
+                      item-text="name"
+                      item-value="_id"                      
+                    ></v-select>
+                  </v-flex>                                  
+
+                  <v-flex xs6 sm6 md3>
+                    <v-select
+                      :items="items"
+                      v-model="selectItem"
+                      :error-messages="errors.collect('selectItem')"
+                      label="구입품목"
+                      data-vv-name="selectItem"
+                      required
+                      v-on:change="onChangeItem"
+                      item-text="text"
+                      item-value="wCode"   
+                      hint="작업분류와 매칭되는 구입품목 선택"
+                      persistent-hint                                        
+                    ></v-select>
+                  </v-flex>
+                  <v-flex xs6 sm6 md3>
+                    <!-- <v-btn outline color="black" @click.native="addItem">구입품목 추가</v-btn> -->
+                  </v-flex>
+                  <v-flex xs12 sm6 md6>
+                    
+                  </v-flex> 
+                  
+                  <v-flex xs12>
+                    <div slot="label">
+                      품목상세 <small>(optional)</small>
+                      <v-btn outline color="black" flat @click.native="addItemRow">추가</v-btn>
+                      <v-btn outline color="black" flat @click.native="deleteItemRow">삭제</v-btn>
+                    </div>
+                  </v-flex>
+                  
+                  <template v-for="(item, index) in itemItems">
+                    <v-flex xs4 sm4 md4 :key="'C' + index">
+                      <v-text-field
+                        label="품목명"                      
+                        v-model="item.itemName"
+                      ></v-text-field>
+                    </v-flex>
+                    <v-flex xs4 sm4 md4 :key="'D' + index">
+                      <v-text-field
+                        label="수량"
+                        v-model="item.itemAmount"                        
+                      ></v-text-field>
+                    </v-flex>
+                    <v-flex xs4 sm4 md4 :key="'E' + index">
+                      <v-text-field
+                        label="가격"
+                        v-model="item.itemPrice"
+                        v-on:change="onChangeItemPrice"
+                      ></v-text-field>
+                    </v-flex>  
+                  </template>                                                     
+
+                  <v-flex xs8 sm8 md8>                    
+                  </v-flex>
+                  <v-flex xs4 sm4 md4>
+                    <v-text-field
+                      v-model="itemPriceTotal"
+                      label="총 가격"
+                      placeholder="Placeholder"
+                      disabled
+                    ></v-text-field>
+                  </v-flex>                      
+                  
+                  <v-flex xs12 sm12 md12>
+                    <v-textarea
+                      v-model="purpose"
+                      auto-grow
+                      box
+                      color="deep-purple"
+                      label="사용목적"
+                      rows="3"
+                    ></v-textarea>
+                  </v-flex>
+                  
+                  <v-flex xs4 sm4 md4>                    
+                    <!-- https://medium.freecodecamp.org/how-to-build-a-flexible-image-uploader-component-using-vue-js-2-0-5ee7fc77516 -->
+                    <image-input v-model="iavatar">
+                      <div slot="activator">
+                        <v-avatar size="150px" v-ripple v-if="!iavatar" class="grey lighten-3 mb-3">
+                          <span>사진 추가</span>
+                        </v-avatar>
+                        <v-avatar size="150px" v-ripple v-else class="mb-3">
+                          <img :src="iavatar.imageURL" alt="avatar">
+                        </v-avatar>
+                      </div>
+                    </image-input>                    
+                  </v-flex>
+
+                  <v-flex xs4 sm4 md4>                    
+                    <!-- https://medium.freecodecamp.org/how-to-build-a-flexible-image-uploader-component-using-vue-js-2-0-5ee7fc77516 -->
+                    <image-input v-model="iavatar2">
+                      <div slot="activator">
+                        <v-avatar size="150px" v-ripple v-if="!iavatar2" class="grey lighten-3 mb-3">
+                          <span>사진 추가</span>
+                        </v-avatar>
+                        <v-avatar size="150px" v-ripple v-else class="mb-3">
+                          <img :src="iavatar2.imageURL" alt="avatar2">
+                        </v-avatar>
+                      </div>
+                    </image-input>                    
+                  </v-flex>
+
+                  <v-flex xs4 sm4 md4>                    
+                    <!-- https://medium.freecodecamp.org/how-to-build-a-flexible-image-uploader-component-using-vue-js-2-0-5ee7fc77516 -->
+                    <image-input v-model="iavatar3">
+                      <div slot="activator">
+                        <v-avatar size="150px" v-ripple v-if="!iavatar3" class="grey lighten-3 mb-3">
+                          <span>사진 추가</span>
+                        </v-avatar>
+                        <v-avatar size="150px" v-ripple v-else class="mb-3">
+                          <img :src="iavatar3.imageURL" alt="avatar3">
+                        </v-avatar>
+                      </div>
+                    </image-input>                    
+                  </v-flex>
+                  
+                </v-layout>
+              </v-container>
+              <small>*필수 입력 사항입니다</small>
+            </v-card-text>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn outline color="black" flat @click.native="dialog = false">취소</v-btn>
+              <!-- <v-btn color="blue darken-1" flat @click.native="dialog = false" :disabled="!valid">작성</v-btn> -->
+              <v-btn outline color="black" flat @click.native="itemSave">작성</v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-tab-item>
+        <!-- 자 재 일 지 -->
+
+      </v-tabs>
+
     </v-dialog>
   </v-layout>
 </template>
@@ -163,17 +529,82 @@
 <script>
 import {bus} from '../main'
 import LandService from '@/services/LandService'
-import ScService from '@/services/ScService'
+import DcService from '@/services/DcService'
+// import ScService from '@/services/ScService'
 import WcService from '@/services/WcService'
 import JournalService from '@/services/JournalService'
 import WeatherService from '@/services/WeatherService'
-var async = require('async')  // https://caolan.github.io/async/
+import ItemService from '@/services/ItemService'
+import WcDataService from '@/services/WcDataService'
+import ImageInput from './ImageInput.vue'
+// var async = require('async')  // https://caolan.github.io/async/
 export default {
   $_veeValidate: {
     validator: 'new'
   },
   data () {
     return {
+      iSelectLand: '',
+      iLandItems: [],
+      //
+      selectedItem: '',
+      iavatar3: null,
+      iavatar2: null,
+      iavatar: null,
+      purpose: '',
+      itemPriceTotal: 0,
+      itemItems: [
+        {
+          itemName: '',
+          itemAmount: '',
+          itemPrice: ''
+        }
+      ],
+      selectItem: '',
+      items: [],
+      //
+      outputDetail: '',
+      outputAmount: '',
+      incomeDetail: '',
+      incomeAmount: '',
+      shipmentDetail: '',
+      shipmentAmount: '',
+      CooTotal: 0,
+      workTime: '',
+      workerNumber: '',
+      minREH: '',
+      maxREH: '',
+      avgREH: '',
+      minT1H: '',
+      maxT1H: '',
+      avgT1H: '',
+      RN1: '',
+      skyStatus: '',
+      selectedWorkTypeText: '',
+      itemNames: [],
+      showOutput: false,
+      showUsage: false,
+      showIncome: false,
+      showShipment: false,
+      sCode: '',
+      usageItems: [
+        {
+          itemName: '',
+          usage: ''
+        }
+      ],
+      cooItems: [
+        {
+          category: '',
+          cost: ''
+        }
+      ],
+      avatar3: null,
+      avatar2: null,
+      avatar: null,
+      saving: false,
+      saved: false,
+      active: null,
       weatherData: [],
       convertedXY: {},
       newEvent: {},
@@ -186,25 +617,20 @@ export default {
       selectedLandId: '',
       selectedCropCode: '',
       dialog: false,
+      Item_User_Profile: '',
       User_Profile: '',
       menu2: false,
       menu3: false,
       e6: null,
       e7: null,
       landItems: [],
-      userId: '5af4fa281a1ee4261039149f',
+      userId: '',
       cropName: '',
       workType: [],
       selectLand: null,
       selectWorkType: null,
       dictionary: {
         custom: {
-          e7: {
-            required: '작업종료 시간을 입력해주세요'
-          },
-          e6: {
-            required: '작업시작 시간을 입력해주세요'
-          },
           selectLand: {
             required: '농장명을 선택해주세요'
           },
@@ -215,12 +641,33 @@ export default {
       }
     }
   },
+  watch: {
+    avatar: {
+      handler: function () {
+        this.saved = false
+        // console.log(this.avatar.uploadedFilename)
+      },
+      deep: true
+    }
+    /*
+    cooItems: {
+      handler: function (val, oldVal) {
+        console.log(val)
+        for (var i = 0; i < val.length; i++) {
+          val[i].cost = val[i].cost.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+        }
+      },
+      deep: true
+    }
+    */
+  },
   mounted () {
     this.$validator.localize('ko', this.dictionary)
     var vm = this
     bus.$on('dialog', function (value) {
       Object.assign(vm.$data, vm.$options.data.call(vm))  // initialize this data
-      vm.User_Profile = '영농일지 작성 - ' + value
+      vm.User_Profile = '작업일지 작성 - ' + value
+      vm.Item_User_Profile = '자재관리 작성 - ' + value
       vm.selectLand = ''
       vm.cropName = ''
       vm.selectWorkType = ''
@@ -229,20 +676,66 @@ export default {
       vm.e7 = null
       vm.remarks = ''
       vm.dialog = true
-      vm.getLocation()
+      vm.userId = this.$session.get('userId')
+      // vm.getLocation()
       vm.getLands()
+      vm.getWeatherCrawlerDataAgg(value, value)
+      vm.getItems()
+    })
+    bus.$on('fromAddWorkTypeModal', function (value) {
+      if (value.from === 'work') {
+        vm.onChangeLand(vm.selectedLandId)
+        vm.selectWorkType = value.addedWTC
+      } else {
+        vm.onChangeILand(vm.selectedLandId)
+        vm.selectItem = value.addedWTC
+      }
     })
   },
   created () {
-    this.getLocation()
+    this.userId = this.$session.get('userId')
+    // this.getLocation()
     this.getLands()
   },
+  components: {
+    ImageInput: ImageInput
+  },
   methods: {
+    async getItems () {
+      const response = await WcService.fetchWorkCodesAsItem()
+      this.items = response.data
+    },
+    async getWeatherCrawlerDataAgg (sDate, eDate) {
+      const response = await WcDataService.fetchWcDataAgg({
+        startDate: sDate,
+        endDate: eDate
+      })
+      if (response.data.length >= 1) {
+        this.skyStatus = response.data[0].sky
+        this.RN1 = response.data[0].rn1
+        this.avgT1H = Math.round(response.data[0].t1hAvg) + '℃'
+        this.maxT1H = response.data[0].t1hMax + '℃'
+        this.minT1H = response.data[0].t1hMin + '℃'
+        this.avgREH = Math.round(response.data[0].rehAvg) + '%'
+        this.maxREH = response.data[0].rehMax + '%'
+        this.minREH = response.data[0].rehMin + '%'
+      } else {
+        this.skyStatus = 'No data'
+        this.RN1 = 'No data'
+        this.avgT1H = 'No data'
+        this.maxT1H = 'No data'
+        this.minT1H = 'No data'
+        this.avgREH = 'No data'
+        this.maxREH = 'No data'
+        this.minREH = 'No data'
+      }
+    },
     async getLands () {
       const response = await LandService.fetchLands({
         userId: this.userId
       })
       this.landItems = response.data.lands
+      this.iLandItems = response.data.lands
     },
     async getCropCodeByLandId (landId) {
       const response = await LandService.fetchCropCodeByLandId({
@@ -252,27 +745,33 @@ export default {
       this.getCropNameByCropCode(this.selectedCropCode)
       this.getWorkTypeByCropCode(this.selectedCropCode)
     },
+    async getCropCodeByILandId (landId) {
+      const response = await LandService.fetchCropCodeByLandId({
+        landId: landId
+      })
+      this.selectedCropCode = response.data[0].cropCode
+      this.getIWorkTypeByCropCode(this.selectedCropCode)
+    },
     async getCropNameByCropCode (cropCode) {
-      const response = await ScService.fetchCropNameByCropCode({
+      const response = await DcService.fetchCropNameByCropCode({
         cropCode: cropCode
       })
       this.cropName = response.data[0].text
+      this.sCode = response.data[0].sCode
     },
     async getWorkTypeByCropCode (cropCode) {
       const response = await WcService.fetchTextByCropCode({
         cropCode: cropCode
       })
       this.workType = response.data
+      this.workType.push({text: '새 작업추가'})
     },
-    async createNewJournal () {
-      async.series([this.task1, this.task2], function (err, results) {
-        if (err) {
-          console.log('error : ' + err)
-        } else {
-          console.log('task finish')
-          console.log(results)
-        }
+    async getIWorkTypeByCropCode (cropCode) {
+      const response = await WcService.fetchTextByCropCode({
+        cropCode: cropCode
       })
+      this.items = response.data
+      this.items.push({text: '새 작업추가'})
     },
     async fetchNameByLandId (landId) {
       const response = await LandService.fetchNameByLandId({
@@ -281,16 +780,57 @@ export default {
       this.newEvent.title = response.data[0].name
     },
     async fetchCropNameByCropCode (cropCode) {
-      const response = await ScService.fetchCropNameByCropCode({
+      const response = await DcService.fetchCropNameByCropCode({
         cropCode: cropCode
       })
       this.newEvent.title += ' - ' + response.data[0].text
     },
     async fetchTextByCode (workCode) {
-      const response = await WcService.fetchTextByCode({
+      const response = await WcService.fetchOneTextByCcode({
         code: workCode
       })
-      this.newEvent.title += '\n' + response.data[0].text + ' - ' + this.workContent
+      this.newEvent.title += ' - ' + response.data[0].text
+    },
+    async fetchTextByCcode (workCode) {
+      const response = await WcService.fetchOneTextByCcode({
+        code: workCode
+      })
+      this.selectedWorkTypeText = response.data[0].text
+      if (this.selectedWorkTypeText === '출하') {
+        this.showShipment = true
+        this.showIncome = true
+        this.showUsage = false
+        this.usageItems = [{
+          itemName: '',
+          usage: ''
+        }]
+        this.showOutput = false
+      } else if (this.selectedWorkTypeText === '비료' || this.selectedWorkTypeText === '농약' || this.selectedWorkTypeText === '사료') {
+        this.showShipment = false
+        this.showIncome = false
+        this.showUsage = true
+        this.showOutput = false
+      } else if (this.selectedWorkTypeText === '생산') {
+        this.showShipment = false
+        this.showIncome = false
+        this.showUsage = false
+        this.usageItems = [{
+          itemName: '',
+          usage: ''
+        }]
+        this.showOutput = true
+      }
+    },
+    async fetchItemsByWcode (workCode) {
+      const response = await ItemService.fetchItemsByWcode({
+        userId: this.userId,
+        wCode: workCode
+      })
+      for (var i = 0; i < response.data.length; i++) {
+        for (var j = 0; j < response.data[i].itemDetail.length; j++) {
+          this.itemNames.push(response.data[i].itemDetail[j].itemName)
+        }
+      }
     },
     async fetchWeatherData (baseDate, baseTime, callback, weatherDataSize) {
       const response = await WeatherService.fetchWeatherData({
@@ -330,6 +870,133 @@ export default {
         callback(null, 'result1')
       }
     },
+    async createNewItem () {
+      // 사진 데이터
+      var pictureAData = ''
+      var pictureBData = ''
+      var pictureCData = ''
+
+      if (this.iavatar) {
+        pictureAData = this.iavatar.uploadedFilename
+      }
+
+      if (this.iavatar2) {
+        pictureBData = this.iavatar2.uploadedFilename
+      }
+
+      if (this.iavatar3) {
+        pictureCData = this.iavatar3.uploadedFilename
+      }
+
+      const response = await ItemService.createItem({
+        userId: this.userId,
+        date: this.User_Profile.substring(10, 20),
+        item: this.selectedItem,
+        itemDetail: this.itemItems,
+        purpose: this.purpose,
+        pictureA: pictureAData,
+        pictureB: pictureBData,
+        pictureC: pictureCData
+      })
+      // console.log(response.data)
+      this.newEvent.itemId = response.data.result._id
+      var workTypeVal = ''
+      const response2 = await WcService.fetchOneTextByCcode({
+        code: response.data.result.item
+      })
+      workTypeVal = response2.data[0].text
+      this.newEvent.title = workTypeVal + ' 구입'
+      this.newEvent.start = this.User_Profile.substring(10, 20)
+      this.newEvent.end = this.User_Profile.substring(10, 20)
+      this.newEvent.color = 'orange'
+    },
+    async createNewJournal () {
+      /*
+      async.series([this.task1, this.task2], function (err, results) {
+        if (err) {
+          console.log('error : ' + err)
+        } else {
+          console.log('task finish')
+          console.log(results)
+        }
+      })
+      */
+      // 날씨 데이터
+      var weatherData = {'minT1H': this.minT1H, 'maxT1H': this.maxT1H, 'avgT1H': this.avgT1H, 'minREH': this.minREH, 'maxREH': this.maxREH, 'avgREH': this.avgREH, 'avgRN1': this.RN1, 'sky': this.skyStatus}
+
+      // 발생비용 데이터
+      var cooDatas = []
+      for (var i = 0; i < this.cooItems.length; i++) {
+        var tempCooData = {}
+        tempCooData.category = this.cooItems[i].category
+        tempCooData.cost = this.cooItems[i].cost
+        cooDatas.push(tempCooData)
+      }
+
+      // 출하량 데이터
+      var shipmentData = {'amount': this.shipmentAmount, 'detail': this.shipmentDetail}
+
+      // 수입 데이터
+      var incomeData = {'amount': this.incomeAmount, 'detail': this.incomeDetail}
+
+      // 사용량 데이터
+      var usageDatas = []
+      for (var j = 0; j < this.usageItems.length; j++) {
+        var tempUsageData = {}
+        tempUsageData.itemName = this.usageItems[j].itemName
+        tempUsageData.usage = this.usageItems[j].usage
+        usageDatas.push(tempUsageData)
+      }
+
+      // 생산량 데이터
+      var outputData = {'amount': this.outputAmount, 'detail': this.outputDetail}
+
+      // 사진 데이터
+      var pictureAData = ''
+      var pictureBData = ''
+      var pictureCData = ''
+
+      if (this.avatar) {
+        pictureAData = this.avatar.uploadedFilename
+      }
+
+      if (this.avatar2) {
+        pictureBData = this.avatar2.uploadedFilename
+      }
+
+      if (this.avatar3) {
+        pictureCData = this.avatar3.uploadedFilename
+      }
+
+      const response = await JournalService.createJournal({
+        userId: this.userId,
+        date: this.User_Profile.substring(10, 20),
+        landId: this.selectedLandId,
+        workCode: this.selectedWorkTypeCode,
+        workContent: this.workContent,
+        workTime: this.workTime,
+        workerNumber: this.workerNumber,
+        weather: weatherData,
+        remarks: this.remarks,
+        coo: cooDatas,
+        shipment: shipmentData,
+        income: incomeData,
+        usage: usageDatas,
+        output: outputData,
+        pictureA: pictureAData,
+        pictureB: pictureBData,
+        pictureC: pictureCData
+      })
+      // console.log(response.data)
+
+      this.newEvent.journalId = response.data.result._id
+      this.fetchNameByLandId(this.selectedLandId)
+      this.fetchCropNameByCropCode(this.selectedCropCode)
+      this.fetchTextByCode(this.selectedWorkTypeCode)
+      this.newEvent.start = this.User_Profile.substring(10, 20)
+      this.newEvent.end = this.User_Profile.substring(10, 20)
+    },
+    /*
     task1: function (callback) {
       this.getWeatherData(this.User_Profile.substring(10, 20).replace(/-/gi, ''),
                           this.selectedWSTime.substring(0, 2).replace(/(^0+)/, ''),
@@ -358,6 +1025,7 @@ export default {
       this.fetchCropNameByCropCode(this.selectedWorkTypeCode.substring(0, 11))
       this.fetchTextByCode(this.selectedWorkTypeCode)
     },
+    */
     getWeatherData: function (baseDate, baseSTime, baseETime, callback) {
       // console.log('baseDate:' + baseDate + ', baseSTime:' + baseSTime + ', baseETime:' + baseETime)
       for (var i = baseSTime * 1; i < baseETime * 1; i++) {
@@ -381,6 +1049,7 @@ export default {
       this.getLandsByUserId()
     },
     async getLandsByUserId () {
+      /*
       var vm = this
       const response = await LandService.fetchLands({
         userId: this.userId
@@ -397,19 +1066,8 @@ export default {
           vm.convertedXY = vm.dfs_xy_conv('toXY', response.json.results[0].geometry.location.lat, response.json.results[0].geometry.location.lng)
         }
       })
+      */
     },
-    /* OLD VERSION WITH "navigator.geolocation"
-    getLocation: function () {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(this.showPosition)
-      } else {
-        console.log('Geolocation is not supported by this browser.')
-      }
-    },
-    showPosition: function (position) {
-      this.convertedXY = this.dfs_xy_conv('toXY', position.coords.latitude, position.coords.longitude)
-    },
-    */
     dfs_xy_conv: function (code, v1, v2) { // http://fronteer.kr/service/kmaxy - 37.579871128849334, 126.98935225645432 => 60, 127
       var RE = 6371.00877 // 지구 반경(km)
       var GRID = 5.0 // 격자 간격(km)
@@ -475,12 +1133,47 @@ export default {
       }
       return rs
     },
+    onChangeItemPrice: function (event) {
+      this.itemPriceTotal = Number('0')
+      for (var i = 0; i < this.itemItems.length; i++) {
+        this.itemPriceTotal = Number(this.itemPriceTotal)
+        this.itemPriceTotal += Number(this.itemItems[i].itemPrice)
+      }
+      this.itemPriceTotal += ''
+      this.itemPriceTotal = this.itemPriceTotal.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+    },
+    onChangeItemCost: function (event) {
+      this.CooTotal = Number('0')
+      for (var i = 0; i < this.cooItems.length; i++) {
+        this.CooTotal = Number(this.CooTotal)
+        this.CooTotal += Number(this.cooItems[i].cost)
+      }
+      this.CooTotal += ''
+      this.CooTotal = this.CooTotal.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+    },
+    onChangeILand: function (event) {
+      this.getCropCodeByILandId(this.iSelectLand)
+    },
     onChangeLand: function (event) {
       this.selectedLandId = event
       this.getCropCodeByLandId(this.selectedLandId)
     },
+    onChangeItem: function (event) {
+      this.selectedItem = event
+      if (event === '새 작업추가') {
+        this.addWorkType(1)
+      } else {
+      }
+    },
     onChangeWorkType: function (event) {
-      this.selectedWorkTypeCode = event.bCode + event.mCode + event.sCode + event.wCode
+      // console.log(event)
+      this.selectedWorkTypeCode = event
+      if (event === '새 작업추가') {
+        this.addWorkType(0)
+      } else {
+        this.fetchTextByCcode(this.selectedWorkTypeCode)
+        this.fetchItemsByWcode(this.selectedWorkTypeCode)
+      }
     },
     onChangeWSTime: function (event) {
       this.newEvent.start = this.User_Profile.substring(10, 20) + ' ' + event
@@ -497,6 +1190,7 @@ export default {
     save () {
       this.$validator.validateAll().then((result) => {
         if (!result) {
+          console.log(result)
           return
         }
         this.createNewJournal()
@@ -513,8 +1207,67 @@ export default {
         // this.dialog = false
       }).catch(() => {})
     },
-    addWorkType () {
+    itemSave () {
+      // console.log('item saved!')
+      this.createNewItem()
+      this.$swal({
+        type: 'success',
+        title: '자재를 등록하였습니다',
+        showConfirmButton: false,
+        timer: 777
+      }).then((result) => {
+        bus.$emit('toJournalForNew', this.newEvent)
+        this.dialog = false
+      })
+    },
+    addWorkType (workOrItem) {
+      var paramForAWT = {}
+      if (workOrItem === 0) {
+        paramForAWT.from = 'work' // 작업일지 작성시
+      } else {
+        paramForAWT.from = 'item' // 자재관리 작성시
+      }
+      paramForAWT.cropCode = this.selectedCropCode
+      bus.$emit('dialogForAddWorkType', paramForAWT)
+    },
+    addCooRow () {
+      this.cooItems.push({
+        category: '',
+        cost: ''
+      })
+    },
+    deleteCooRow () {
+      if (this.cooItems.length > 1) {
+        this.cooItems.splice(this.cooItems.length - 1, 1)
+        this.onChangeItemCost()
+      }
+    },
+    addUsageRow () {
+      this.usageItems.push({
+        itemName: '',
+        usage: ''
+      })
+    },
+    deleteUsageRow () {
+      if (this.usageItems.length > 1) {
+        this.usageItems.splice(this.usageItems.length - 1, 1)
+      }
+    },
+    addItem () {
       bus.$emit('dialogForAddWorkType', 'test')
+    },
+    addItemRow () {
+      this.itemItems.push({
+        itemName: '',
+        itemAmount: '',
+        itemPrice: ''
+      })
+    },
+    deleteItemRow () {
+      if (this.itemItems.length > 1) {
+        this.itemItems.splice(this.itemItems.length - 1, 1)
+        this.onChangeItemPrice()
+      }
     }
   }
 }

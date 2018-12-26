@@ -13,6 +13,10 @@ export default {
     return Api().get('journals/searchWorktime/' + params.userId + '/' + params.startDate + '/' + params.endDate + '/' + params.landId, params)
   },
 
+  fetchJournalsBy3 (params) {
+    return Api().get('journals/searchBy3/' + params.startDate + '/' + params.endDate + '/' + params.searchWord, params)
+  },
+
   fetchJournalsBy4 (params) {
     return Api().get('journals/searchBy4/' + params.startDate + '/' + params.endDate + '/' + params.workType + '/' + params.workContent, params)
   },
@@ -43,5 +47,10 @@ export default {
 
   createJournals (params) {
     return Api().post('journals', params)
+  },
+
+  // NEW
+  createJournal (params) {
+    return Api().post('journal', params)
   }
 }

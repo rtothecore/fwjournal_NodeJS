@@ -1,8 +1,8 @@
 <template>
-<div style="position:absolute">
+<div style="position:absolute height:900px;">
     <!-- <div id="calendar" style="height:900px; width:900px; float:left;"> -->
     <div id="calendar" v-bind:style="{ height: calendarHeight, width: calendarWidth, float: 'left'}">
-      <div v-if="$mq === 'laptop' || $mq === 'desktop'">
+      <div>
         <v-layout row ma-2>
           <v-flex xs4 order-md1 order-xs1>
             <v-card color="white" class="black--text">
@@ -12,20 +12,22 @@
                       <div>
                         <div class="subheading">오늘</div>
                         <div class="title">{{ todayT1h }}</div>
-                        <div class="caption">{{ todayPm10 }}</div>
                       </div>
                     </v-flex>
                     <v-flex xs5>
-                      <v-card-media
+                      <v-img
                         :src="todaySkyImg"
                         height="50px"
                         contain
-                      ></v-card-media>
+                      ></v-img>
                     </v-flex>
                   </v-layout>
 
                   <v-layout>
-                    <div class="body-2">{{ weatherLoc }}</div>
+                    <div>
+                    <div class="caption">{{ todayPm10 }}</div>                    
+                    <div class="caption">{{ weatherLoc }}</div>
+                    </div>
                   </v-layout>
 
                 </v-container>
@@ -42,11 +44,11 @@
                       </div>
                     </v-flex>
                     <v-flex xs5>
-                      <v-card-media
+                      <v-img
                         :src="tomAmSkyImg"
                         height="100px"
                         contain
-                      ></v-card-media>
+                      ></v-img>
                     </v-flex>
                   </v-layout>
                 </v-container>
@@ -64,11 +66,11 @@
                       </div>
                     </v-flex>
                     <v-flex xs5>
-                      <v-card-media
+                      <v-img
                         :src="tomPmSkyImg"
                         height="100px"
                         contain
-                      ></v-card-media>
+                      ></v-img>
                     </v-flex>
                   </v-layout>
                 </v-container>
@@ -86,11 +88,11 @@
                       </div>
                     </v-flex>
                     <v-flex xs5>
-                      <v-card-media
+                      <v-img
                         :src="afTomAmSkyImg"
                         height="100px"
                         contain
-                      ></v-card-media>
+                      ></v-img>
                     </v-flex>
                   </v-layout>
                 </v-container>
@@ -108,11 +110,11 @@
                       </div>
                     </v-flex>
                     <v-flex xs5>
-                      <v-card-media
+                      <v-img
                         :src="afTomPmSkyImg"
                         height="100px"
                         contain
-                      ></v-card-media>
+                      ></v-img>
                     </v-flex>
                   </v-layout>
                 </v-container>
@@ -120,154 +122,35 @@
           </v-flex>
         </v-layout>
       </div>
-      <!-- For Mobile -->
-      <div v-else>  
-        <v-layout row ma-1>
-          <v-flex xs4 order-md1 order-xs1>
-            <v-card color="white" class="black--text">
-                <v-container fluid grid-list-lg>
-                  <v-layout row>
-                    <v-flex xs7>
-                      <div>
-                        <div class="subheading">오늘</div>
-                        <div class="title">{{ todayT1h }}</div>
-                        <div>
-                          <v-card-media
-                            :src="todaySkyImg"
-                            height="35px"
-                            contain
-                          ></v-card-media>
-                        </div>
-                        <div class="caption">{{ todayPm10 }}</div>
-                        <div class="body-2">{{ weatherLoc }}</div>
-                      </div>
-                    </v-flex>
-                  </v-layout>
-                </v-container>
-              </v-card>
-          </v-flex>
-
-          <v-flex xs4 order-md2 order-xs2>
-            <v-card color="white" class="black--text">
-                <v-container fluid grid-list-lg>
-                  <v-layout row>
-                    <v-flex xs7>
-                      <div>
-                        <div class="subheading">내일</div>
-                        <div class="body-1"><span style="white-space:nowrap">오전&nbsp;<img :src="tomAmSkyImg" height="30" width="30"/></span></div>
-                        <div class="title">{{ tomorrowAmT1h }}</div>
-
-                        <div class="body-1"><span style="white-space:nowrap">오후&nbsp;<img :src="tomPmSkyImg" height="30" width="30"/></span></div>
-                        <div class="title">{{ tomorrowPmT1h }}</div>
-                      </div>
-                    </v-flex>
-                  </v-layout>
-                </v-container>
-              </v-card>
-          </v-flex>
-
-          <v-flex xs4 order-md3 order-xs3>
-            <v-card color="white" class="black--text">
-                <v-container fluid grid-list-lg>
-                  <v-layout row>
-                    <v-flex xs7>
-                      <div>
-                        <div class="subheading">모레</div>
-                        <div class="body-1"><span style="white-space:nowrap">오전&nbsp;<img :src="afTomAmSkyImg" height="30" width="30"/></span></div>
-                        <div class="title">{{ afterTomorrowAmT1h }}</div>
-
-                        <div class="body-1"><span style="white-space:nowrap">오후&nbsp;<img :src="afTomAmSkyImg" height="30" width="30"/></span></div>
-                        <div class="title">{{ afterTomorrowPmT1h }}</div>
-                      </div>
-                    </v-flex>
-                  </v-layout>
-                </v-container>
-              </v-card>
-          </v-flex>
-        </v-layout>
-      </div>
-
+      
+      <!-- <div style="height:100%; margin-bottom:400px; background:red; overflow:auto;"> -->
       <div>
-	    <full-calendar :config="config" :events="events" @event-selected="eventSelected"/>
-      <!-- <br/><br/><br/> -->
-      <journalModal></journalModal>
-      <journalModalForEdit></journalModalForEdit>
-      <addWorkTypeModal></addWorkTypeModal>
-      </div>
-      <!-- FOR MOBILE -->
-    <div v-if="$mq === 'mobile'">  
-        
-        <v-layout row ma-1 justify-center>
-          <v-card>
-            <v-card-title>
-              <v-spacer></v-spacer><b class="headline">- 품목별 가격정보 -</b>
-              <v-spacer></v-spacer>
-            </v-card-title>
-            <v-data-table
-              :headers="headersForMobile"
-              :items="crops"
-              :rows-per-page-items=[5]
-              class="elevation-1"
-            >
-              <template slot="headerCell" slot-scope="props">
-                <v-tooltip bottom>
-                  <span slot="activator">
-                    {{ props.header.text }}
-                  </span>
-                  <span>
-                    {{ props.header.text }}
-                  </span>
-                </v-tooltip>
-              </template>
-              <template slot="items" slot-scope="props">
-                <td class="text-xs-left">{{ props.item.PRDLST_NM }}</td>
-                <td class="text-xs-left">{{ props.item.PBLMNG_WHSAL_MRKT_NM }}</td>
-                <td class="text-xs-left">{{ props.item.AVRG_AMT }}</td>
-              </template>
-            </v-data-table>
-          </v-card>
-        </v-layout>
-          
-        <v-layout row ma-1 justify-center>
-          <v-card>
-            <v-card-title>
-                <v-spacer></v-spacer><b class="headline">- 작업 예측 -</b>
-                <v-spacer></v-spacer>
-              </v-card-title>
-            <v-data-table
-              :headers="headersForPredictMobile"
-              :items="journals"
-              :rows-per-page-items=[5]
-              class="elevation-1"
-            >
-              <template slot="headerCell" slot-scope="props">
-                <v-tooltip bottom>
-                  <span slot="activator">
-                    {{ props.header.text }}
-                  </span>
-                  <span>
-                    {{ props.header.text }}
-                  </span>
-                </v-tooltip>
-              </template>
-              <template slot="items" slot-scope="props">
-                <td class="text-xs-left">{{ props.item.cropName }}</td>
-                <td class="text-xs-left">{{ props.item.date }}</td>
-                <td class="text-xs-left">{{ props.item.workCode }}</td>
-              </template>
-            </v-data-table>
-          </v-card>
-        </v-layout>
-      </div>
-
+        <full-calendar :config="config" :events="events" @event-selected="eventSelected"/>
+        <!-- <br/><br/><br/> -->
+        <journalModal></journalModal>
+        <journalModalForEdit></journalModalForEdit>
+        <addWorkTypeModal></addWorkTypeModal>
+      </div>            
     </div>
 
-    <div style="float: right; display: inline; width: 50%" v-if="$mq === 'laptop' || $mq === 'desktop'">
+    <div style="float: right; display: inline; width: 50%">
+
+        <v-toolbar flat color="white" v-if='showMarketPrice'>
+          <v-toolbar-title>판매가격 정보</v-toolbar-title>
+          <v-divider
+            class="mx-2"
+            inset
+            vertical
+          ></v-divider>
+          <v-spacer></v-spacer>          
+        </v-toolbar>
+
         <v-data-table
           :headers="headers"
           :items="crops"
           :rows-per-page-items=[10]
           class="elevation-1"
+          v-if='showMarketPrice'
         >
           <template slot="headerCell" slot-scope="props">
             <v-tooltip bottom>
@@ -290,11 +173,23 @@
           </template>
         </v-data-table>
         <hr/>
+
+        <v-toolbar flat color="white" v-if='showPredictTable'>
+          <v-toolbar-title>농작업일정 예측</v-toolbar-title>
+          <v-divider
+            class="mx-2"
+            inset
+            vertical
+          ></v-divider>
+          <v-spacer></v-spacer>          
+        </v-toolbar>
+
         <v-data-table
           :headers="headersForPredict"
           :items="journals"
           :rows-per-page-items=[10]
           class="elevation-1"
+          v-if='showPredictTable'
         >
           <template slot="headerCell" slot-scope="props">
             <v-tooltip bottom>
@@ -307,11 +202,17 @@
             </v-tooltip>
           </template>
           <template slot="items" slot-scope="props">
-            <td>{{ props.item.cropName }}</td>
+            <td>{{ props.item.landName }}</td>
+            <td>{{ props.item.date }}</td>
+            <td>{{ props.item.workName }}</td>
+            <td>{{ props.item.sky }}</td>
+            <td>{{ props.item.t1h }}</td>
+            <!-- 
             <td class="text-xs-right">{{ props.item.date }}</td>
-            <td class="text-xs-right">{{ props.item.workCode }}</td>
-            <td class="text-xs-right">{{ props.item.workContent }}</td>
-            <td class="text-xs-right">{{ props.item.remarks }}</td>
+            <td class="text-xs-right">{{ props.item.workName }}</td>
+            <td class="text-xs-right">{{ props.item.sky }}</td>
+            <td class="text-xs-right">{{ props.item.t1h }}</td>
+            -->
           </template>
         </v-data-table>
     </div>
@@ -323,14 +224,18 @@
     import {bus} from '../main'
     import JournalService from '@/services/JournalService'
     import WcService from '@/services/WcService'
-    import ScService from '@/services/ScService'
+    // import ScService from '@/services/ScService'
     import LandService from '@/services/LandService'
     import WeatherService from '@/services/WeatherService'
+    import ItemService from '@/services/ItemService'
     import PriceService from '@/services/PriceService'
+    import DcService from '@/services/DcService'
     import proj4 from 'proj4'
     export default {
   data () {
         return {
+          showPredictTable: true,
+          showMarketPrice: true,
           lastYearYM: '',
           calendarWidth: '',
           calendarHeight: '',
@@ -339,15 +244,15 @@
           journals: [],
           headersForPredict: [
             {
-              text: '작물명',
+              text: '농장명',
               align: 'left',
               sortable: false,
-              value: 'cropName'
+              value: 'landName'
             },
-            { text: '작년날짜', value: 'date' },
-            { text: '작업분류', value: 'workCode' },
-            { text: '작업내용', value: 'workContent' },
-            { text: '작년특기사항', value: 'remarks' }
+            { text: '작업일', value: 'date' },
+            { text: '작업명', value: 'workName' },
+            { text: '날씨', value: 'sky' },
+            { text: '온도', value: 't1h' }
           ],
           headersForPredictMobile: [
             {
@@ -397,7 +302,6 @@
           tomorrowPmT1h: '',
           tomorrowAmT1h: '',
           todayT1h: '',
-          // userId: '5af4fa281a1ee4261039149f',
           userId: '',
           events: [
             /*
@@ -450,20 +354,15 @@
         this.userId = this.$session.get('userId')
         // this.$refs.calendar.fireMethod('changeView', view)
         this.getJournal()
+        this.getItem()
         this.getLocation()
         this.getMyCrop()
         this.getLastYearJournal()
         // media query
-        if (this.$mq === 'desktop') {
-          // this.calendarWidth = '900px'
-          this.calendarWidth = '49%'
-          this.calendarHeight = '900px'
-          this.config.aspectRatio = 1.5
-        } else {
-          this.calendarWidth = '400px'
-          this.calendarHeight = '400px'
-          this.config.aspectRatio = 1
-        }
+        // this.calendarWidth = '900px'
+        this.calendarWidth = '49%'
+        this.calendarHeight = '900px'
+        this.config.aspectRatio = 1.5
   },
   mounted () {
         var vm = this
@@ -484,6 +383,7 @@
   },
   methods: {
         eventSelected: function (event, jsEvent, view) {
+          // console.log(event)
           bus.$emit('dialogForEdit', event)
         },
         async getMyCrop () {
@@ -492,7 +392,7 @@
             userId: this.userId
           })
           for (var i = 0; i < response.data.lands.length; i++) {
-            const response2 = await ScService.fetchCropNameByCropCode({
+            const response2 = await DcService.fetchCropNameByCropCode({
               cropCode: response.data.lands[i].cropCode
             })
             this.myCrops.push(response2.data[0].text)
@@ -512,59 +412,104 @@
               }
             }
           }
+          if (this.crops.length === 0) {
+            this.showMarketPrice = false
+          }
         },
         async getJournal () {
           const response = await JournalService.fetchJournals({
             userId: this.userId
           })
+          // console.log(response.data)
           for (var i = 0; i < response.data.length; i++) {
             var tmpEvent = {}
-            const response2 = await WcService.fetchTextByCode({
+
+            // 작업분류명
+            var workTypeVal = ''
+            const response2 = await WcService.fetchOneTextByCcode({
               code: response.data[i].workCode
             })
-            const response3 = await ScService.fetchCropNameByCropCode({
-              cropCode: response.data[i].workCode.substring(0, 11)
+            workTypeVal = response2.data[0].text
+
+            // 작물명
+            var cropNameVal = ''
+            const response3 = await LandService.fetchCropNameByLandId({
+              landId: response.data[i].landId
             })
+            cropNameVal = response3.data[0].text
+
+            // 농장명
+            var landNameVal = ''
             const response4 = await LandService.fetchNameByLandId({
               landId: response.data[i].landId
             })
-            tmpEvent.title = response4.data[0].name + ' - ' + response3.data[0].text + '\n' + response2.data[0].text + ' - ' + response.data[i].workContent
+            landNameVal = response4.data[0].name
+
+            // tmpEvent.title = response4.data[0].name + ' - ' + response3.data[0].text + '\n' + response2.data[0].text + ' - ' + response.data[i].workContent
+            tmpEvent.title = landNameVal + ' - ' + cropNameVal + ' - ' + workTypeVal
+            /*
             var tmpSTime = response.data[i].date + ' ' + response.data[i].workSTime.substring(0, 2) + ':' + response.data[i].workSTime.substring(2, 4)
             var tmpETime = response.data[i].date + ' ' + response.data[i].workETime.substring(0, 2) + ':' + response.data[i].workETime.substring(2, 4)
-            tmpEvent.start = tmpSTime
-            tmpEvent.end = tmpETime
+            */
+            var tmpTime = response.data[i].date
+            tmpEvent.start = tmpTime
+            tmpEvent.end = tmpTime
             tmpEvent.journalId = response.data[i]._id
             this.events.push(tmpEvent)
             tmpEvent.eventIndex = this.events.indexOf(tmpEvent)
             // console.log(this.events.indexOf(tmpEvent))
           }
         },
+        async getItem () {
+          const response = await ItemService.fetchItems({
+            userId: this.userId
+          })
+          for (var i = 0; i < response.data.length; i++) {
+            var tmpEvent = {}
+
+            // 작업분류명
+            var workTypeVal = ''
+            const response2 = await WcService.fetchOneTextByCcode({
+              code: response.data[i].item
+            })
+            workTypeVal = response2.data[0].text
+
+            tmpEvent.title = workTypeVal + ' 구입'
+            var tmpTime = response.data[i].date
+            tmpEvent.start = tmpTime
+            tmpEvent.end = tmpTime
+            // tmpEvent.journalId = response.data[i]._id
+            tmpEvent.itemId = response.data[i]._id
+            tmpEvent.color = 'orange'
+            this.events.push(tmpEvent)
+            tmpEvent.eventIndex = this.events.indexOf(tmpEvent)
+          }
+          // console.log(response.data)
+        },
         async fetchTodayWeather (nx, ny) {
           const response = await WeatherService.fetchTodayWeather({
             nx: nx,
             ny: ny
           })
+          // console.log(response.data)
           for (var i = 0; i < response.data.item.length; i++) {
-            var sky = 'SKY'
+            // var sky = 'SKY'
             var t1h = 'T1H'
             var reh = 'REH'
-            if (sky === response.data.item[i].category) {
+            var pty = 'PTY'
+            if (pty === response.data.item[i].category) {
               switch (response.data.item[i].obsrValue) {
-                case 1 :
-                  // this.todaySky = '맑음'
+                case 0 :  // 없음
                   this.todaySkyImg = require('../assets/sun.png')
                   break
-                case 2 :
-                  // this.todaySky = '구름조금'
-                  this.todaySkyImg = require('../assets/cloud1.png')
+                case 1 :  // 비
+                  this.todaySkyImg = require('../assets/rain.png')
                   break
-                case 3 :
-                  // this.todaySky = '구름많음'
-                  this.todaySkyImg = require('../assets/cloud2.png')
+                case 2 :  // 비,눈
+                  this.todaySkyImg = require('../assets/rain.png')
                   break
-                case 4 :
-                  // this.todaySky = '흐림'
-                  this.todaySkyImg = require('../assets/heu.png')
+                case 3 :  // 눈
+                  this.todaySkyImg = require('../assets/snow.png')
                   break
                 default :
                   break
@@ -611,6 +556,7 @@
               switch (onlyFcstTime[k].fcstValue + '') {
                 case '1' :
                   // this.tt1Sky = '맑음'
+                  console.log('맑음')
                   this.tomAmSkyImg = require('../assets/sun.png')
                   break
                 case '2' :
@@ -785,40 +731,52 @@
           if (response.data.length > 0) {
             var tmpJournals = response.data
             for (var i = 0; i < response.data.length; i++) {
-              const response2 = await ScService.fetchCropNameByCropCode({
-                cropCode: response.data[i].workCode.substring(0, 11)
+              const response2 = await LandService.fetchNameByLandId({
+                landId: response.data[i].landId
               })
-              tmpJournals[i].cropName = response2.data[0].text
+              tmpJournals[i].landName = response2.data[0].name
+              this.weatherLoc = response2.data[0].name
 
-              const response3 = await WcService.fetchTextByCode({
+              const response3 = await WcService.fetchOneTextByCcode({
                 code: response.data[i].workCode
               })
-              tmpJournals[i].workCode = response3.data[0].text
+              tmpJournals[i].workName = response3.data[0].text
+
+              tmpJournals[i].sky = tmpJournals[i].weather.sky
+              tmpJournals[i].t1h = tmpJournals[i].weather.avgT1H
             }
             this.journals = tmpJournals
-          } else {
+          } else {  // 작년 10일이내의 데이터가 없는 경우 작년 해당월의 데이터를 보여줌
             const response4 = await JournalService.fetchJournalsByYMUserId({
               ym: this.lastYearYM,
               userId: this.userId
             })
+            // console.log(response4.data)
             var tmpJournals2 = response4.data
             for (var j = 0; j < response4.data.length; j++) {
-              const response5 = await ScService.fetchCropNameByCropCode({
-                cropCode: response4.data[j].workCode.substring(0, 11)
+              const response5 = await LandService.fetchNameByLandId({
+                landId: response4.data[j].landId
               })
-              tmpJournals2[j].cropName = response5.data[0].text
-              const response6 = await WcService.fetchTextByCode({
+              tmpJournals2[j].landName = response5.data[0].name
+              this.weatherLoc = response5.data[0].name
+
+              const response6 = await WcService.fetchOneTextByCcode({
                 code: response4.data[j].workCode
               })
-              tmpJournals2[j].workCode = response6.data[0].text
+              tmpJournals2[j].workName = response6.data[0].text
+
+              tmpJournals2[j].sky = tmpJournals2[j].weather.sky
+              tmpJournals2[j].t1h = tmpJournals2[j].weather.avgT1H
             }
             this.journals = tmpJournals2
           }
+          if (this.journals === 0) {
+            this.showPredictTable = false
+          }
         },
         getLastYearJournal: function () {
-          var today = moment()
-          // var today = moment('20190628', 'YYYY-MM-DD')
-          // console.log(today)
+          var event = moment().format('YYYY-MM-DD')
+          var today = moment(event, 'YYYY-MM-DD')
           var lastYear = today.subtract(1, 'year')
           var lastYearBefore10 = lastYear.subtract(10, 'day')
           this.startDate = lastYearBefore10.format('YYYY-MM-DD')
@@ -826,7 +784,7 @@
           var lastYearAfter10 = lastYear.add(20, 'day')
           this.endDate = lastYearAfter10.format('YYYY-MM-DD')
           // console.log(this.endDate)
-          this.lastYearYM = lastYear.format('YYYY-MM')
+          this.lastYearYM = moment(event, 'YYYY-MM').subtract(1, 'year').format('YYYY-MM')
           // console.log(this.lastYearYM)
 
           this.getJournalsByDate()
@@ -859,7 +817,7 @@
             address: response.data.lands[0].address
           }, function (err, response) {
             if (!err) {
-              vm.weatherLoc = response.json.results[0].address_components[0].short_name
+              // vm.weatherLoc = response.json.results[0].address_components[0].short_name
 
               var convertedXY = vm.dfs_xy_conv('toXY', response.json.results[0].geometry.location.lat, response.json.results[0].geometry.location.lng)
               vm.fetchTodayWeather(convertedXY.x, convertedXY.y)

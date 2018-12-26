@@ -67,7 +67,7 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn color="blue darken-1" flat @click.native="dialog = false">취소</v-btn>
-          <v-btn color="blue darken-1" flat @click.native="save">추가</v-btn>
+          <v-btn color="blue darken-1" flat @click.native="checkDuplicatedWorkType">추가</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -80,12 +80,20 @@ import BcService from '@/services/BcService'
 import McService from '@/services/McService'
 import ScService from '@/services/ScService'
 import WcService from '@/services/WcService'
+import DcService from '@/services/DcService'
 export default {
   $_veeValidate: {
     validator: 'new'
   },
   data () {
     return {
+      duplicateWorkTypeText: false,
+      fromValue: '',
+      addedWorkTypeCode: '',
+      bcsCode: '',
+      mcsCode: '',
+      scsCode: '',
+      dcsCode: '',
       maxWcs: '',
       bcs: '',
       mcs: '',
@@ -118,13 +126,50 @@ export default {
     this.$validator.localize('ko', this.dictionary)
     var vm = this
     bus.$on('dialogForAddWorkType', function (value) {
+      // console.log(value)
+      vm.fromValue = value.from
+      vm.dcsCode = value.cropCode
       vm.dialog = true
+      vm.bms = ''
+      vm.mcs = ''
+      vm.scs = ''
+      vm.workType = ''
+      vm.getScByDcode()
     })
   },
   created () {
     this.getBCS()
   },
   methods: {
+    async getScByDcode () {
+      const response = await DcService.fetchScsByDcode({
+        dCode: this.dcsCode
+      })
+      this.scsCode = response.data.dcs[0].sCode
+      this.getMcByScode()
+    },
+    async getMcByScode () {
+      const response = await ScService.fetchMcsByScode({
+        sCode: this.scsCode
+      })
+      this.mcsCode = response.data.scs[0].mCode
+      this.getBcByMcode()
+    },
+    async getBcByMcode () {
+      const response = await McService.fetchBcsByMcode({
+        mCode: this.mcsCode
+      })
+      this.bcsCode = response.data.mcs[0].bCode
+
+      // 대, 중, 소분류 자동선택
+      this.getBCS()
+      this.getMCS(this.bcsCode)
+      this.getSCS(this.mcsCode)
+      this.getMaxWCS()
+      this.bcs = this.bcsCode
+      this.mcs = this.mcsCode
+      this.scs = this.scsCode
+    },
     async getBCS () {
       const response = await BcService.fetchBcs({})
       this.bcsItems = response.data.bcs
@@ -135,33 +180,58 @@ export default {
       })
       this.mcsItems = response.data.mcs
     },
-    async getSCS (bCode, mCode) {
-      const response = await ScService.fetchScsByBCodeMCode({
-        bCode: bCode,
+    async getSCS (mCode) {
+      const response = await ScService.fetchSByM({
         mCode: mCode
       })
       this.scsItems = response.data.scs
     },
-    async getMaxWCS (bCode, mCode, sCode) {
-      const response = await WcService.fetchByBCodeMCodeSCode({
-        bCode: bCode,
-        mCode: mCode,
-        sCode: sCode
+    async getMaxWCS () {
+      const response = await WcService.fetchMaxWcs({
       })
-      // console.log(response.data[0].wCode)
       this.maxWcs = response.data[0].wCode
     },
     async addWorkType () {
-      this.maxWcs = (this.maxWcs.replace('W', '') * 1) + 1
+      // this.maxWcs = (this.maxWcs.replace('W', '') * 1) + 1
+      this.maxWcs = (this.maxWcs.substr(1) * 1) + 1
       this.maxWcs = 'W' + this.leadingZeros(this.maxWcs, 3)
       // console.log(this.bcs + ', ' + this.mcs + ', ' + this.scs + ', ' + this.maxWcs + ', ' + this.workType)
-      await WcService.createWc({
+      const response = await WcService.createWc({
         bCode: this.bcs,
         mCode: this.mcs,
         sCode: this.scs,
         wCode: this.maxWcs,
-        text: this.workType
+        text: this.workType,
+        asItem: '0'
       })
+      this.addedWorkTypeCode = response.data.result.wCode
+      // console.log(this.addedWorkTypeCode)
+    },
+    async addWorkTypeForItem () {
+      this.maxWcs = (this.maxWcs.substr(1) * 1) + 1
+      this.maxWcs = 'W' + this.leadingZeros(this.maxWcs, 3)
+      const response = await WcService.createWc({
+        bCode: this.bcs,
+        mCode: this.mcs,
+        sCode: this.scs,
+        wCode: this.maxWcs,
+        text: this.workType,
+        asItem: '1'
+      })
+      this.addedWorkTypeCode = response.data.result.wCode
+    },
+    async checkDuplicatedWorkType () {
+      const response = await WcService.fetchSameWc({
+        workTypeText: this.workType
+      })
+      console.log(response.data)
+      if (response.data.length >= 1) {
+        console.log('true')
+        alert('같은 이름의 분류가 존재합니다')
+      } else {
+        console.log('false')
+        this.save()
+      }
     },
     leadingZeros: function (n, digits) {
       var zero = ''
@@ -179,7 +249,7 @@ export default {
     },
     onChangeMcs: function (event) {
       // console.log(this.bcs + ', ' + event)
-      this.getSCS(this.bcs, event)
+      this.getSCS(event)
     },
     onChangeScs: function (event) {
       // console.log(this.bcs + ', ' + this.mcs + ', ' + event)
@@ -190,14 +260,23 @@ export default {
         if (!result) {
           return
         }
-        this.addWorkType()
+
+        if (this.fromValue === 'work') {
+          this.addWorkType()
+        } else {
+          this.addWorkTypeForItem()
+        }
+
         this.$swal({
           type: 'success',
           title: '작업분류를 추가하였습니다',
           showConfirmButton: false,
           timer: 777
         }).then((result) => {
-          // bus.$emit('toJournalForNew', this.newEvent)
+          var paramForReturn = {}
+          paramForReturn.from = this.fromValue
+          paramForReturn.addedWTC = this.addedWorkTypeCode
+          bus.$emit('fromAddWorkTypeModal', paramForReturn)
           this.dialog = false
         })
         // bus.$emit('toJournal', 'test')

@@ -5,7 +5,7 @@
         <h1>작업시간</h1>
       </v-flex>
 
-      <v-flex v-if="$mq === 'laptop' || $mq === 'desktop'" md2 />
+      <v-flex md2 />
 
        <v-flex xs6 sm6 md2>
         <v-menu
@@ -92,12 +92,10 @@
         </v-btn>
       </v-flex>
       
-      <v-flex v-if="$mq === 'laptop' || $mq === 'desktop'" md2 />
+      <v-flex md2 />
 
-      <div v-if="$mq === 'laptop' || $mq === 'desktop'" id="chartContainer" style="height: 360px; width: 70%;" />
-      <!-- For Mobile -->
-      <div v-else id="chartContainer" style="height: 260px; width: 100%;" />
-      
+      <div id="chartContainer" style="height: 360px; width: 70%;" />
+          
     </v-layout>
   </v-container>
 </template>

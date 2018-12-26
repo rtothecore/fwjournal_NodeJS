@@ -2,7 +2,7 @@
   <v-layout align-center justify-center fill-height>
     <div
       id="e3"
-      style="max-width: 400px; margin: auto;"
+      style="width: 400px; margin: auto;"
       class="grey lighten-3"
     >
       <v-toolbar
@@ -22,15 +22,14 @@
           <v-layout row wrap justify-center>
 
             <v-flex xs12>
-              
               <form>
                 <v-text-field
-                  prepend-icon="fas fa-envelope"
+                  prepend-icon="fas fa-id-badge"
                   v-validate="'required'"
-                  v-model="email"
-                  :error-messages="errors.collect('email')"
-                  label="이메일"
-                  data-vv-name="email"
+                  v-model="id"
+                  :error-messages="errors.collect('id')"
+                  label="아이디"
+                  data-vv-name="id"
                 ></v-text-field>
 
                 <v-text-field
@@ -43,15 +42,18 @@
                   data-vv-name="password"
                   counter
                   v-on:keyup.enter="login"
-                ></v-text-field>
-                
-                <p class="text-lg-right">
-                  <v-btn color="warning" @click="goToRegister()">회원가입</v-btn>
-                  <v-btn color="success" @click="login()">로그인</v-btn>
-                </p>
+                ></v-text-field>                                
               </form>
+            </v-flex>
 
-            </v-flex> 
+            <v-flex xs12>
+              <v-btn block color="success" @click="login()">로그인</v-btn>              
+              <p style="cursor:pointer" class="text-lg-right" @click="findPw()">비밀번호 찾기</p>              
+            </v-flex>
+          
+            <v-flex xs12>
+              <v-btn block color="warning" @click="goToRegister()">회원가입</v-btn>
+            </v-flex>
 
           </v-layout>
         </v-container>
@@ -64,7 +66,8 @@
 </template>
 
 <script>
-import {bus} from '../main'
+// import {bus} from '../main'
+// import moment from 'moment'
 import UserService from '@/services/UserService'
 export default {
   $_veeValidate: {
@@ -73,11 +76,11 @@ export default {
   data () {
     return {
       password: '',
-      email: '',
+      id: '',
       dictionary: {
         custom: {
-          email: {
-            required: () => '이메일주소를 입력해주세요'
+          id: {
+            required: () => '아이디를 입력해주세요'
           },
           password: {
             required: () => '비밀번호를 입력해주세요'
@@ -90,13 +93,13 @@ export default {
     this.$validator.localize('ko', this.dictionary)
   },
   methods: {
-    async getUserByEmailNPw () {
+    async getUserByIdNPw () {
       try {
-        const response = await UserService.fetchUserByEmailNPw({
-          email: this.email,
-          pw: this.password
+        const response = await UserService.login({
+          id: this.id,
+          password: this.password
         })
-        if (response.data.length > 0) {
+        if (response.data[0]._id) {
           this.$swal({
             type: 'success',
             title: '로그인 성공',
@@ -105,6 +108,7 @@ export default {
           }).then((result) => {
             this.$session.start()
             this.$session.set('userId', response.data[0]._id)
+            this.runLoginProcess()
             this.$router.push('/')
           })
         } else {
@@ -120,16 +124,86 @@ export default {
         alert(e)
       }
     },
+    async findPassword () {
+      const response = await UserService.findPassword({
+        id: this.id
+      })
+      if (response.status === 200) {
+        this.$swal({
+          type: 'success',
+          title: '임시비밀번호 발송',
+          showConfirmButton: false,
+          timer: 777
+        }).then((result) => {
+        })
+      } else if (response.status === 201) {
+        this.$swal({
+          type: 'warning',
+          title: '존재하지않는 아이디입니다',
+          showConfirmButton: false,
+          timer: 777
+        }).then((result) => {
+        })
+      }
+    },
+    async checkPwExpired () {
+      const response = await UserService.checkPasswordExpired({
+        id: this.id
+      })
+      if (response.status === 200) {
+        // 로그인 성공
+      } else if (response.status === 201 || response.status === 203) {
+        // 비번 수정 창으로 이동
+        this.$swal({
+          type: 'warning',
+          title: '비밀번호를 변경해주세요',
+          showConfirmButton: false,
+          timer: 1444
+        }).then((result) => {
+          this.$router.push('/changePw')
+        })
+      } else if (response.status === 202) {
+        // 임시비번 재발급 창으로 이동
+        this.$swal({
+          type: 'warning',
+          title: '비밀번호 찾기로 임시비밀번호를 재발급 받으세요',
+          showConfirmButton: false,
+          timer: 1444
+        }).then((result) => {
+          this.$session.destroy()
+          this.btnLogOutSeen = false
+          this.isBackImgActive = true
+          this.$router.push('/login')
+        })
+      }
+    },
     login () {
       this.$validator.validateAll().then((result) => {
         if (!result) {
           return
         }
-        this.getUserByEmailNPw()
+        this.getUserByIdNPw()
       }).catch(() => {})
     },
     goToRegister () {
-      bus.$emit('dialogForRegister')
+      // bus.$emit('dialogForRegister')
+      this.$router.push('/suStep1')
+    },
+    findPw () {
+      if (this.id.length > 0) {
+        this.findPassword()
+      } else {
+        this.$swal({
+          type: 'warning',
+          title: '아이디를 입력해주세요',
+          showConfirmButton: false,
+          timer: 777
+        }).then((result) => {
+        })
+      }
+    },
+    runLoginProcess () {
+      this.checkPwExpired()
     }
   },
   computed: {

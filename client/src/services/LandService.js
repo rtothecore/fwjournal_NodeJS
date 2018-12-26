@@ -23,5 +23,10 @@ export default {
 
   deleteLand (id) {
     return Api().delete('lands/' + id)
+  },
+
+  // NEW
+  fetchCropNameByLandId (params) {
+    return Api().get('lands/getCropName/' + params.landId, params)
   }
 }

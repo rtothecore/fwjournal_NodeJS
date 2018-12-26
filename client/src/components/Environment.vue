@@ -87,16 +87,12 @@
         </v-layout>
       </v-flex>
 
-      <div v-if="$mq === 'laptop' || $mq === 'desktop'" id="chartContainerForWeather" style="height: 360px; width: 70%;" />
-      <!-- For Mobile -->
-      <div v-else id="chartContainerForWeather" style="height: 260px; width: 100%;" />
-
+      <div id="chartContainerForWeather" style="height: 360px; width: 70%;" />
+      
       <!-- dummy -->
       <div style="height: 50px; width: 100%;" />
 
-      <div v-if="$mq === 'laptop' || $mq === 'desktop'" id="chartContainerForSensorData" style="height: 360px; width: 70%;" />
-      <!-- Form Mobile -->
-      <div v-else id="chartContainerForSensorData" style="height: 260px; width: 100%;" />
+      <div id="chartContainerForSensorData" style="height: 360px; width: 70%;" />
 
       <!-- dummy -->
       <div style="height: 50px; width: 100%;" />
