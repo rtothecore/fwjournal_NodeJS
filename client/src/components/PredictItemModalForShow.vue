@@ -4,11 +4,27 @@
           <!-- 자 재 일 지 -->        
           <v-card color="white">
             <v-card-title>
-              <span class="headline" style="color:black">{{Item_User_Profile}}</span>
+              <span class="headline" style="color:black">{{Item_User_Profile}}</span> <v-btn outline color="black" flat @click.native="dialog = false">닫기</v-btn> 
             </v-card-title>
             <v-card-text>
               <v-container grid-list-md>
-                <v-layout wrap>                                   
+                <v-layout wrap>   
+
+                  <v-flex xs6 sm6 md3>
+                    <v-select
+                      :items="landItems"
+                      v-model="selectLand"
+                      :error-messages="errors.collect('selectLand')"
+                      label="농장명"
+                      data-vv-name="selectLand"
+                      required
+                      v-on:change="onChangeLand"
+                      item-text="name"
+                      item-value="_id"
+                      disabled                     
+                    ></v-select>
+                  </v-flex>
+
                   <v-flex xs6 sm6 md3>
                     <v-select                      
                       :items="items"
@@ -21,7 +37,8 @@
                       item-text="text"
                       item-value="wCode"   
                       hint="작업분류와 매칭되는 구입품목 선택"
-                      persistent-hint                                        
+                      persistent-hint  
+                      disabled                                      
                     ></v-select>
                   </v-flex>
                   <v-flex xs6 sm6 md3>
@@ -46,12 +63,14 @@
                       <v-text-field
                         label="품목명"                      
                         v-model="item.itemName"
+                        disabled
                       ></v-text-field>
                     </v-flex>
                     <v-flex xs4 sm4 md4 :key="'D' + index">
                       <v-text-field
                         label="수량"
                         v-model="item.itemAmount"                        
+                        disabled
                       ></v-text-field>
                     </v-flex>
                     <v-flex xs4 sm4 md4 :key="'E' + index">
@@ -59,6 +78,7 @@
                         label="가격"
                         v-model="item.itemPrice"
                         v-on:change="onChangeItemPrice"
+                        disabled
                       ></v-text-field>
                     </v-flex>  
                   </template>                                                     
@@ -70,6 +90,7 @@
                       v-model="itemPriceTotal"
                       label="총 가격"
                       placeholder="Placeholder"
+                      disabled
                     ></v-text-field>
                   </v-flex>                      
                   
@@ -81,6 +102,7 @@
                       color="deep-purple"
                       label="사용목적"
                       rows="3"
+                      disabled
                     ></v-textarea>
                   </v-flex>
                   
@@ -283,6 +305,7 @@ export default {
       if (vm.itemId) {
         // console.log('i am item')
         vm.active = 1
+        vm.getLands()
         vm.getItem()
       } else {
         // console.log('i am journal')
@@ -308,6 +331,9 @@ export default {
         id: this.itemId
       })
       this.Item_User_Profile = '자재관리 - ' + response.data[0].date
+
+      // 농장명
+      this.selectLand = response.data[0].landId
 
       // 구입품목
       this.getItems()

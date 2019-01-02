@@ -29,11 +29,31 @@ export default {
     return Api().get('items/searchBy3/' + params.startDate + '/' + params.endDate + '/' + params.item, params)
   },
 
+  fetchItemsBy4 (params) {
+    return Api().get('items/searchBy4/' + params.startDate + '/' + params.endDate + '/' + params.item + '/' + params.landId, params)
+  },
+
   fetchItemsByDateNUserId (params) {
     return Api().get('items/' + params.startDate + '/' + params.endDate + '/' + params.userId, params)
   },
 
+  fetchJournalsByYMNUserIdAndDetail (params) {
+    return Api().get('itemsByYMNUserIdAndDetail/' + params.startDate + '/' + params.endDate + '/' + params.userId, params)
+  },
+
+  fetchItemsByDateNUserIdNLandId (params) {
+    return Api().get('items/searchBy4_2/' + params.startDate + '/' + params.endDate + '/' + params.userId + '/' + params.landId, params)
+  },
+
   fetchItemsByYMUserId (params) {
     return Api().get('items/searchByYMUserId/' + params.ym + '/' + params.userId, params)
+  },
+
+  fetchItemsByYMUserIdLandId (params) {
+    return Api().get('items/searchByYMUserIdLandId/' + params.ym + '/' + params.userId + '/' + params.landId, params)
+  },
+
+  fetchItemExp (params) {
+    return Api().get('itemsGetAggData/' + params.userId + '/' + params.startDate + '/' + params.endDate, params)
   }
 }

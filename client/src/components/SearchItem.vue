@@ -66,7 +66,19 @@
         </v-menu>
       </v-flex>
 
-      <v-flex xs4 sm4 md2>
+      <v-flex xs6 sm6 md1>
+        <v-select
+          :items="landItems"
+          v-model="selectLand"
+          label="농장명"
+          class="input-group--focused"
+          item-text="name"
+          item-value="_id"
+          v-on:change="onChangeLand"
+        ></v-select>
+      </v-flex>
+
+      <v-flex xs4 sm4 md1>
         <v-select
           :items="WorkTypeitems"
           v-model="e2"
@@ -99,10 +111,7 @@
 
       <journalModalForEdit></journalModalForEdit>
       <addWorkTypeModal></addWorkTypeModal>
-
-      <v-flex md2 />
-
-      <!-- <div> -->                  
+      <!-- <v-flex md2 /> -->
     
     </v-layout>
   </v-container>
@@ -135,6 +144,7 @@
           </template>
           <template slot="items" slot-scope="props">
             <td class="text-xs-left">{{ props.item.date }}</td>
+            <td class="text-xs-left">{{ props.item.landName }}</td>
             <td class="text-xs-left">{{ props.item.item }}</td>
             <td class="text-xs-left">{{ props.item.purpose }}</td>            
             <td class="text-xs-left">{{ props.item.amount }}</td>
@@ -184,6 +194,7 @@ export default {
       editeWorkTypeItems: [],
       selectedCropCode: '',
       selectedLandId: '',
+      selectLand: '',
       landItems: [],
       selectedWorkType: '',
       e2: null,
@@ -231,6 +242,7 @@ export default {
           value: 'date',
           width: '10%'
         },
+        { text: '농장명', value: 'landName', align: 'left', width: '15%' },
         { text: '구입품목', value: 'item', align: 'left', width: '15%' },
         { text: '사용목적', value: 'purpose', align: 'left', width: '15%' },
         { text: '구입수량', value: 'amount', align: 'left', width: '15%' },
@@ -267,6 +279,7 @@ export default {
   created () {
     this.userId = this.$session.get('userId')
     this.getItems()
+    this.getLands()
     this.getWorkTypeItems()
   },
   components: {
@@ -278,6 +291,12 @@ export default {
       this[l] = !this[l]
       setTimeout(() => (this[l] = false), 1000)
       this.loader = null
+    },
+    // https://github.com/vuetifyjs/vuetify/issues/4455
+    items () {
+      this.$nextTick(() => {
+        this.pagination.totalItems = this.items.length
+      })
     }
   },
   computed: {
@@ -329,6 +348,12 @@ export default {
       })
       this.items = response.data
       for (var i = 0; i < this.items.length; i++) {
+        // 농장명
+        const response3 = await LandService.fetchNameByLandId({
+          landId: this.items[i].landId
+        })
+        this.items[i].landName = response3.data[0].name
+
         // 구입품목
         const response2 = await WcService.fetchOneTextByCcode({
           code: this.items[i].item
@@ -349,7 +374,7 @@ export default {
         this.items[i].stock = stockVal
       }
     },
-    async getItemsBy3 () {
+    async getItemsBy4 () {
       var tmpStartDate = this.startDate
       if (!tmpStartDate) {
         tmpStartDate = 0
@@ -364,13 +389,25 @@ export default {
       if (!tmpWorkType) {
         tmpWorkType = 0
       }
-      const response = await ItemService.fetchItemsBy3({
+
+      if (!this.selectLand) {
+        this.selectLand = 0
+      }
+
+      const response = await ItemService.fetchItemsBy4({
         startDate: tmpStartDate,
         endDate: tmpEndDate,
-        item: tmpWorkType
+        item: tmpWorkType,
+        landId: this.selectLand
       })
       this.items = response.data
       for (var i = 0; i < this.items.length; i++) {
+        // 농장명
+        const response3 = await LandService.fetchNameByLandId({
+          landId: this.items[i].landId
+        })
+        this.items[i].landName = response3.data[0].name
+
         // 구입품목
         const response2 = await WcService.fetchOneTextByCcode({
           code: this.items[i].item
@@ -426,6 +463,12 @@ export default {
       })
       this.editedWorkTypeCode = response.data
     },
+    async getLands () {
+      const response = await LandService.fetchLands({
+        userId: this.userId
+      })
+      this.landItems = response.data.lands
+    },
     onChangeWSTime: function (event) {
       var tmpStr = event
       this.editedItem.workSTime = tmpStr.replace(':', '')
@@ -440,8 +483,10 @@ export default {
       this.getWorkCodeById(event)
     },
     onChangeLand: function (event) {
+      /*
       this.selectedLandId = event
       this.getCropCodeByLandId(this.selectedLandId)
+      */
     },
     onChangeWorkType: function (event) {
       // console.log(event)
@@ -499,13 +544,14 @@ export default {
         if (!result) {
           return
         }
-        this.getItemsBy3()
+        this.getItemsBy4()
       }).catch(() => {})
     },
     searchReset () {
       this.startDate = ''
       this.endDate = ''
       this.e2 = null
+      this.selectLand = ''
       this.workContent = null
       this.getItems()
       this.$validator.reset()

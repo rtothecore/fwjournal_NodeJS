@@ -66,23 +66,24 @@
         </v-menu>
       </v-flex>
 
-      <v-flex xs4 sm4 md2>
-        <!--
-        <v-select
-          :items="WorkTypeitems"
-          v-model="e2"
-          label="작업분류"
-          class="input-group--focused"
-          item-text="text"
-          item-value="value"
-          v-on:change="onChangeWorkType"
-        ></v-select>
-        -->
+      <v-flex xs4 sm4 md1>        
         <v-text-field
           v-model="searchWord"
           label="검색어"                  
         ></v-text-field>
-      </v-flex>      
+      </v-flex>    
+
+      <v-flex xs6 sm6 md1>
+        <v-select
+          :items="landItems"
+          v-model="selectLand"
+          label="농장명"
+          class="input-group--focused"
+          item-text="name"
+          item-value="_id"
+          v-on:change="onChangeLand"
+        ></v-select>
+      </v-flex>  
 
       <v-flex xs8 sm8 md2 class="text-xs-left">
         <v-btn
@@ -105,11 +106,7 @@
 
       <journalModalForEdit></journalModalForEdit>
       <addWorkTypeModal></addWorkTypeModal>
-
-      <v-flex md2 />
-
-      <!-- <div> -->                  
-    
+                     
     </v-layout>
   </v-container>
 
@@ -141,6 +138,7 @@
           </template>
           <template slot="items" slot-scope="props">
             <td class="text-xs-left">{{ props.item.date }}</td>
+            <td class="text-xs-left">{{ props.item.farmName }}</td>
             <td class="text-xs-left">{{ props.item.cropName }}</td>
             <td class="text-xs-left">{{ props.item.workType }}</td>
             <td class="text-xs-left">{{ props.item.workContent }}</td>
@@ -181,6 +179,8 @@ export default {
   },
   data () {
     return {
+      selectLand: '',
+      landItems: [],
       searchWord: '',
       editWorkCode: '',
       editDate: '',
@@ -192,7 +192,6 @@ export default {
       editeWorkTypeItems: [],
       selectedCropCode: '',
       selectedLandId: '',
-      landItems: [],
       selectedWorkType: '',
       e2: null,
       WorkTypeitems: [
@@ -239,6 +238,7 @@ export default {
           value: 'date',
           width: '15%'
         },
+        { text: '농장명', value: 'farmName', align: 'left', width: '5%' },
         { text: '작물명', value: 'cropName', align: 'left', width: '5%' },
         { text: '작업분류', value: 'workType', align: 'left', width: '5%' },
         { text: '작업내용', value: 'workContent', align: 'left', width: '30%' },
@@ -271,7 +271,7 @@ export default {
   created () {
     this.userId = this.$session.get('userId')
     this.getJournals()
-    // this.getLands()
+    this.getLands()
     this.getWorkTypeItems()
   },
   components: {
@@ -283,15 +283,15 @@ export default {
       this[l] = !this[l]
       setTimeout(() => (this[l] = false), 1000)
       this.loader = null
+    },
+    // https://github.com/vuetifyjs/vuetify/issues/4455
+    journals () {
+      this.$nextTick(() => {
+        this.pagination.totalItems = this.journals.length
+      })
     }
   },
   computed: {
-    // formTitle () {
-      // return this.editedIndex === -1 ? 'New Item' : 'Edit Item'
-      // return this.journals[0].date
-      // var tmpVal = this.editedIndex
-      // return this.journals[tmpVal].date
-    // },
     pages () {
       if (this.pagination.rowsPerPage == null ||
         this.pagination.totalItems == null
@@ -372,7 +372,7 @@ export default {
       }
       this.journals = tmpJournals
     },
-    async getJournalsBy3 () {
+    async getJournalsBy4 () {
       var tmpStartDate = this.startDate
       if (!tmpStartDate) {
         tmpStartDate = 0
@@ -387,14 +387,26 @@ export default {
       if (!tmpSearchWord) {
         tmpSearchWord = 0
       }
-      const response = await JournalService.fetchJournalsBy3({
+
+      if (!this.selectLand) {
+        this.selectLand = 0
+      }
+
+      const response = await JournalService.fetchJournalsBy4LandId({
         startDate: tmpStartDate,
         endDate: tmpEndDate,
-        searchWord: tmpSearchWord
+        searchWord: tmpSearchWord,
+        landId: this.selectLand
       })
       var tmpJournals = response.data
 
       for (var i = 0; i < response.data.length; i++) {
+        // 농장명
+        const response4 = await LandService.fetchNameByLandId({
+          landId: response.data[i].landId
+        })
+        tmpJournals[i].farmName = response4.data[0].name
+        // 작물명
         const response2 = await LandService.fetchCropNameByLandId({
           landId: response.data[i].landId
         })
@@ -456,8 +468,10 @@ export default {
       this.getWorkCodeById(event)
     },
     onChangeLand: function (event) {
+      /*
       this.selectedLandId = event
       this.getCropCodeByLandId(this.selectedLandId)
+      */
     },
     onChangeWorkType: function (event) {
       this.selectedWorkType = event
@@ -514,12 +528,14 @@ export default {
         if (!result) {
           return
         }
-        this.getJournalsBy3()
+        this.getJournalsBy4()
       }).catch(() => {})
     },
     searchReset () {
       this.startDate = ''
       this.endDate = ''
+      this.searchWord = ''
+      this.selectLand = ''
       this.e2 = null
       this.workContent = null
       this.getJournals()

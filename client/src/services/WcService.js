@@ -48,6 +48,10 @@ export default {
     return Api().get('wc/getTxtByCC2/' + params.cropCode, params)
   },
 
+  fetchTextByCropCodeAsItem (params) {
+    return Api().get('wc/getTxtByCC3/' + params.cropCode, params)
+  },
+
   fetchTextByCcode (params) {
     return Api().get('wc/getTextByCcode/' + params.code, params)
   },

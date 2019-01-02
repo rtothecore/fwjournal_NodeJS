@@ -7,6 +7,21 @@
           <v-flex xs4 order-md1 order-xs1>
             <v-card color="white" class="black--text">
                 <v-container fluid grid-list-lg>
+                  <v-layout>
+                    <div>                    
+                    <div class="caption">
+                      <v-select
+                        :items="landItems"
+                        v-model="selectLand"
+                        label="농장명"
+                        item-text="name"
+                        item-value="_id"
+                        v-on:change="onChangeLand"
+                      ></v-select>
+                    </div>
+                    </div>
+                  </v-layout>
+
                   <v-layout row>
                     <v-flex xs7>
                       <div>
@@ -25,8 +40,7 @@
 
                   <v-layout>
                     <div>
-                    <div class="caption">{{ todayPm10 }}</div>                    
-                    <div class="caption">{{ weatherLoc }}</div>
+                    <div class="caption">{{ todayPm10 }}</div>                      
                     </div>
                   </v-layout>
 
@@ -35,7 +49,7 @@
           </v-flex>
           <v-flex xs4 order-md2 order-xs2>
             <v-card color="white" class="black--text">
-                <v-container fluid grid-list-lg>
+                <v-container fluid grid-list-lg>                  
                   <v-layout row>
                     <v-flex xs7>
                       <div>
@@ -51,6 +65,14 @@
                       ></v-img>
                     </v-flex>
                   </v-layout>
+                  
+                  <v-layout>
+                    <div>
+                    <div class="caption">&nbsp</div>                    
+                    <div class="caption">&nbsp</div>                    
+                    </div>
+                  </v-layout>
+
                 </v-container>
               </v-card>
           </v-flex>
@@ -73,6 +95,14 @@
                       ></v-img>
                     </v-flex>
                   </v-layout>
+
+                  <v-layout>
+                    <div>
+                    <div class="caption">&nbsp</div>                    
+                    <div class="caption">&nbsp</div>                    
+                    </div>
+                  </v-layout>
+
                 </v-container>
               </v-card>
           </v-flex>
@@ -95,6 +125,14 @@
                       ></v-img>
                     </v-flex>
                   </v-layout>
+
+                  <v-layout>
+                    <div>
+                    <div class="caption">&nbsp</div>                    
+                    <div class="caption">&nbsp</div>                    
+                    </div>
+                  </v-layout>
+
                 </v-container>
               </v-card>
           </v-flex>
@@ -117,6 +155,14 @@
                       ></v-img>
                     </v-flex>
                   </v-layout>
+
+                  <v-layout>
+                    <div>
+                    <div class="caption">&nbsp</div>                    
+                    <div class="caption">&nbsp</div>                    
+                    </div>
+                  </v-layout>
+
                 </v-container>
               </v-card>
           </v-flex>
@@ -234,6 +280,8 @@
     export default {
   data () {
         return {
+          selectLand: '',
+          landItems: [],
           showPredictTable: true,
           showMarketPrice: true,
           lastYearYM: '',
@@ -246,7 +294,7 @@
             {
               text: '농장명',
               align: 'left',
-              sortable: false,
+              sortable: true,
               value: 'landName'
             },
             { text: '작업일', value: 'date' },
@@ -355,9 +403,10 @@
         // this.$refs.calendar.fireMethod('changeView', view)
         this.getJournal()
         this.getItem()
-        this.getLocation()
+        // this.getLocation()
         this.getMyCrop()
         this.getLastYearJournal()
+        this.getLands()
         // media query
         // this.calendarWidth = '900px'
         this.calendarWidth = '49%'
@@ -382,9 +431,20 @@
         })
   },
   methods: {
+        onChangeLand: function (event) {
+          this.selectLand = event
+          this.getWeatherData()
+        },
         eventSelected: function (event, jsEvent, view) {
           // console.log(event)
           bus.$emit('dialogForEdit', event)
+        },
+        async getLands () {
+          const response = await LandService.fetchLands({
+            userId: this.userId
+          })
+          this.landItems = response.data.lands
+          this.onChangeLand(response.data.lands[0]._id) // 맨처음의 농장을 기본으로 선택
         },
         async getMyCrop () {
           this.myCrops = []
@@ -735,7 +795,7 @@
                 landId: response.data[i].landId
               })
               tmpJournals[i].landName = response2.data[0].name
-              this.weatherLoc = response2.data[0].name
+              // this.weatherLoc = response2.data[0].name
 
               const response3 = await WcService.fetchOneTextByCcode({
                 code: response.data[i].workCode
@@ -751,14 +811,13 @@
               ym: this.lastYearYM,
               userId: this.userId
             })
-            // console.log(response4.data)
             var tmpJournals2 = response4.data
             for (var j = 0; j < response4.data.length; j++) {
               const response5 = await LandService.fetchNameByLandId({
                 landId: response4.data[j].landId
               })
               tmpJournals2[j].landName = response5.data[0].name
-              this.weatherLoc = response5.data[0].name
+              // this.weatherLoc = response5.data[0].name
 
               const response6 = await WcService.fetchOneTextByCcode({
                 code: response4.data[j].workCode
@@ -770,7 +829,7 @@
             }
             this.journals = tmpJournals2
           }
-          if (this.journals === 0) {
+          if (this.journals.length === 0) {
             this.showPredictTable = false
           }
         },
@@ -800,13 +859,16 @@
           }
           return zero + n
         },
+        /*
         getLocation: function () {
-          this.getLandsByUserId()
+          this.getWeatherData()
         },
-        async getLandsByUserId () {
+        */
+        async getWeatherData () {
           var vm = this
-          const response = await LandService.fetchLands({
-            userId: this.userId
+          // landId로 농장주소 얻기
+          const response = await LandService.fetchNameByLandId({
+            landId: this.selectLand
           })
           // Do geo coding
           // https://github.com/googlemaps/google-maps-services-js
@@ -814,7 +876,7 @@
             key: 'AIzaSyAbcu_ORn9DV9mv0GFbxwX3FrYFMyL-nRA'
           })
           googleMapsClient.geocode({
-            address: response.data.lands[0].address
+            address: response.data[0].address
           }, function (err, response) {
             if (!err) {
               // vm.weatherLoc = response.json.results[0].address_components[0].short_name
@@ -832,52 +894,6 @@
             }
           })
         },
-        /* OLD VERSION WITH "navigator.geolocation"
-        locationError: function (err) {
-          alert(err.code + '-' + err.message)
-        },
-        getLocation: function () {
-          if (navigator.geolocation) {
-            // navigator.geolocation.getCurrentPosition(this.showPosition)
-            var options = {
-              enableHighAccuracy: true,
-              timeout: 5000,
-              maximumAge: 0
-            }
-            navigator.geolocation.getCurrentPosition(this.showPosition, this.locationError, options)
-          } else {
-            console.log('Geolocation is not supported by this browser.')
-          }
-        },
-        showPosition: function (position) {
-          var vm = this
-          // Reverse geo coding
-          // https://github.com/googlemaps/google-maps-services-js
-          var googleMapsClient = require('@google/maps').createClient({
-            key: 'AIzaSyAbcu_ORn9DV9mv0GFbxwX3FrYFMyL-nRA'
-          })
-          var latlng = {lat: position.coords.latitude, lng: position.coords.longitude}
-          googleMapsClient.reverseGeocode({
-            latlng: latlng
-          }, function (err, response) {
-            if (!err) {
-              // console.log(response.json.results[0].address_components[1].short_name)
-              vm.weatherLoc = response.json.results[0].address_components[1].short_name
-            }
-          })
-
-          var convertedXY = this.dfs_xy_conv('toXY', position.coords.latitude, position.coords.longitude)
-          this.fetchTodayWeather(convertedXY.x, convertedXY.y)
-          this.fetchWeatherForecast(convertedXY.x, convertedXY.y)
-
-          // https://www.npmjs.com/package/proj4
-          // http://www.gisdeveloper.co.kr/?p=1854
-          var firstProjection = '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs'
-          var secondProjection = '+proj=longlat +ellps=bessel +towgs84=-146.43,507.89,681.46 +no_defs'
-          var tmXY = proj4(firstProjection, secondProjection, [convertedXY.y, convertedXY.x])
-          this.fetchAirData(tmXY[0], tmXY[1])
-        },
-        */
         dfs_xy_conv: function (code, v1, v2) { // http://fronteer.kr/service/kmaxy - 37.579871128849334, 126.98935225645432 => 60, 127
           var RE = 6371.00877 // 지구 반경(km)
           var GRID = 5.0 // 격자 간격(km)

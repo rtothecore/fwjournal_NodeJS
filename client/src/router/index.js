@@ -21,7 +21,8 @@ const routerOptions = [
   { path: '/suStep2', component: 'SignUpStep2' },
   { path: '/suStep3', name: 'nameSuStep3', component: 'SignUpStep3' },
   { path: '/changePw', component: 'ChangePassword' },
-  { path: '/changePhoneNo', component: 'ChangePhoneNo' }
+  { path: '/changePhoneNo', component: 'ChangePhoneNo' },
+  { path: '/account', component: 'Account' }
 ]
 
 const routes = routerOptions.map(route => {

@@ -222,20 +222,22 @@ export default {
         landId: landId
       })
       var tmpJournals = response.data
+      // console.log(tmpJournals)
       var tmpWorkDatas = []
       this.chartOptions.data[0].dataPoints = []
 
       for (var i = 0; i < tmpJournals.length; i++) {
         var tmpWorkData = {}
         tmpWorkData.x = new Date(tmpJournals[i].date)
-
-        var tmpWorkTime = tmpJournals[i].workETime - tmpJournals[i].workSTime
-        var tmpStr = tmpWorkTime.toString()
+        // var tmpWorkTime = tmpJournals[i].workETime - tmpJournals[i].workSTime
+        /*
         if (tmpStr.length === 3) {
           tmpWorkData.y = tmpStr.substring(0, 1) * 1
         } else if (tmpStr.length === 4) {
           tmpWorkData.y = tmpStr.substring(0, 2) * 1
         }
+        */
+        tmpWorkData.y = tmpJournals[i].workTime * 1
         tmpWorkDatas.push(tmpWorkData)
       }
       console.log(tmpWorkDatas)

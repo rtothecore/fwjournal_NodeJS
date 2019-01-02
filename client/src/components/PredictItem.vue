@@ -1,41 +1,77 @@
 <template>
   <v-container fluid>
-    <v-layout row wrap justify-center>
-      <v-flex xs12 class="text-xs-center" mt-5>
-        <!-- <h1>{{Predict_page}}</h1> -->
-        <h1>자재구입 일정</h1>
-        <!-- <v-date-picker v-model="date" locale="kr" show-current="2013-07-13" v-on:change="onChangeDate"></v-date-picker> -->
+    <v-container grid-list-md text-xs-center fluid>
+    <v-layout row wrap>
+      <v-flex xs12 class="text-xs-center" mt-5>      
+        <h1>자재구입 일정</h1>        
       </v-flex>
       
-      <v-flex xs12 class="text-xs-center" mt-1>
-        <v-layout row ma-2 justify-center>
-          <v-flex xs6 md2>
-            <v-menu
-              :close-on-content-click="false"
-              v-model="menu1"
-              :nudge-right="40"
-              lazy
-              transition="scale-transition"
-              offset-y
-              full-width
-              max-width="290px"
-              min-width="290px"
-            >
-              <v-text-field
-                slot="activator"
-                v-model="computedDateFormatted"
-                label="기준날짜"
-                persistent-hint
-                prepend-icon="event"
-                readonly
-              ></v-text-field>
-              <v-date-picker v-model="sDate" no-title @input="menu1 = false" v-on:change="onChangeDate" locale='euc-kr'></v-date-picker>
-            </v-menu>
-          </v-flex>       
-        </v-layout>
+      <v-flex md4 />
+
+      <v-flex xs6 sm6 md2>
+        <v-menu
+          :close-on-content-click="false"
+          v-model="menu1"
+          :nudge-right="40"
+          lazy
+          transition="scale-transition"
+          offset-y
+          full-width
+          max-width="290px"
+          min-width="290px"
+        >
+          <v-text-field
+            slot="activator"
+            v-model="computedDateFormatted"
+            label="기준날짜"
+            persistent-hint
+            prepend-icon="event"
+            readonly
+          ></v-text-field>
+          <v-date-picker v-model="sDate" no-title @input="menu1 = false" v-on:change="onChangeDate" locale='euc-kr'></v-date-picker>
+        </v-menu>
+      </v-flex>       
+      
+      <v-flex xs6 sm6 md2>
+        <v-select
+          :items="landItems"
+          v-model="selectLand"
+          label="농장명"
+          class="input-group--focused"
+          item-text="name"
+          item-value="_id"
+          v-on:change="onChangeLand"
+        ></v-select>
       </v-flex>
 
-      <div>
+      <v-flex xs8 sm8 md2 class="text-xs-left">
+        <v-btn          
+          color="light-blue"
+          class="white--text"
+          @click.native="searchItems"
+        >
+          검색
+        </v-btn>
+        <v-btn
+          color="orange lighten-3"
+          class="white--text"
+          @click.native="searchReset"
+        >
+          초기화
+        </v-btn>
+      </v-flex>
+
+      <v-flex md2 />
+
+      </v-layout>
+      </v-container>
+
+       <v-container fluid pa-0>
+      <v-layout row wrap>
+        <v-flex md2 />
+
+        <v-flex xs12 sm12 md8>      
+        <div>
         <v-data-table
           :headers="headers"
           :items="items"
@@ -56,6 +92,7 @@
           </template>
           <template slot="items" slot-scope="props">
             <td>{{ props.item.date }}</td>
+            <td class="text-xs-right">{{ props.item.landName }}</td>
             <td class="text-xs-right">{{ props.item.item }}</td>
             <td class="text-xs-right">{{ props.item.purpose }}</td>
             <td class="text-xs-right">{{ props.item.itemAmount }}</td>
@@ -72,11 +109,13 @@
         <div class="text-xs-center pt-2">
           <v-pagination v-model="pagination.page" :length="pages"></v-pagination>
         </div>
+        </div>
+        </v-flex>
         <predictItemModalForShow></predictItemModalForShow>
-      </div>      
+       </v-layout>
+      </v-container>    
 
-      <br/><br/><br/>
-    </v-layout>
+      <!-- <br/><br/><br/> -->    
   </v-container>
 </template>
 
@@ -86,10 +125,12 @@ import moment from 'moment'
 // import JournalService from '@/services/JournalService'
 import ItemService from '@/services/ItemService'
 import WcService from '@/services/WcService'
-// import LandService from '@/services/LandService'
+import LandService from '@/services/LandService'
 export default {
   data () {
     return {
+      selectLand: '',
+      landItems: [],
       // Predict_page: moment().format('YYYY년 MM월 DD일'),
       startDate2: null,
       sDate: null,
@@ -109,6 +150,7 @@ export default {
           sortable: false,
           value: 'date'
         },
+        { text: '농장명', value: 'landName' },
         { text: '구입품목', value: 'item' },
         { text: '사용목적', value: 'purpose' },
         { text: '구입수량', value: 'itemAmount' },
@@ -131,17 +173,41 @@ export default {
     this.userId = this.$session.get('userId')
     var today = moment().format('YYYY-MM-DD')
     this.onChangeDate(today)
+    this.getLands()
   },
   methods: {
+    async getLands () {
+      const response = await LandService.fetchLands({
+        userId: this.userId
+      })
+      this.landItems = response.data.lands
+    },
     async getItemsByDate () {
-      const response = await ItemService.fetchItemsByDateNUserId({
+      if (!this.startDate) {
+        this.startDate = 0
+      }
+      if (!this.endDate) {
+        this.endDate = 0
+      }
+      if (!this.selectLand) {
+        this.selectLand = 0
+      }
+      const response = await ItemService.fetchItemsByDateNUserIdNLandId({
         startDate: this.startDate,
         endDate: this.endDate,
-        userId: this.userId
+        userId: this.userId,
+        landId: this.selectLand
       })
       if (response.data.length > 0) {
         var tmpItems = response.data
         for (var i = 0; i < response.data.length; i++) {
+          //
+          const response7 = await LandService.fetchNameByLandId({
+            landId: response.data[i].landId
+          })
+
+          tmpItems[i].landName = response7.data[0].name
+          //
           const response2 = await WcService.fetchOneTextByCcode({
             code: response.data[i].item
           })
@@ -160,12 +226,20 @@ export default {
         }
         this.items = tmpItems
       } else {  // 작년 10일이내의 데이터가 없는 경우 작년 해당월의 데이터를 보여줌
-        const response4 = await ItemService.fetchItemsByYMUserId({
+        const response4 = await ItemService.fetchItemsByYMUserIdLandId({
           ym: this.lastYearYM,
-          userId: this.userId
+          userId: this.userId,
+          landId: this.selectLand
         })
         var tmpItems2 = response4.data
         for (var j = 0; j < response4.data.length; j++) {
+          //
+          const response8 = await LandService.fetchNameByLandId({
+            landId: response4.data[j].landId
+          })
+
+          tmpItems2[j].landName = response8.data[0].name
+          //
           const response5 = await WcService.fetchOneTextByCcode({
             code: response4.data[j].item
           })
@@ -180,6 +254,9 @@ export default {
         }
         this.items = tmpItems2
       }
+    },
+    onChangeLand: function (event) {
+      // console.log(event)
     },
     onChangeDate: function (event) {
       var today = moment(event, 'YYYY-MM-DD')
@@ -196,9 +273,18 @@ export default {
       this.getItemsByDate()
     },
     showItem (item) {
-      console.log(item)
+      // console.log(item)
       var emitParams = {'itemId': item._id, 'origin': 'fromPredict'}
       bus.$emit('dialogForShow', emitParams)
+    },
+    searchItems () {
+      this.getItemsByDate()
+    },
+    searchReset () {
+      this.startDate = ''
+      this.endDate = ''
+      this.sDate = ''
+      this.selectLand = ''
     }
   },
   computed: {

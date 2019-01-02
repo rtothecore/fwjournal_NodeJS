@@ -195,6 +195,7 @@ app.get('/wcData/getAggData/:startDate/:endDate', (req, res) => {
 	            "rehMax" : { "$max" : "$currentData.weather.reh" },
 	            "rehAvg" : { "$avg" : "$currentData.weather.reh" },
 	            "sky": { "$first": '$currentData.weather.sky' },
+	            "pty": { "$first": '$currentData.weather.pty' },
 	            "rn1": { "$first": '$currentData.weather.rn1' }
             }
         },
@@ -604,6 +605,30 @@ app.get('/wc/getWCsAsItem', (req, res) => {
 })
 
 // Fetch workcalss text by cropCode
+app.get('/wc/getTxtByCC3/:code', (req, res) => {  
+  var dCode = req.params.code
+  Dc.find({}, '', function (error, dcs) {
+  	if (error) { console.error(error); }
+  	// res.send(dcs[0].sCode)  	
+  	Sc.find({}, '', function (error2, scs) {
+  		if (error2) { console.error(error2); }
+  		// res.send(scs[0].mCode)
+  		Mc.find({}, '', function (error3, mcs) {
+  			if (error3) { console.error(error3); }
+  			// res.send(mcs[0].bCode)
+  			Wc.find({}, '', function (error4, wcs) {
+  				if (error4) { console.error(error4); }
+  				res.send(wcs)
+  			}).where('bCode').equals(mcs[0].bCode)
+  			  .where('asItem').equals('1')
+  		}).where('mCode').equals(scs[0].mCode)
+  	})
+  	.where('sCode').equals(dcs[0].sCode)
+  })
+  .where('dCode').equals(dCode)
+})
+
+// Fetch workcalss text by cropCode
 app.get('/wc/getTxtByCC2/:code', (req, res) => {  
   var dCode = req.params.code
   Dc.find({}, '', function (error, dcs) {
@@ -915,6 +940,31 @@ app.get('/journals/searchBy4/:startDate/:endDate/:workType/:workContent', (req, 
   })
 })
 
+// Fetch journals by date, workType, landId
+app.get('/journals/searchBy4LandId/:startDate/:endDate/:searchWord/:landId', (req, res) => {
+  // console.log(req.params)
+  var query = Journal.find({})
+  if(0 != req.params.startDate) {
+  	query.where('date').gte(req.params.startDate)
+  }
+  if(0 != req.params.endDate) {
+  	query.where('date').lte(req.params.endDate)
+  }
+
+  var searchWord = req.params.searchWord  
+  if(0 != req.params.searchWord) {
+  	query.where('workContent').regex(searchWord)  	
+  }
+
+  if(0 != req.params.landId) {
+  	query.where('landId').equals(req.params.landId)
+  }
+
+  query.exec().then(result => {
+  	res.send(result)
+  })
+})
+
 // Fetch journals by year, month
 app.get('/journals/searchByYM/:ym', (req, res) => {
   console.log(req.params)
@@ -928,12 +978,24 @@ app.get('/journals/searchByYM/:ym', (req, res) => {
 // Fetch journals by year, month, userId
 app.get('/journals/searchByYMUserId/:ym/:userId', (req, res) => {
   console.log(req.params)
-  Journal.find({}, 'userId date landId workCode workContent workSTime workETime weather remarks', function (error, journals) {
+  Journal.find({}, '', function (error, journals) {
     if (error) { console.error(error); }
     res.send(journals)
   })
   .where('date').regex(req.params.ym)
   .where('userId').equals(req.params.userId)
+})
+
+// Fetch journals by year, month, userId, landId
+app.get('/journals/searchByYMUserIdLandId/:ym/:userId/:landId', (req, res) => {
+  console.log(req.params)
+  Journal.find({}, '', function (error, journals) {
+    if (error) { console.error(error); }
+    res.send(journals)
+  })
+  .where('date').regex(req.params.ym)
+  .where('userId').equals(req.params.userId)
+  .where('landId').equals(req.params.landId)
 })
 
 // Fetch journals by date
@@ -950,12 +1012,60 @@ app.get('/journals/:startDate/:endDate', (req, res) => {
 // Fetch journals by date & userId
 app.get('/journals/:startDate/:endDate/:userId', (req, res) => {
   console.log(req.params)
-  Journal.find({}, 'userId date landId workCode workContent workSTime workETime weather remarks', function (error, journals) {
+  Journal.find({}, '', function (error, journals) {
     if (error) { console.error(error); }
     res.send(journals)
   })
   .where('date').gte(req.params.startDate).lte(req.params.endDate)
   .where('userId').equals(req.params.userId)
+})
+
+// Fetch journals by date & userId
+app.get('/journalsByYMNUserId/:startYM/:endYM/:userId', (req, res) => {
+  console.log(req.params)
+  Journal.find({}, '', function (error, journals) {
+    if (error) { console.error(error); }
+    res.send(journals)
+  })
+  .where('date').gte(req.params.startYM + '-01 00:00:00').lte(req.params.endYM + '-31 23:59:59')
+  .where('userId').equals(req.params.userId)
+  .where('income.amount').ne('')
+  .where('income.amount').ne(null)
+})
+
+// Fetch journals by date & userId & Coo.cost != null
+app.get('/journalsByYMNUserIdAndCoo/:startYM/:endYM/:userId', (req, res) => {
+  console.log(req.params)
+  Journal.find({}, '', function (error, journals) {
+    if (error) { console.error(error); }
+    res.send(journals)
+  })
+  .where('date').gte(req.params.startYM + '-01 00:00:00').lte(req.params.endYM + '-31 23:59:59')
+  .where('userId').equals(req.params.userId)
+  .where('COO.cost').ne('')
+  .where('COO.cost').ne(null)
+})
+
+// Fetch journals by date, userId, landId
+app.get('/journals/searchBy4_2/:startDate/:endDate/:userId/:landId', (req, res) => {  
+  console.log(req.params)
+  var query = Journal.find({})
+  if(0 != req.params.startDate) {
+  	query.where('date').gte(req.params.startDate)
+  }
+  if(0 != req.params.endDate) {
+  	query.where('date').lte(req.params.endDate)
+  }  
+  if(0 != req.params.userId) {
+  	query.where('userId').equals(req.params.userId)
+  }
+  if(0 != req.params.landId) {
+  	query.where('landId').regex(req.params.landId)
+  }
+
+  query.exec().then(result => {
+  	res.send(result)
+  })
 })
 
 // Fetch journals by userId
@@ -1402,7 +1512,26 @@ app.put('/lands/:id', (req, res) => {
 
 // Delete land
 app.delete('/lands/:id', (req, res) => {
-	var db = req.db
+	// 이 농장과 연계된 작업일지를 모두 삭제	
+	Journal.remove({
+		landId: req.params.id
+	}, function(err2, journals) {
+		if (err2) {
+			res.send(err2)
+		}		
+		console.log('journals removed! - ' + journals)
+	})
+
+	// 이 농장과 연계된 자재일지를 모두 삭제	
+	Item.remove({
+		landId: req.params.id
+	}, function(err3, items) {
+		if (err3) {
+			res.send(err3)
+		}		
+		console.log('items removed! - ' + items)
+	})
+
 	Land.remove({
 		_id: req.params.id
 	}, function(err, lands) {
@@ -2010,6 +2139,7 @@ app.post('/item', (req, res) => {
   // console.log(req.body);
   var userId = req.body.userId;
   var date = req.body.date;
+  var landId = req.body.landId;
   var item = req.body.item;
   var itemDetail = req.body.itemDetail;
   var purpose = req.body.purpose;
@@ -2020,6 +2150,7 @@ app.post('/item', (req, res) => {
   var new_item = new Item({
     userId: userId,
     date: date,
+    landId: landId,
     item: item,
     itemDetail: itemDetail,
     purpose: purpose,
@@ -2094,6 +2225,54 @@ app.get('/items/searchBy3/:startDate/:endDate/:item', (req, res) => {
   })
 })
 
+// Fetch items by date, item
+app.get('/items/searchBy4/:startDate/:endDate/:item/:landId', (req, res) => {  
+  console.log(req.params)
+  var query = Item.find({})
+  if(0 != req.params.startDate) {
+  	query.where('date').gte(req.params.startDate)
+  }
+  if(0 != req.params.endDate) {
+  	query.where('date').lte(req.params.endDate)
+  }
+
+  var item = req.params.item  
+  if(0 != req.params.item) {
+  	query.where('item').equals(item)  	
+  }
+
+  var landId = req.params.landId
+  if(0 != req.params.landId) {
+  	query.where('landId').equals(landId)  	
+  }
+
+  query.exec().then(result => {
+  	res.send(result)
+  })
+})
+
+// Fetch items by date, userId, landId
+app.get('/items/searchBy4_2/:startDate/:endDate/:userId/:landId', (req, res) => {  
+  console.log(req.params)
+  var query = Item.find({})
+  if(0 != req.params.startDate) {
+  	query.where('date').gte(req.params.startDate)
+  }
+  if(0 != req.params.endDate) {
+  	query.where('date').lte(req.params.endDate)
+  }  
+  if(0 != req.params.userId) {
+  	query.where('userId').equals(req.params.userId)
+  }
+  if(0 != req.params.landId) {
+  	query.where('landId').regex(req.params.landId)
+  }
+
+  query.exec().then(result => {
+  	res.send(result)
+  })
+})
+
 // Fetch items by year, month, userId
 app.get('/items/searchByYMUserId/:ym/:userId', (req, res) => {
   console.log(req.params)
@@ -2105,6 +2284,18 @@ app.get('/items/searchByYMUserId/:ym/:userId', (req, res) => {
   .where('userId').equals(req.params.userId)
 })
 
+// Fetch items by year, month, userId, landId
+app.get('/items/searchByYMUserIdLandId/:ym/:userId/:landId', (req, res) => {
+  console.log(req.params)
+  Item.find({}, '', function (error, items) {
+    if (error) { console.error(error); }
+    res.send(items)
+  })
+  .where('date').regex(req.params.ym)
+  .where('userId').equals(req.params.userId)
+  .where('landId').equals(req.params.landId)
+})
+
 // Fetch items by date & userId
 app.get('/items/:startDate/:endDate/:userId', (req, res) => {
   console.log(req.params)
@@ -2114,6 +2305,109 @@ app.get('/items/:startDate/:endDate/:userId', (req, res) => {
   })
   .where('date').gte(req.params.startDate).lte(req.params.endDate)
   .where('userId').equals(req.params.userId)
+})
+
+// Fetch items by date & userId & itemDetail
+app.get('/itemsByYMNUserIdAndDetail/:startDate/:endDate/:userId', (req, res) => {
+  console.log(req.params)
+  Item.find({}, '', function (error, items) {
+    if (error) { console.error(error); }
+    res.send(items)
+  })
+  .where('date').gte(req.params.startDate).lte(req.params.endDate)
+  .where('userId').equals(req.params.userId)
+  .where('itemDetail.itemPrice').ne('')
+  .where('itemDetail.itemPrice').ne(null)  
+})
+
+// Fetch item with aggregate
+app.get('/itemsGetAggData/:userId/:startDate/:endDate', (req, res) => {	
+	Item.aggregate([
+		{
+			"$unwind" : "$itemDetail"
+		},
+        {
+            "$group" : {
+                "_id" : { "date" : { "$substr" : [ "$date", 0, 7 ] }, "userId" : "$userId" },
+                "totalExpenditure" : { "$sum" : "$itemDetail.itemPrice" },
+                "count" : { "$sum" : 1 }
+            }
+        },
+        {
+            "$match" : {
+            	"$and" : [
+            		{ "_id.date" : { "$gte" : req.params.startDate, "$lte" : req.params.endDate } },
+                	{ "_id.userId" : req.params.userId }
+            	]                
+            }
+        }
+    ], function (err, result) {
+        if (err) {
+            next(err);
+        } else {
+            res.send(result);
+        }
+    });
+})
+
+// Fetch journal with aggregate
+app.get('/journalsGetAggData/:userId/:startDate/:endDate', (req, res) => {	
+	Journal.aggregate([
+		{
+			"$unwind" : "$income"
+		},
+        {
+            "$group" : {
+                "_id" : { "date" : { "$substr" : [ "$date", 0, 7 ] }, "userId" : "$userId" },
+                "totalIncome" : { "$sum" : "$income.amount" },
+                "count": { "$sum" : 1 }
+            }
+        },
+        {
+            "$match" : {
+            	"$and" : [
+            		{ "_id.date" : { "$gte" : req.params.startDate, "$lte" : req.params.endDate } },
+            		{ "_id.userId" : req.params.userId }
+            	]            	
+            }
+        }
+    ], function (err, result) {
+        if (err) {
+            next(err);
+        } else {
+            res.send(result);
+        }
+    });
+})
+
+// Fetch journal with aggregate
+app.get('/journalsGetCOOAggData/:userId/:startDate/:endDate', (req, res) => {	
+	Journal.aggregate([
+		{
+			"$unwind" : "$COO"
+		},
+        {
+            "$group" : {
+                "_id" : { "date" : { "$substr" : [ "$date", 0, 7 ] }, "userId" : "$userId" },
+                "totalCooCost" : { "$sum" : "$COO.cost" },
+                "count": { "$sum" : 1 }
+            }
+        },
+        {
+            "$match" : {
+            	"$and" : [
+            		{ "_id.date" : { "$gte" : req.params.startDate, "$lte" : req.params.endDate } },
+            		{ "_id.userId" : req.params.userId }
+            	]            	
+            }
+        }
+    ], function (err, result) {
+        if (err) {
+            next(err);
+        } else {
+            res.send(result);
+        }
+    });
 })
 
 // Get report images - https://stackoverflow.com/questions/5823722/how-to-serve-an-image-using-nodejs

@@ -150,21 +150,23 @@
                     ></v-select>
                   </v-flex>
                   <v-flex xs6 sm6 md3>
-                    <v-btn outline color="black" @click.native="addWorkType">작업추가</v-btn>
+                    <!-- <v-btn outline color="black" @click.native="addWorkType">작업추가</v-btn> -->
                   </v-flex>
 
                   <v-flex xs6 sm6 md6>
                     <v-text-field
                       v-model="workTime"
                       label="작업시간"
-                      placeholder="Placeholder"
+                      placeholder="작업시간"
+                      type="number"
                     ></v-text-field>
                   </v-flex>
                   <v-flex xs6 sm6 md6>
                     <v-text-field
                       v-model="workerNumber"
                       label="작업인원"
-                      placeholder="Placeholder"
+                      placeholder="작업인원"
+                      type="number"
                     ></v-text-field>
                   </v-flex>                  
 
@@ -188,6 +190,7 @@
                         label="발생비용"
                         v-model="item.cost"
                         v-on:change="onChangeItemCost"
+                        type="number"
                       ></v-text-field>
                     </v-flex> 
                   </template>                                                     
@@ -199,6 +202,7 @@
                       v-model="CooTotal"
                       label="총 발생비용"
                       placeholder="Placeholder"
+                      disabled
                     ></v-text-field>
                   </v-flex>    
 
@@ -207,14 +211,15 @@
                       <v-text-field
                         v-model="shipmentAmount"
                         label="출하량"
-                        placeholder="Placeholder"
+                        placeholder="출하량"
+                        type="number"
                       ></v-text-field>
                     </v-flex>
                     <v-flex xs6 sm6 md6>
                       <v-text-field
                         v-model="shipmentDetail"
                         label="출하량 상세"
-                        placeholder="Placeholder"
+                        placeholder="출하량 상세"
                       ></v-text-field>
                     </v-flex>
                   </template>
@@ -224,14 +229,15 @@
                       <v-text-field
                         v-model="incomeAmount"
                         label="수입량"
-                        placeholder="Placeholder"
+                        placeholder="수입량"
+                        type="number"
                       ></v-text-field>
                     </v-flex>
                     <v-flex xs6 sm6 md6>
                       <v-text-field
                         v-model="incomeDetail"
                         label="수입량 상세"
-                        placeholder="Placeholder"
+                        placeholder="수입량 상세"
                       ></v-text-field>
                     </v-flex>
                   </template>
@@ -268,6 +274,7 @@
                         <v-text-field
                           label="사용량"
                           v-model="item.usage"
+                          type="number"
                         ></v-text-field>
                       </v-flex>
                     </template>
@@ -278,14 +285,15 @@
                       <v-text-field
                         v-model="outputAmount"
                         label="생산량"
-                        placeholder="Placeholder"
+                        placeholder="생산량"
+                        type="number"
                       ></v-text-field>
                     </v-flex>
                     <v-flex xs6 sm6 md6>
                       <v-text-field
                         v-model="outputDetail"
                         label="생산량 상세"
-                        placeholder="Placeholder"
+                        placeholder="생산량 상세"
                       ></v-text-field>
                     </v-flex>
                   </template>
@@ -381,7 +389,22 @@
             </v-card-title>
             <v-card-text>
               <v-container grid-list-md>
-                <v-layout wrap>                                   
+                <v-layout wrap> 
+
+                  <v-flex xs6 sm6 md3>
+                    <v-select
+                      :items="iLandItems"
+                      v-model="iSelectLand"
+                      :error-messages="errors.collect('iSelectLand')"
+                      label="농장명"
+                      data-vv-name="iSelectLand"
+                      required
+                      v-on:change="onChangeILand"
+                      item-text="name"
+                      item-value="_id"                      
+                    ></v-select>
+                  </v-flex>
+
                   <v-flex xs6 sm6 md3>
                     <v-select                      
                       :items="items"
@@ -398,7 +421,7 @@
                     ></v-select>
                   </v-flex>
                   <v-flex xs6 sm6 md3>
-                    <v-btn outline color="black" @click.native="addItem">구입품목 추가</v-btn>
+                    <!-- <v-btn outline color="black" @click.native="addItem">구입품목 추가</v-btn> -->
                   </v-flex>
                   <v-flex xs12 sm6 md6>
                     
@@ -422,7 +445,8 @@
                     <v-flex xs2 sm2 md2 :key="'D' + index">
                       <v-text-field
                         label="수량"
-                        v-model="item.itemAmount"                        
+                        v-model="item.itemAmount"   
+                        type="number"                     
                       ></v-text-field>
                     </v-flex>
                     <v-flex xs3 sm3 md3 :key="'E' + index">
@@ -430,18 +454,21 @@
                         label="가격"
                         v-model="item.itemPrice"
                         v-on:change="onChangeItemPrice"
+                        type="number"
                       ></v-text-field>
                     </v-flex>
                     <v-flex xs2 sm2 md2 :key="'F' + index">
                       <v-text-field
                         label="사용량"
                         v-model="item.itemUsage"                        
+                        type="number"
                       ></v-text-field>
                     </v-flex>  
                     <v-flex xs2 sm2 md2 :key="'G' + index">
                       <v-text-field
                         label="재고량"
                         v-model="item.itemStock"                        
+                        type="number"
                       ></v-text-field>
                     </v-flex>  
                   </template>                                                     
@@ -452,7 +479,8 @@
                     <v-text-field
                       v-model="itemPriceTotal"
                       label="총 가격"
-                      placeholder="Placeholder"
+                      placeholder="총 가격"
+                      disabled
                     ></v-text-field>
                   </v-flex>                      
                   
@@ -548,6 +576,9 @@ export default {
   },
   data () {
     return {
+      iSelectLand: '',
+      iLandItems: [],
+      //
       imgCommonPreview: {},
       //
       showWorkJournal: true,
@@ -682,6 +713,7 @@ export default {
         vm.showWorkJournal = false
         vm.showItemJournal = true
         // vm.active = 1
+        vm.getLands()
         vm.getItem()
       } else {
         // console.log('i am journal')
@@ -692,6 +724,17 @@ export default {
         vm.getLands()
       }
     })
+    bus.$on('fromAddWorkTypeModal', function (value) {
+      if (value.compType === 'edit') {
+        if (value.from === 'work') {
+          vm.onChangeLand(vm.selectedLandId)
+          vm.selectWorkType = value.addedWTC
+        } else {
+          vm.onChangeILand(vm.selectedLandId)
+          vm.selectItem = value.addedWTC
+        }
+      }
+    })
   },
   created () {
     // this.getLands()
@@ -700,18 +743,18 @@ export default {
     ImageInput: ImageInput
   },
   methods: {
-    async getItems () {
-      const response = await WcService.fetchWorkCodesAsItem()
-      this.items = response.data
-    },
     async getItem () {
       const response = await ItemService.fetchItem({
         id: this.itemId
       })
       this.Item_User_Profile = '자재관리 수정 - ' + response.data[0].date
 
+      // 농장명
+      this.iSelectLand = response.data[0].landId
+      this.selectedLandId = response.data[0].landId
+
       // 구입품목
-      this.getItems()
+      this.onChangeILand()
       this.selectItem = response.data[0].item
 
       // 품목상세
@@ -747,8 +790,21 @@ export default {
       })
       this.User_Profile = '영농일지 수정 - ' + response.data[0].date
 
-      // console.log(response.data)  //
       this.skyStatus = response.data[0].weather.sky
+      switch (this.skyStatus) {
+        case '0' :
+          this.skyStatus = '맑음'
+          break
+        case '1' :
+          this.skyStatus = '비'
+          break
+        case '2' :
+          this.skyStatus = '비/눈'
+          break
+        case '3' :
+          this.skyStatus = '눈'
+          break
+      }
       this.RN1 = response.data[0].weather.avgRN1
       this.minT1H = response.data[0].weather.minT1H + '℃'
       this.maxT1H = response.data[0].weather.maxT1H + '℃'
@@ -758,6 +814,7 @@ export default {
       this.avgREH = Math.round(response.data[0].weather.avgREH) + '%'
 
       this.selectLand = response.data[0].landId
+      this.selectedLandId = response.data[0].landId
       this.getCropCodeByLandId(this.selectLand)
       this.selectedWorkTypeCode = response.data[0].workCode
       this.selectWorkType = response.data[0].workCode
@@ -802,6 +859,11 @@ export default {
         this.showOutput = true
         this.outputAmount = response.data[0].output.amount
         this.outputDetail = response.data[0].output.detail
+      } else {
+        this.showShipment = false
+        this.showIncome = false
+        this.showUsage = false
+        this.showOutput = false
       }
 
       this.workContent = response.data[0].workContent
@@ -831,6 +893,7 @@ export default {
         userId: this.userId,
         wCode: workCode
       })
+      this.itemNames = []
       for (var i = 0; i < response.data.length; i++) {
         for (var j = 0; j < response.data[i].itemDetail.length; j++) {
           this.itemNames.push(response.data[i].itemDetail[j].itemName)
@@ -842,6 +905,7 @@ export default {
         userId: this.userId
       })
       this.landItems = response.data.lands
+      this.iLandItems = response.data.lands
     },
     async getCropCodeByLandId (landId) {
       const response = await LandService.fetchCropCodeByLandId({
@@ -849,7 +913,14 @@ export default {
       })
       this.selectedCropCode = response.data[0].cropCode
       this.getCropNameByCropCode(this.selectedCropCode)
-      this.getWorkTypeByWorkTypeCode(this.selectedWorkTypeCode)
+      this.getWorkTypeByCropCode(this.selectedCropCode)
+    },
+    async getWorkTypeByCropCode (cropCode) {
+      const response = await WcService.fetchTextByCropCode({
+        cropCode: cropCode
+      })
+      this.workType = response.data
+      this.workType.push({text: '새 작업추가'})
     },
     async getCropNameByCropCode (cropCode) {
       const response = await DcService.fetchCropNameByCropCode({
@@ -862,12 +933,7 @@ export default {
         code: workTypeCode
       })
       this.workType = response.data
-    },
-    async getWorkCodeById (id) {
-      const response = await WcService.fetchWorkCodeById({
-        id: id
-      })
-      this.selectedWorkTypeCode = response.data
+      this.workType.push({text: '새 작업추가'})
     },
     async updateItem () {
       var pictureAData = ''
@@ -984,16 +1050,73 @@ export default {
       })
       this.updatedEvent.title += ' - ' + response.data[0].text
     },
+    async getIWorkTypeByCropCode (cropCode) {
+      const response = await WcService.fetchTextByCropCodeAsItem({
+        cropCode: cropCode
+      })
+      this.items = response.data
+      this.items.push({text: '새 작업추가'})
+    },
+    async getCropCodeByILandId (landId) {
+      const response = await LandService.fetchCropCodeByLandId({
+        landId: landId
+      })
+      this.selectedCropCode = response.data[0].cropCode
+      this.getIWorkTypeByCropCode(this.selectedCropCode)
+    },
+    async fetchTextByCcode (workCode) {
+      const response = await WcService.fetchOneTextByCcode({
+        code: workCode
+      })
+      this.selectedWorkTypeText = response.data[0].text
+      if (this.selectedWorkTypeText === '출하') {
+        this.showShipment = true
+        this.showIncome = true
+        this.showUsage = false
+        this.usageItems = [{
+          itemName: '',
+          usage: ''
+        }]
+        this.showOutput = false
+      } else if (this.selectedWorkTypeText === '비료' || this.selectedWorkTypeText === '농약' || this.selectedWorkTypeText === '사료') {
+        this.showShipment = false
+        this.showIncome = false
+        this.showUsage = true
+        this.showOutput = false
+      } else if (this.selectedWorkTypeText === '생산') {
+        this.showShipment = false
+        this.showIncome = false
+        this.showUsage = false
+        this.usageItems = [{
+          itemName: '',
+          usage: ''
+        }]
+        this.showOutput = true
+      } else {
+        this.showShipment = false
+        this.showIncome = false
+        this.showUsage = false
+        this.showOutput = false
+      }
+    },
+    onChangeILand: function (event) {
+      this.getCropCodeByILandId(this.iSelectLand)
+    },
     onChangeItemPrice: function (event) {
       this.itemPriceTotal = Number('0')
       for (var i = 0; i < this.itemItems.length; i++) {
         this.itemPriceTotal = Number(this.itemPriceTotal)
         this.itemPriceTotal += Number(this.itemItems[i].itemPrice)
       }
+      this.itemPriceTotal += ''
+      this.itemPriceTotal = this.itemPriceTotal.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',')
     },
     onChangeItem: function (event) {
       this.selectedItem = event
-      // console.log(event)
+      if (event === '새 작업추가') {
+        this.addWorkType(1)
+      } else {
+      }
     },
     onChangeItemCost: function (event) {
       this.CooTotal = Number('0')
@@ -1001,13 +1124,21 @@ export default {
         this.CooTotal = Number(this.CooTotal)
         this.CooTotal += Number(this.cooItems[i].cost)
       }
+      this.CooTotal += ''
+      this.CooTotal = this.CooTotal.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',')
     },
     onChangeLand: function (event) {
       this.selectedLandId = event
       this.getCropCodeByLandId(this.selectedLandId)
     },
     onChangeWorkType: function (event) {
-      this.getWorkCodeById(event)
+      this.selectedWorkTypeCode = event
+      if (event === '새 작업추가') {
+        this.addWorkType(0)
+      } else {
+        this.fetchTextByCcode(this.selectedWorkTypeCode)
+        this.fetchItemsByWcode(this.selectedWorkTypeCode)
+      }
     },
     onChangeWSTime: function (event) {
       var tmpStr = event
@@ -1101,8 +1232,16 @@ export default {
       // bus.$emit('toJournal', 'test')
       // this.dialog = false
     },
-    addWorkType () {
-      bus.$emit('dialogForAddWorkType', 'test')
+    addWorkType (workOrItem) {
+      var paramForAWT = {}
+      if (workOrItem === 0) {
+        paramForAWT.from = 'work' // 작업일지 작성시
+      } else {
+        paramForAWT.from = 'item' // 자재관리 작성시
+      }
+      paramForAWT.compType = 'edit'
+      paramForAWT.cropCode = this.selectedCropCode
+      bus.$emit('dialogForAddWorkType', paramForAWT)
     },
     addCooRow () {
       this.cooItems.push({

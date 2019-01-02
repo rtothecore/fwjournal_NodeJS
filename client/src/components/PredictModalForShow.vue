@@ -4,7 +4,7 @@
           <!-- 작 업 일 지 -->
           <v-card color="white">
             <v-card-title>
-              <span class="headline" style="color:black">{{User_Profile}}</span>
+              <span class="headline" style="color:black">{{User_Profile}}</span> <v-btn outline color="black" flat @click.native="dialog = false">닫기</v-btn> 
             </v-card-title>
             <v-card-text>
               <v-container grid-list-md>
@@ -95,7 +95,8 @@
                       required
                       v-on:change="onChangeLand"
                       item-text="name"
-                      item-value="_id"                      
+                      item-value="_id"
+                      disabled                     
                     ></v-select>
                   </v-flex>
                   <v-flex xs6 sm6 md3>
@@ -104,7 +105,8 @@
                       label="작물명" 
                       hint="농장명을 선택하면 자동입력됩니다"
                       persistent-hint
-                      required                      
+                      required       
+                      disabled                                    
                       ></v-text-field>
                   </v-flex>
                   <v-flex xs6 sm6 md3>
@@ -120,7 +122,8 @@
                       item-text="text"
                       item-value="wCode"   
                       hint="작물명에 따른 작업분류 선택"
-                      persistent-hint                                        
+                      persistent-hint
+                      disabled                                        
                     ></v-select>
                   </v-flex>
                   <v-flex xs6 sm6 md3>
@@ -132,6 +135,7 @@
                       v-model="workTime"
                       label="작업시간"
                       placeholder="Placeholder"
+                      disabled
                     ></v-text-field>
                   </v-flex>
                   <v-flex xs6 sm6 md6>
@@ -139,6 +143,7 @@
                       v-model="workerNumber"
                       label="작업인원"
                       placeholder="Placeholder"
+                      disabled
                     ></v-text-field>
                   </v-flex>                  
 
@@ -157,6 +162,7 @@
                       <v-text-field
                         label="발생분류"                      
                         v-model="item.category"
+                        disabled
                       ></v-text-field>
                     </v-flex>
                     <v-flex xs6 sm6 md6 :key="'B' + index">
@@ -164,6 +170,7 @@
                         label="발생비용"
                         v-model="item.cost"
                         v-on:change="onChangeItemCost"
+                        disabled
                       ></v-text-field>
                     </v-flex> 
                   </template>                                                     
@@ -175,6 +182,7 @@
                       v-model="CooTotal"
                       label="총 발생비용"
                       placeholder="Placeholder"
+                      disabled
                     ></v-text-field>
                   </v-flex>    
 
@@ -184,6 +192,7 @@
                         v-model="shipmentAmount"
                         label="출하량"
                         placeholder="Placeholder"
+                        disabled
                       ></v-text-field>
                     </v-flex>
                     <v-flex xs6 sm6 md6>
@@ -191,6 +200,7 @@
                         v-model="shipmentDetail"
                         label="출하량 상세"
                         placeholder="Placeholder"
+                        disabled
                       ></v-text-field>
                     </v-flex>
                   </template>
@@ -201,6 +211,7 @@
                         v-model="incomeAmount"
                         label="수입량"
                         placeholder="Placeholder"
+                        disabled
                       ></v-text-field>
                     </v-flex>
                     <v-flex xs6 sm6 md6>
@@ -208,6 +219,7 @@
                         v-model="incomeDetail"
                         label="수입량 상세"
                         placeholder="Placeholder"
+                        disabled
                       ></v-text-field>
                     </v-flex>
                   </template>
@@ -239,13 +251,15 @@
                           data-vv-name="item.itemName"
                           required                           
                           hint="품목명 선택"
-                          persistent-hint                                        
+                          persistent-hint
+                          disabled                                        
                         ></v-select>
                       </v-flex>
                       <v-flex xs6 sm6 md6 :key="'D' + index">
                         <v-text-field
                           label="사용량"
                           v-model="item.usage"
+                          disabled
                         ></v-text-field>
                       </v-flex>
                     </template>
@@ -257,6 +271,7 @@
                         v-model="outputAmount"
                         label="생산량"
                         placeholder="Placeholder"
+                        disabled
                       ></v-text-field>
                     </v-flex>
                     <v-flex xs6 sm6 md6>
@@ -264,6 +279,7 @@
                         v-model="outputDetail"
                         label="생산량 상세"
                         placeholder="Placeholder"
+                        disabled
                       ></v-text-field>
                     </v-flex>
                   </template>
@@ -276,6 +292,7 @@
                       color="deep-purple"
                       label="작업내용"
                       rows="3"
+                      disabled
                     ></v-textarea>
                   </v-flex>
 
@@ -287,6 +304,7 @@
                       color="deep-purple"
                       label="특이사항"
                       rows="3"
+                      disabled
                     ></v-textarea>
                   </v-flex>
 
@@ -554,6 +572,20 @@ export default {
 
       // console.log(response.data)  //
       this.skyStatus = response.data[0].weather.sky
+      switch (this.skyStatus) {
+        case '0' :
+          this.skyStatus = '맑음'
+          break
+        case '1' :
+          this.skyStatus = '비'
+          break
+        case '2' :
+          this.skyStatus = '비/눈'
+          break
+        case '3' :
+          this.skyStatus = '눈'
+          break
+      }
       this.RN1 = response.data[0].weather.avgRN1
       this.minT1H = response.data[0].weather.minT1H + '℃'
       this.maxT1H = response.data[0].weather.maxT1H + '℃'

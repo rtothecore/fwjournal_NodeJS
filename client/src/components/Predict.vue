@@ -1,41 +1,77 @@
 <template>
-  <v-container fluid>
-    <v-layout row wrap justify-center>
+  <v-container fluid>    
+    <v-container grid-list-md text-xs-center fluid>
+    <v-layout row wrap>
       <v-flex xs12 class="text-xs-center" mt-5>
-        <!-- <h1>{{Predict_page}}</h1> -->
         <h1>농작업 일정</h1>
-        <!-- <v-date-picker v-model="date" locale="kr" show-current="2013-07-13" v-on:change="onChangeDate"></v-date-picker> -->
-      </v-flex>
-      
-      <v-flex xs12 class="text-xs-center" mt-1>
-        <v-layout row ma-2 justify-center>
-          <v-flex xs6 md2>
-            <v-menu
-              :close-on-content-click="false"
-              v-model="menu1"
-              :nudge-right="40"
-              lazy
-              transition="scale-transition"
-              offset-y
-              full-width
-              max-width="290px"
-              min-width="290px"
-            >
-              <v-text-field
-                slot="activator"
-                v-model="computedDateFormatted"
-                label="기준날짜"
-                persistent-hint
-                prepend-icon="event"
-                readonly
-              ></v-text-field>
-              <v-date-picker v-model="sDate" no-title @input="menu1 = false" v-on:change="onChangeDate" locale='euc-kr'></v-date-picker>
-            </v-menu>
-          </v-flex>       
-        </v-layout>
       </v-flex>
 
-      <div>
+      <v-flex md4 />
+
+      <v-flex xs6 sm6 md2>
+        <v-menu
+          :close-on-content-click="false"
+          v-model="menu1"
+          :nudge-right="40"
+          lazy
+          transition="scale-transition"
+          offset-y
+          full-width
+          max-width="290px"
+          min-width="290px"
+        >
+          <v-text-field
+            slot="activator"
+            v-model="computedDateFormatted"
+            label="기준날짜"
+            persistent-hint
+            prepend-icon="event"
+            readonly
+          ></v-text-field>
+          <v-date-picker v-model="sDate" no-title @input="menu1 = false" v-on:change="onChangeDate" locale='euc-kr'></v-date-picker>
+        </v-menu>
+      </v-flex>
+
+      <v-flex xs6 sm6 md2>
+        <v-select
+          :items="landItems"
+          v-model="selectLand"
+          label="농장명"
+          class="input-group--focused"
+          item-text="name"
+          item-value="_id"
+          v-on:change="onChangeLand"
+        ></v-select>
+      </v-flex>
+
+      <v-flex xs8 sm8 md2 class="text-xs-left">
+        <v-btn          
+          color="light-blue"
+          class="white--text"
+          @click.native="searchJournals"
+        >
+          검색
+        </v-btn>
+        <v-btn
+          color="orange lighten-3"
+          class="white--text"
+          @click.native="searchReset"
+        >
+          초기화
+        </v-btn>
+      </v-flex>
+
+      <v-flex md2 />
+
+      </v-layout>
+      </v-container>
+
+      <v-container fluid pa-0>
+      <v-layout row wrap>
+        <v-flex md2 />
+
+        <v-flex xs12 sm12 md8>      
+        <div>
         <v-data-table
           :headers="headers"
           :items="journals"
@@ -56,6 +92,7 @@
           </template>
           <template slot="items" slot-scope="props">
             <td>{{ props.item.date }}</td>
+            <td class="text-xs-right">{{ props.item.landName }}</td>
             <td class="text-xs-right">{{ props.item.cropName }}</td>
             <td class="text-xs-right">{{ props.item.workType }}</td>
             <td class="text-xs-right">{{ props.item.workContent }}</td>
@@ -71,11 +108,14 @@
         <div class="text-xs-center pt-2">
           <v-pagination v-model="pagination.page" :length="pages"></v-pagination>
         </div>
+        </div>
+        </v-flex>
         <predictModalForShow></predictModalForShow>
-      </div>      
+      </v-layout>
+      </v-container>
 
-      <br/><br/><br/>
-    </v-layout>
+      <!-- <br/><br/><br/> -->
+    
   </v-container>
 </template>
 
@@ -90,6 +130,8 @@ import DcService from '@/services/DcService'
 export default {
   data () {
     return {
+      selectLand: '',
+      landItems: [],
       // Predict_page: moment().format('YYYY년 MM월 DD일'),
       startDate2: null,
       sDate: null,
@@ -109,6 +151,7 @@ export default {
           sortable: false,
           value: 'date'
         },
+        { text: '농장명', value: 'landName' },
         { text: '작물명', value: 'cropName' },
         { text: '작업분류', value: 'workType' },
         { text: '작업내용', value: 'workContent' },
@@ -129,13 +172,30 @@ export default {
     this.userId = this.$session.get('userId')
     var today = moment().format('YYYY-MM-DD')
     this.onChangeDate(today)
+    this.getLands()
   },
   methods: {
+    async getLands () {
+      const response = await LandService.fetchLands({
+        userId: this.userId
+      })
+      this.landItems = response.data.lands
+    },
     async getJournalsByDate () {
-      const response = await JournalService.fetchJournalsByDateNUserId({
+      if (!this.startDate) {
+        this.startDate = 0
+      }
+      if (!this.endDate) {
+        this.endDate = 0
+      }
+      if (!this.selectLand) {
+        this.selectLand = 0
+      }
+      const response = await JournalService.fetchJournalsByDateNUserIdNLandId({
         startDate: this.startDate,
         endDate: this.endDate,
-        userId: this.userId
+        userId: this.userId,
+        landId: this.selectLand
       })
       if (response.data.length > 0) {
         var tmpJournals = response.data
@@ -143,6 +203,9 @@ export default {
           const response2 = await LandService.fetchNameByLandId({
             landId: response.data[i].landId
           })
+
+          tmpJournals[i].landName = response2.data[0].name
+
           tmpJournals[i].cropCode = response2.data[0].cropCode
 
           const response4 = await DcService.fetchCropNameByCropCode({
@@ -156,19 +219,37 @@ export default {
           tmpJournals[i].workType = response3.data[0].text
 
           tmpJournals[i].sky = tmpJournals[i].weather.sky
+          switch (tmpJournals[i].sky) {
+            case '0' :
+              tmpJournals[i].sky = '맑음'
+              break
+            case '1' :
+              tmpJournals[i].sky = '비'
+              break
+            case '2' :
+              tmpJournals[i].sky = '비/눈'
+              break
+            case '3' :
+              tmpJournals[i].sky = '눈'
+              break
+          }
           tmpJournals[i].t1h = tmpJournals[i].weather.avgT1H
         }
         this.journals = tmpJournals
       } else {  // 작년 10일이내의 데이터가 없는 경우 작년 해당월의 데이터를 보여줌
-        const response4 = await JournalService.fetchJournalsByYMUserId({
+        const response4 = await JournalService.fetchJournalsByYMUserIdLandId({
           ym: this.lastYearYM,
-          userId: this.userId
+          userId: this.userId,
+          landId: this.selectLand
         })
         var tmpJournals2 = response4.data
         for (var j = 0; j < response4.data.length; j++) {
           const response5 = await LandService.fetchNameByLandId({
             landId: response4.data[j].landId
           })
+
+          tmpJournals2[j].landName = response5.data[0].name
+
           tmpJournals2[j].cropCode = response5.data[0].cropCode
 
           const response7 = await DcService.fetchCropNameByCropCode({
@@ -187,6 +268,9 @@ export default {
         this.journals = tmpJournals2
       }
     },
+    onChangeLand: function (event) {
+      // console.log(event)
+    },
     onChangeDate: function (event) {
       var today = moment(event, 'YYYY-MM-DD')
       var lastYear = today.subtract(1, 'year')
@@ -199,12 +283,21 @@ export default {
       this.lastYearYM = moment(event, 'YYYY-MM').subtract(1, 'year').format('YYYY-MM')
       console.log(this.lastYearYM)
 
-      this.getJournalsByDate()
+      // this.getJournalsByDate()
     },
     showItem (item) {
-      console.log(item)
+      // console.log(item)
       var emitParams = {'journalId': item._id, 'origin': 'fromPredict'}
       bus.$emit('dialogForShow', emitParams)
+    },
+    searchJournals () {
+      this.getJournalsByDate()
+    },
+    searchReset () {
+      this.startDate = ''
+      this.endDate = ''
+      this.sDate = ''
+      this.selectLand = ''
     }
   },
   computed: {

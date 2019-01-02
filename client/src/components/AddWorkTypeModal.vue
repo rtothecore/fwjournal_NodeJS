@@ -88,6 +88,7 @@ export default {
   data () {
     return {
       duplicateWorkTypeText: false,
+      compType: '',
       fromValue: '',
       addedWorkTypeCode: '',
       bcsCode: '',
@@ -128,6 +129,7 @@ export default {
     bus.$on('dialogForAddWorkType', function (value) {
       // console.log(value)
       vm.fromValue = value.from
+      vm.compType = value.compType
       vm.dcsCode = value.cropCode
       vm.dialog = true
       vm.bms = ''
@@ -275,6 +277,7 @@ export default {
         }).then((result) => {
           var paramForReturn = {}
           paramForReturn.from = this.fromValue
+          paramForReturn.compType = this.compType
           paramForReturn.addedWTC = this.addedWorkTypeCode
           bus.$emit('fromAddWorkTypeModal', paramForReturn)
           this.dialog = false

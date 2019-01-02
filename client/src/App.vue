@@ -152,6 +152,7 @@
           { title: '농장정보', path: '/configLand' }
         ],
         statsSubMenuItems: [
+          { title: '수입/지출분석', path: '/account' },
           { title: '작업시간', path: '/workTime' },
           { title: '환경모니터링', path: '/environment' }
         ]

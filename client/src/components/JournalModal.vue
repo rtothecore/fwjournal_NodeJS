@@ -35,7 +35,7 @@
                 <v-layout wrap>
                   <v-flex xs6 sm6 md6>
                     <v-text-field
-                      v-model="skyStatus"
+                      v-model="skyStatusText"
                       label="날씨"
                       placeholder="날씨"
                       hint="자동입력"
@@ -54,7 +54,7 @@
 
                   <v-flex xs6 sm6 md4>
                     <v-text-field
-                      v-model="avgT1H"
+                      v-model="avgT1HText"
                       label="평균온도"
                       placeholder="평균온도"
                       hint="자동입력"
@@ -63,7 +63,7 @@
                   </v-flex>
                   <v-flex xs6 sm6 md4>
                     <v-text-field
-                      v-model="maxT1H"
+                      v-model="maxT1HText"
                       label="최대온도"
                       placeholder="최대온도"
                       hint="자동입력"
@@ -72,7 +72,7 @@
                   </v-flex>
                   <v-flex xs6 sm6 md4>
                     <v-text-field
-                      v-model="minT1H"
+                      v-model="minT1HText"
                       label="최소온도"
                       placeholder="최소온도"
                       hint="자동입력"
@@ -82,7 +82,7 @@
 
                   <v-flex xs6 sm6 md4>
                     <v-text-field
-                      v-model="avgREH"
+                      v-model="avgREHText"
                       label="평균습도"
                       placeholder="평균습도"
                       hint="자동입력"
@@ -91,7 +91,7 @@
                   </v-flex>
                   <v-flex xs6 sm6 md4>
                     <v-text-field
-                      v-model="maxREH"
+                      v-model="maxREHText"
                       label="최대습도"
                       placeholder="최대습도"
                       hint="자동입력"
@@ -100,7 +100,7 @@
                   </v-flex>
                   <v-flex xs6 sm6 md4>
                     <v-text-field
-                      v-model="minREH"
+                      v-model="minREHText"
                       label="최소습도"
                       placeholder="최소습도"
                       hint="자동입력"
@@ -199,7 +199,7 @@
                     <v-text-field
                       v-model="CooTotal"
                       label="총 발생비용"
-                      placeholder="Placeholder"
+                      placeholder="총 발생비용"
                       disabled
                     ></v-text-field>
                   </v-flex>    
@@ -209,14 +209,15 @@
                       <v-text-field
                         v-model="shipmentAmount"
                         label="출하량"
-                        placeholder="Placeholder"
+                        placeholder="출하량"
+                        type="number"
                       ></v-text-field>
                     </v-flex>
                     <v-flex xs6 sm6 md6>
                       <v-text-field
                         v-model="shipmentDetail"
                         label="출하량 상세"
-                        placeholder="Placeholder"
+                        placeholder="출하량 상세"
                       ></v-text-field>
                     </v-flex>
                   </template>
@@ -226,7 +227,8 @@
                       <v-text-field
                         v-model="incomeAmount"
                         label="수입량"
-                        placeholder="Placeholder"
+                        placeholder="수입량"
+                        type="number"
                       ></v-text-field>
                     </v-flex>
                     <v-flex xs6 sm6 md6>
@@ -264,6 +266,7 @@
                         <v-text-field
                           label="사용량"
                           v-model="item.usage"
+                          type="number"
                         ></v-text-field>
                       </v-flex>
                     </template>
@@ -274,14 +277,15 @@
                       <v-text-field
                         v-model="outputAmount"
                         label="생산량"
-                        placeholder="Placeholder"
+                        placeholder="생산량"
+                        type="number"
                       ></v-text-field>
                     </v-flex>
                     <v-flex xs6 sm6 md6>
                       <v-text-field
                         v-model="outputDetail"
                         label="생산량 상세"
-                        placeholder="Placeholder"
+                        placeholder="생산량 상세"
                       ></v-text-field>
                     </v-flex>
                   </template>
@@ -430,7 +434,8 @@
                     <v-flex xs4 sm4 md4 :key="'D' + index">
                       <v-text-field
                         label="수량"
-                        v-model="item.itemAmount"                        
+                        v-model="item.itemAmount"  
+                        type="number"                      
                       ></v-text-field>
                     </v-flex>
                     <v-flex xs4 sm4 md4 :key="'E' + index">
@@ -438,6 +443,7 @@
                         label="가격"
                         v-model="item.itemPrice"
                         v-on:change="onChangeItemPrice"
+                        type="number"
                       ></v-text-field>
                     </v-flex>  
                   </template>                                                     
@@ -572,6 +578,14 @@ export default {
       CooTotal: 0,
       workTime: '',
       workerNumber: '',
+      //
+      minREHText: '',
+      maxREHText: '',
+      avgREHText: '',
+      minT1HText: '',
+      maxT1HText: '',
+      avgT1HText: '',
+      //
       minREH: '',
       maxREH: '',
       avgREH: '',
@@ -579,6 +593,7 @@ export default {
       maxT1H: '',
       avgT1H: '',
       RN1: '',
+      skyStatusText: '',
       skyStatus: '',
       selectedWorkTypeText: '',
       itemNames: [],
@@ -683,12 +698,14 @@ export default {
       vm.getItems()
     })
     bus.$on('fromAddWorkTypeModal', function (value) {
-      if (value.from === 'work') {
-        vm.onChangeLand(vm.selectedLandId)
-        vm.selectWorkType = value.addedWTC
-      } else {
-        vm.onChangeILand(vm.selectedLandId)
-        vm.selectItem = value.addedWTC
+      if (value.compType === 'new') {
+        if (value.from === 'work') {
+          vm.onChangeLand(vm.selectedLandId)
+          vm.selectWorkType = value.addedWTC
+        } else {
+          vm.onChangeILand(vm.selectedLandId)
+          vm.selectItem = value.addedWTC
+        }
       }
     })
   },
@@ -711,14 +728,35 @@ export default {
         endDate: eDate
       })
       if (response.data.length >= 1) {
-        this.skyStatus = response.data[0].sky
+        this.skyStatus = response.data[0].pty
+        switch (this.skyStatus) {
+          case 0 :
+            this.skyStatusText = '맑음'
+            break
+          case 1 :
+            this.skyStatusText = '비'
+            break
+          case 2 :
+            this.skyStatusText = '비/눈'
+            break
+          case 3 :
+            this.skyStatusText = '눈'
+            break
+        }
+
         this.RN1 = response.data[0].rn1
-        this.avgT1H = Math.round(response.data[0].t1hAvg) + '℃'
-        this.maxT1H = response.data[0].t1hMax + '℃'
-        this.minT1H = response.data[0].t1hMin + '℃'
-        this.avgREH = Math.round(response.data[0].rehAvg) + '%'
-        this.maxREH = response.data[0].rehMax + '%'
-        this.minREH = response.data[0].rehMin + '%'
+        this.avgT1H = response.data[0].t1hAvg
+        this.avgT1HText = Math.round(this.avgT1H) + '℃'
+        this.maxT1H = response.data[0].t1hMax
+        this.maxT1HText = this.maxT1H + '℃'
+        this.minT1H = response.data[0].t1hMin
+        this.minT1HText = this.minT1H + '℃'
+        this.avgREH = response.data[0].rehAvg
+        this.avgREHText = Math.round(this.avgREH) + '%'
+        this.maxREH = response.data[0].rehMax
+        this.maxREHText = this.maxREH + '%'
+        this.minREH = response.data[0].rehMin
+        this.minREHText = this.minREH + '%'
       } else {
         this.skyStatus = 'No data'
         this.RN1 = 'No data'
@@ -767,7 +805,7 @@ export default {
       this.workType.push({text: '새 작업추가'})
     },
     async getIWorkTypeByCropCode (cropCode) {
-      const response = await WcService.fetchTextByCropCode({
+      const response = await WcService.fetchTextByCropCodeAsItem({
         cropCode: cropCode
       })
       this.items = response.data
@@ -819,6 +857,11 @@ export default {
           usage: ''
         }]
         this.showOutput = true
+      } else {
+        this.showShipment = false
+        this.showIncome = false
+        this.showUsage = false
+        this.showOutput = false
       }
     },
     async fetchItemsByWcode (workCode) {
@@ -826,6 +869,7 @@ export default {
         userId: this.userId,
         wCode: workCode
       })
+      this.itemNames = []
       for (var i = 0; i < response.data.length; i++) {
         for (var j = 0; j < response.data[i].itemDetail.length; j++) {
           this.itemNames.push(response.data[i].itemDetail[j].itemName)
@@ -871,6 +915,12 @@ export default {
       }
     },
     async createNewItem () {
+      // 품목 사용량, 재고량 계산
+      for (var i = 0; i < this.itemItems.length; i++) {
+        this.itemItems[i].itemUsage = 0
+        this.itemItems[i].itemStock = this.itemItems[i].itemAmount
+      }
+
       // 사진 데이터
       var pictureAData = ''
       var pictureBData = ''
@@ -891,6 +941,7 @@ export default {
       const response = await ItemService.createItem({
         userId: this.userId,
         date: this.User_Profile.substring(10, 20),
+        landId: this.iSelectLand,
         item: this.selectedItem,
         itemDetail: this.itemItems,
         purpose: this.purpose,
@@ -1227,6 +1278,7 @@ export default {
       } else {
         paramForAWT.from = 'item' // 자재관리 작성시
       }
+      paramForAWT.compType = 'new'
       paramForAWT.cropCode = this.selectedCropCode
       bus.$emit('dialogForAddWorkType', paramForAWT)
     },
