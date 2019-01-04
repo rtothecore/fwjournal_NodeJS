@@ -1,10 +1,15 @@
 <template>
-  <v-container fluid>
+  <div style="width:1200px; margin:0 auto;">
+    <!-- dummy --> <div style="height:20px"/>
+        <b-row>
+          <b-col md="12">
+            <b-card header="수입/지출 분석">
+              <b-row>
+                <b-col sm="12" lg="6">
+                  <div style="width:1150px; margin:0 auto;">
+            
     <v-layout row wrap justify-center>
-      <v-flex xs12 class="text-xs-center" mt-5>
-        <h1>수입/지출 분석</h1>
-      </v-flex>
-
+     
       <v-flex xs12 class="text-xs-center" >
       <v-tabs fixed-tabs>
         <v-tab          
@@ -31,7 +36,7 @@
       <!-- 전 체 시 작 -->
       <v-flex v-if="showTotalContent" xs12 class="text-xs-center" mt-1>
         <v-layout row ma-2 justify-center>
-          <v-flex xs4 md1 order-md1 order-xs1>
+          <v-flex xs4 md2 order-md1 order-xs1>
             <v-menu
               :close-on-content-click="false"
               v-model="menu1"
@@ -58,7 +63,10 @@
               <v-date-picker v-model="sDate" no-title @input="menu1 = false" locale='euc-kr'></v-date-picker>
             </v-menu>
           </v-flex>
-          <v-flex xs4 md1 order-md2 order-xs2>
+
+          <v-flex xs4 md1 order-md2 order-xs2/>
+          
+          <v-flex xs4 md2 order-md2 order-xs2>
             <v-menu
               :close-on-content-click="false"
               v-model="menu2"
@@ -85,6 +93,9 @@
               <v-date-picker v-model="eDate" no-title @input="menu2 = false" locale='euc-kr'></v-date-picker>
             </v-menu>
           </v-flex>
+
+          <v-flex xs4 md1 order-md2 order-xs2/>
+
           <v-flex xs4 md1 order-md3 order-xs3>
             <v-btn
               :loading="loading"
@@ -99,7 +110,7 @@
         </v-layout>
       </v-flex>      
 
-      <div v-if="showTotalContent" id="chartContainerForTotal" style="height: 360px; width: 70%;" />
+      <div v-if="showTotalContent" id="chartContainerForTotal" style="height: 360px; width: 90%;" />
       
       <!-- dummy -->
       <div v-if="showTotalContent" style="height: 10px; width: 100%;" />
@@ -108,8 +119,8 @@
 
       <v-flex v-if="showTotalContent" xs12 class="text-xs-left" mt-1>
         <v-layout row ma-2 justify-center>
-          <v-flex xs2 md2 order-md1 order-xs1/>
-          <v-flex xs8 md8 order-md2 order-xs2>
+          <!-- <v-flex xs2 md2 order-md1 order-xs1/> -->
+          <v-flex xs8 md11 order-md2 order-xs2>
             <h2>지출</h2>
             <v-divider :key="`divider-1`"></v-divider>
             <!-- <h3>발생비용 &nbsp;&nbsp;&nbsp; {{ totalCooCost }}</h3> -->
@@ -118,35 +129,35 @@
             <v-divider :key="`divider-2`"></v-divider>
             <h3>소계 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {{ getStrWithComma(totalExpenditure) }}</h3>
           </v-flex>
-          <v-flex xs2 md2 order-md3 order-xs3/>                                     
+          <!-- <v-flex xs2 md2 order-md3 order-xs3/> -->                                     
         </v-layout>
 
         <!-- dummy -->
         <div v-if="showTotalContent" style="height: 10px; width: 100%;" />
 
         <v-layout row ma-2 justify-center>
-          <v-flex xs2 md2 order-md1 order-xs1/>
-          <v-flex xs8 md8 order-md2 order-xs2>
+          <!-- <v-flex xs2 md2 order-md1 order-xs1/> -->
+          <v-flex xs8 md11 order-md2 order-xs2>
             <h2>수입</h2>
             <v-divider :key="`divider-1`"></v-divider>
             <h3>수입비용 &nbsp;&nbsp;&nbsp; {{ getStrWithComma(totalIncomeCost) }}</h3>            
             <v-divider :key="`divider-2`"></v-divider>
             <h3>소계 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {{ getStrWithComma(totalIncomeCost) }}</h3>
           </v-flex>
-          <v-flex xs2 md2 order-md3 order-xs3/>                                     
+          <!-- <v-flex xs2 md2 order-md3 order-xs3/> -->
         </v-layout>
 
         <!-- dummy -->
         <div v-if="showTotalContent" style="height: 10px; width: 100%;" />
 
         <v-layout row ma-2 justify-center>
-          <v-flex xs2 md2 order-md1 order-xs1/>
-          <v-flex xs8 md8 order-md2 order-xs2>
+          <!-- <v-flex xs2 md2 order-md1 order-xs1/> -->
+          <v-flex xs8 md11 order-md2 order-xs2>
             <h2>수입/지출 분석</h2>
             <v-divider :key="`divider-1`"></v-divider>
             <h3>수입-지출 &nbsp;&nbsp;&nbsp; {{ getStrWithComma(totalIncMinusExp) }}</h3>                        
           </v-flex>
-          <v-flex xs2 md2 order-md3 order-xs3/>                                     
+          <!-- <v-flex xs2 md2 order-md3 order-xs3/> -->
         </v-layout>         
 
       </v-flex>
@@ -156,7 +167,7 @@
       <!-- 수 입 시 작 -->
       <v-flex v-if="showIncomeContent" xs12 class="text-xs-center" mt-1>
         <v-layout row ma-2 justify-center>
-          <v-flex xs4 md1 order-md1 order-xs1>
+          <v-flex xs4 md2 order-md1 order-xs1>
             <v-menu
               :close-on-content-click="false"
               v-model="menu1"
@@ -183,7 +194,10 @@
               <v-date-picker v-model="sDate" no-title @input="menu1 = false" locale='euc-kr'></v-date-picker>
             </v-menu>
           </v-flex>
-          <v-flex xs4 md1 order-md2 order-xs2>
+
+          <v-flex xs4 md1 order-md2 order-xs2/>
+
+          <v-flex xs4 md2 order-md2 order-xs2>
             <v-menu
               :close-on-content-click="false"
               v-model="menu2"
@@ -210,6 +224,9 @@
               <v-date-picker v-model="eDate" no-title @input="menu2 = false" locale='euc-kr'></v-date-picker>
             </v-menu>
           </v-flex>
+
+          <v-flex xs4 md1 order-md2 order-xs2/>
+
           <v-flex xs4 md1 order-md3 order-xs3>
             <v-btn
               :loading="loading"
@@ -224,7 +241,7 @@
         </v-layout>
       </v-flex>      
 
-      <div v-if="showIncomeContent" id="chartContainerForIncome" style="height: 360px; width: 70%;" />
+      <div v-if="showIncomeContent" id="chartContainerForIncome" style="height: 360px; width: 90%;" />
       
       <!-- dummy -->
       <div v-if="showIncomeContent" style="height: 50px; width: 100%;" />
@@ -233,8 +250,8 @@
 
       <v-flex v-if="showIncomeContent" xs12 class="text-xs-left" mt-1>
         <v-layout row ma-2 justify-center>
-          <v-flex xs2 md2 order-md1 order-xs1/>
-          <v-flex xs8 md8 order-md2 order-xs2>
+          <!-- <v-flex xs2 md2 order-md1 order-xs1/> -->
+          <v-flex xs8 md11 order-md2 order-xs2>
             <h2>출하/생산</h2>
             <v-divider :key="`divider-1`"></v-divider> 
 
@@ -266,7 +283,7 @@
             </v-data-table>
 
           </v-flex>
-          <v-flex xs2 md2 order-md3 order-xs3/>                                     
+          <!-- <v-flex xs2 md2 order-md3 order-xs3/> -->
         </v-layout>              
       </v-flex>
 
@@ -275,7 +292,7 @@
       <!-- 지 출 시 작 -->
       <v-flex v-if="showExpContent" xs12 class="text-xs-center" mt-1>
         <v-layout row ma-2 justify-center>
-          <v-flex xs4 md1 order-md1 order-xs1>
+          <v-flex xs4 md2 order-md1 order-xs1>
             <v-menu
               :close-on-content-click="false"
               v-model="menu1"
@@ -302,7 +319,10 @@
               <v-date-picker v-model="sDate" no-title @input="menu1 = false" locale='euc-kr'></v-date-picker>
             </v-menu>
           </v-flex>
-          <v-flex xs4 md1 order-md2 order-xs2>
+
+          <v-flex xs4 md1 order-md2 order-xs2/>
+
+          <v-flex xs4 md2 order-md2 order-xs2>
             <v-menu
               :close-on-content-click="false"
               v-model="menu2"
@@ -329,6 +349,9 @@
               <v-date-picker v-model="eDate" no-title @input="menu2 = false" locale='euc-kr'></v-date-picker>
             </v-menu>
           </v-flex>
+
+          <v-flex xs4 md1 order-md2 order-xs2/>
+
           <v-flex xs4 md1 order-md3 order-xs3>
             <v-btn
               :loading="loading"
@@ -347,7 +370,7 @@
           <v-flex xs4 md1 order-md1 order-xs1>            
           </v-flex>
 
-          <v-flex xs4 md3 order-md2 order-xs2>
+          <v-flex xs4 md4 order-md2 order-xs2>
              <v-radio-group v-model="row" row>
               <v-radio label="발생비용" value="radio-coo" @change='radioChanged'></v-radio>
               <v-radio label="자재구입" value="radio-item" @change='radioChanged'></v-radio>
@@ -361,7 +384,7 @@
         <!-- Radio button -->
       </v-flex>      
 
-      <div v-if="showExpContent" id="chartContainerForExp" style="height: 360px; width: 70%;" />
+      <div v-if="showExpContent" id="chartContainerForExp" style="height: 360px; width: 90%;" />
       
       <!-- dummy -->
       <div v-if="showExpContent" style="height: 50px; width: 100%;" />
@@ -370,8 +393,8 @@
 
       <v-flex v-if="showExpContent && showExpCOOContent" xs12 class="text-xs-left" mt-1>
         <v-layout row ma-2 justify-center>
-          <v-flex xs2 md2 order-md1 order-xs1/>
-          <v-flex xs8 md8 order-md2 order-xs2>
+          <!-- <v-flex xs2 md2 order-md1 order-xs1/> -->
+          <v-flex xs8 md11 order-md2 order-xs2>
             <h2>발생비용</h2>
             <v-divider :key="`divider-1`"></v-divider> 
 
@@ -396,7 +419,7 @@
             </v-data-table>
 
           </v-flex>
-          <v-flex xs2 md2 order-md3 order-xs3/>                                     
+          <!-- <v-flex xs2 md2 order-md3 order-xs3/> -->
         </v-layout>              
       </v-flex>
 
@@ -404,8 +427,8 @@
 
       <v-flex v-if="showExpContent && showExpItemContent" xs12 class="text-xs-left" mt-1>
         <v-layout row ma-2 justify-center>
-          <v-flex xs2 md2 order-md1 order-xs1/>
-          <v-flex xs8 md8 order-md2 order-xs2>
+          <!-- <v-flex xs2 md2 order-md1 order-xs1/> -->
+          <v-flex xs8 md11 order-md2 order-xs2>
             <h2>자재구입</h2>
             <v-divider :key="`divider-2`"></v-divider> 
 
@@ -430,14 +453,21 @@
             </v-data-table>
 
           </v-flex>
-          <v-flex xs2 md2 order-md3 order-xs3/>                                     
+          <!-- <v-flex xs2 md2 order-md3 order-xs3/> -->
         </v-layout>              
       </v-flex>
 
       <!-- 지 출 끝 -->
 
     </v-layout>
-  </v-container>
+          
+                  </div>
+                </b-col>              
+              </b-row>              
+            </b-card>
+          </b-col>
+        </b-row>
+      </div>
 </template>
 
 <script>

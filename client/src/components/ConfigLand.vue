@@ -1,20 +1,19 @@
 <template>
-  <v-container fluid>
-    <v-layout row wrap justify-center>
-      <v-flex xs12 class="text-xs-center" mt-5>
-        <h1>농장정보 설정</h1>
-      </v-flex>
-
-      <v-flex md5 />
-
-      <v-flex xs12 md2 class="text-xs-center" mt-3>    
-      </v-flex>
+  <div style="width:1200px; margin:0 auto;">
+    <!-- dummy --> <div style="height:20px"/>
+        <b-row>
+          <b-col md="12">
+            <b-card header="농장정보 설정">
+              <b-row>
+                <b-col sm="12" lg="6">
+                  <div style="width:1150px; margin:0 auto;">
+            
+    <v-layout row wrap pl-4>      
 
       <v-flex md5 />
 
       <searchAddressModal></searchAddressModal>
 
-      <!-- <div> -->
         <v-dialog v-model="dialog" max-width="500px">
           <v-btn slot="activator" color="primary" dark class="mb-2">새 농장</v-btn>
           <v-card>
@@ -140,38 +139,40 @@
             </v-card-actions>
           </v-card>
         </v-dialog>
-      <div>
-        <v-data-table
-          :headers="headers"
-          :items="lands"
-          hide-actions
-          class="elevation-1"
-        >
-          <template slot="items" slot-scope="props">
-            <td>{{ props.item.name }}</td>
-            <td class="text-xs-right">{{ props.item.address }}</td>
-            <td class="text-xs-right">{{ props.item.size }}</td>
-            <td class="text-xs-right">{{ props.item.cropCode }}</td>
-            <td class="justify-center layout px-0">
-              <v-btn icon class="mx-0" @click="editItem(props.item)">
-                <v-icon color="teal">edit</v-icon>
-              </v-btn>
-              <v-btn icon class="mx-0" @click="deleteItem(props.item)">
-                <v-icon color="pink">delete</v-icon>
-              </v-btn>
-            </td>
-          </template>
-          <!--
-          <template slot="no-data">
-            <v-btn color="primary" @click="initialize">Reset</v-btn>
-          </template>
-          -->
-        </v-data-table>
-      </div>
+      
+        <v-flex xs12 sm12 md12>   
+          <v-data-table
+            :headers="headers"
+            :items="lands"
+            hide-actions
+            class="elevation-1"
+          >
+            <template slot="items" slot-scope="props">
+              <td>{{ props.item.name }}</td>
+              <td>{{ props.item.address }}</td>
+              <td>{{ props.item.size }}</td>
+              <td>{{ props.item.cropCode }}</td>
+              <td class="layout px-0">
+                <v-btn icon class="mx-0" @click="editItem(props.item)">
+                  <v-icon color="teal">edit</v-icon>
+                </v-btn>
+                <v-btn icon class="mx-0" @click="deleteItem(props.item)">
+                  <v-icon color="pink">delete</v-icon>
+                </v-btn>
+              </td>
+            </template>          
+          </v-data-table>
+        </v-flex>      
       
     </v-layout>
-    <br/><br/><br/>
-  </v-container>
+                
+                  </div>
+                </b-col>              
+              </b-row>              
+            </b-card>
+          </b-col>
+        </b-row>
+      </div>
 </template>
 
 <script>

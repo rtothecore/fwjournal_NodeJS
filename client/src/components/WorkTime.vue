@@ -1,12 +1,15 @@
 <template>
-  <v-container fluid>
-    <v-layout row wrap justify-center>
-      <v-flex xs12 class="text-xs-center" mt-5>
-        <h1>작업시간</h1>
-      </v-flex>
-
-      <v-flex md2 />
-
+  <div style="width:1200px; margin:0 auto;">
+    <!-- dummy --> <div style="height:20px"/>
+        <b-row>
+          <b-col md="12">
+            <b-card header="작업시간">
+              <b-row>
+                <b-col sm="12" lg="6">
+                  <div style="width:1150px; margin:0 auto;">
+            
+    <v-layout row wrap pl-4>
+      
        <v-flex xs6 sm6 md2>
         <v-menu
           :close-on-content-click="false"
@@ -34,6 +37,8 @@
           <v-date-picker v-model="sDate" no-title @input="menu1 = false" locale='euc-kr'></v-date-picker>
         </v-menu>
       </v-flex>
+
+      <v-flex md1/>  
 
       <v-flex xs6 sm6 md2>
         <v-menu
@@ -63,6 +68,8 @@
         </v-menu>
       </v-flex>
 
+      <v-flex md1/>  
+
       <v-flex xs8 sm4 md2>
         <v-select
           :items="landItems"
@@ -80,7 +87,9 @@
         ></v-select>
       </v-flex>
 
-      <v-flex xs4 sm8 md2 class="text-xs-left">
+      <v-flex md3/>  
+
+      <v-flex xs4 sm8 md1 class="text-xs-left">
         <v-btn
           :loading="loading"
           :disabled="loading"
@@ -94,10 +103,17 @@
       
       <v-flex md2 />
 
-      <div id="chartContainer" style="height: 360px; width: 70%;" />
+      <div id="chartContainer" style="height: 360px; width: 90%;" />
           
     </v-layout>
-  </v-container>
+          
+                  </div>
+                </b-col>              
+              </b-row>              
+            </b-card>
+          </b-col>
+        </b-row>
+      </div>
 </template>
 
 <script>

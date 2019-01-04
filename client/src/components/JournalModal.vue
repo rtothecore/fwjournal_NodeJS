@@ -26,23 +26,40 @@
           <v-tab-item            
             :key="1"
           >
+          
           <v-card color="white">
+
+            <div style="width:1200px; margin:0 auto;">
+              <!-- dummy --> <div style="height:20px"/>
+        <b-row>
+          <b-col md="12">
+            <b-card header="작업일지 작성">
+              <b-row>
+                <b-col sm="12" lg="6">
+                  <div style="width:1150px; margin:0 auto;">
+            <!--
             <v-card-title>
-              <span class="headline" style="color:black">{{User_Profile}}</span> <v-btn outline color="black" flat @click.native="dialog = false">닫기</v-btn>
+              <span class="headline" style="color:black">{{User_Profile}}</span>               
             </v-card-title>
+            -->
+              <span class="headline" style="color:black; padding-left:40px; float:left">{{User_Profile}}</span>               
+              <span style="float:right">
+                <v-btn outline color="black" flat @click.native="dialog = false">닫기</v-btn>
+              </span>
+
             <v-card-text>
               <v-container grid-list-md>
                 <v-layout wrap>
-                  <v-flex xs6 sm6 md6>
+                  <v-flex xs6 sm6 md3>
                     <v-text-field
                       v-model="skyStatusText"
                       label="날씨"
                       placeholder="날씨"
                       hint="자동입력"
                       disabled
-                    ></v-text-field>
+                    ></v-text-field>                    
                   </v-flex>
-                  <v-flex xs6 sm6 md6>
+                  <v-flex xs6 sm6 md3>
                     <v-text-field
                       v-model="RN1"
                       label="강수량"
@@ -51,8 +68,9 @@
                       disabled
                     ></v-text-field>
                   </v-flex>
+                  <v-flex xs6 sm6 md6/>
 
-                  <v-flex xs6 sm6 md4>
+                  <v-flex xs6 sm6 md2>
                     <v-text-field
                       v-model="avgT1HText"
                       label="평균온도"
@@ -61,7 +79,7 @@
                       disabled
                     ></v-text-field>
                   </v-flex>
-                  <v-flex xs6 sm6 md4>
+                  <v-flex xs6 sm6 md2>
                     <v-text-field
                       v-model="maxT1HText"
                       label="최대온도"
@@ -70,7 +88,7 @@
                       disabled
                     ></v-text-field>
                   </v-flex>
-                  <v-flex xs6 sm6 md4>
+                  <v-flex xs6 sm6 md2>
                     <v-text-field
                       v-model="minT1HText"
                       label="최소온도"
@@ -80,7 +98,7 @@
                     ></v-text-field>
                   </v-flex>
 
-                  <v-flex xs6 sm6 md4>
+                  <v-flex xs6 sm6 md2>
                     <v-text-field
                       v-model="avgREHText"
                       label="평균습도"
@@ -89,7 +107,7 @@
                       disabled
                     ></v-text-field>
                   </v-flex>
-                  <v-flex xs6 sm6 md4>
+                  <v-flex xs6 sm6 md2>
                     <v-text-field
                       v-model="maxREHText"
                       label="최대습도"
@@ -98,7 +116,7 @@
                       disabled
                     ></v-text-field>
                   </v-flex>
-                  <v-flex xs6 sm6 md4>
+                  <v-flex xs6 sm6 md2>
                     <v-text-field
                       v-model="minREHText"
                       label="최소습도"
@@ -131,7 +149,7 @@
                       required                      
                       ></v-text-field>
                   </v-flex>
-                  <v-flex xs6 sm6 md3>
+                  <v-flex xs6 sm6 md2>
                     <v-select
                       v-validate="'required'"
                       :items="workType"
@@ -147,11 +165,9 @@
                       persistent-hint                                        
                     ></v-select>
                   </v-flex>
-                  <v-flex xs6 sm6 md3>
-                    <!-- <v-btn outline color="black" @click.native="addWorkType">작업추가</v-btn> -->
-                  </v-flex>
+                  
 
-                  <v-flex xs6 sm6 md6>
+                  <v-flex xs6 sm6 md2>
                     <v-text-field
                       v-model="workTime"
                       label="작업시간"
@@ -159,7 +175,7 @@
                       type="number"
                     ></v-text-field>
                   </v-flex>
-                  <v-flex xs6 sm6 md6>
+                  <v-flex xs6 sm6 md2>
                     <v-text-field
                       v-model="workerNumber"
                       label="작업인원"
@@ -235,7 +251,7 @@
                       <v-text-field
                         v-model="incomeDetail"
                         label="수입량 상세"
-                        placeholder="Placeholder"
+                        placeholder="수입량 상세"
                       ></v-text-field>
                     </v-flex>
                   </template>
@@ -356,7 +372,7 @@
                   
                 </v-layout>
               </v-container>
-              <small>*필수 입력 사항입니다</small>
+              <!-- <small>*필수 입력 사항입니다</small> -->
             </v-card-text>
             <v-card-actions>
               <v-spacer></v-spacer>
@@ -364,6 +380,16 @@
               <!-- <v-btn color="blue darken-1" flat @click.native="dialog = false" :disabled="!valid">작성</v-btn> -->
               <v-btn outline color="black" flat @click.native="save">작성</v-btn>
             </v-card-actions>
+
+            
+                  </div>
+                </b-col>              
+              </b-row>              
+            </b-card>
+          </b-col>
+        </b-row>
+      </div>  
+
           </v-card>
         </v-tab-item>
         <!-- 작 업 일 지 -->
@@ -373,9 +399,26 @@
             :key="2"
           >
           <v-card color="white">
+
+            <div style="width:1200px; margin:0 auto;">
+              <!-- dummy --> <div style="height:20px"/>
+        <b-row>
+          <b-col md="12">
+            <b-card header="자재관리 작성">
+              <b-row>
+                <b-col sm="12" lg="6">
+                  <div style="width:1150px; margin:0 auto;">
+            
+            <!--
             <v-card-title>
               <span class="headline" style="color:black">{{Item_User_Profile}}</span> <v-btn outline color="black" flat @click.native="dialog = false">닫기</v-btn>
             </v-card-title>
+            -->
+            <span class="headline" style="color:black; padding-left:40px; float:left">{{Item_User_Profile}}</span>               
+            <span style="float:right">
+              <v-btn outline color="black" flat @click.native="dialog = false">닫기</v-btn>
+            </span>
+
             <v-card-text>
               <v-container grid-list-md>
                 <v-layout wrap>
@@ -522,6 +565,15 @@
               <!-- <v-btn color="blue darken-1" flat @click.native="dialog = false" :disabled="!valid">작성</v-btn> -->
               <v-btn outline color="black" flat @click.native="itemSave">작성</v-btn>
             </v-card-actions>
+
+                  </div>
+                </b-col>              
+              </b-row>              
+            </b-card>
+          </b-col>
+        </b-row>
+      </div>
+
           </v-card>
         </v-tab-item>
         <!-- 자 재 일 지 -->
@@ -681,8 +733,10 @@ export default {
     var vm = this
     bus.$on('dialog', function (value) {
       Object.assign(vm.$data, vm.$options.data.call(vm))  // initialize this data
-      vm.User_Profile = '작업일지 작성 - ' + value
-      vm.Item_User_Profile = '자재관리 작성 - ' + value
+      // vm.User_Profile = '작업일지 작성 - ' + value
+      vm.User_Profile = value
+      // vm.Item_User_Profile = '자재관리 작성 - ' + value
+      vm.Item_User_Profile = value
       vm.selectLand = ''
       vm.cropName = ''
       vm.selectWorkType = ''
@@ -940,7 +994,8 @@ export default {
 
       const response = await ItemService.createItem({
         userId: this.userId,
-        date: this.User_Profile.substring(10, 20),
+        // date: this.User_Profile.substring(10, 20),
+        date: this.User_Profile,
         landId: this.iSelectLand,
         item: this.selectedItem,
         itemDetail: this.itemItems,
@@ -957,8 +1012,12 @@ export default {
       })
       workTypeVal = response2.data[0].text
       this.newEvent.title = workTypeVal + ' 구입'
+      /*
       this.newEvent.start = this.User_Profile.substring(10, 20)
       this.newEvent.end = this.User_Profile.substring(10, 20)
+      */
+      this.newEvent.start = this.User_Profile
+      this.newEvent.end = this.User_Profile
       this.newEvent.color = 'orange'
     },
     async createNewJournal () {
@@ -1021,7 +1080,8 @@ export default {
 
       const response = await JournalService.createJournal({
         userId: this.userId,
-        date: this.User_Profile.substring(10, 20),
+        // date: this.User_Profile.substring(10, 20),
+        date: this.User_Profile,
         landId: this.selectedLandId,
         workCode: this.selectedWorkTypeCode,
         workContent: this.workContent,
@@ -1044,8 +1104,10 @@ export default {
       this.fetchNameByLandId(this.selectedLandId)
       this.fetchCropNameByCropCode(this.selectedCropCode)
       this.fetchTextByCode(this.selectedWorkTypeCode)
-      this.newEvent.start = this.User_Profile.substring(10, 20)
-      this.newEvent.end = this.User_Profile.substring(10, 20)
+      // this.newEvent.start = this.User_Profile.substring(10, 20)
+      // this.newEvent.end = this.User_Profile.substring(10, 20)
+      this.newEvent.start = this.User_Profile
+      this.newEvent.end = this.User_Profile
     },
     /*
     task1: function (callback) {

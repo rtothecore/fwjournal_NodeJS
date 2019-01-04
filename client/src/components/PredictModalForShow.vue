@@ -3,13 +3,30 @@
     <v-dialog v-model="dialog" persistent max-width="1024px" height="768px" fullscreen hide-overlay transition="dialog-bottom-transition">    
           <!-- 작 업 일 지 -->
           <v-card color="white">
+
+            <div style="width:1200px; margin:0 auto;">
+              <!-- dummy --> <div style="height:20px"/>
+        <b-row>
+          <b-col md="12">
+            <b-card header="작업일지">
+              <b-row>
+                <b-col sm="12" lg="6">
+                  <div style="width:1150px; margin:0 auto;">
+            
+            <!--
             <v-card-title>
               <span class="headline" style="color:black">{{User_Profile}}</span> <v-btn outline color="black" flat @click.native="dialog = false">닫기</v-btn> 
             </v-card-title>
+            -->
+            <span class="headline" style="color:black; padding-left:40px; float:left">{{User_Profile}}</span>               
+            <span style="float:right">
+              <v-btn outline color="black" flat @click.native="dialog = false">닫기</v-btn>
+            </span>
+
             <v-card-text>
               <v-container grid-list-md>
                 <v-layout wrap>
-                  <v-flex xs6 sm6 md6>
+                  <v-flex xs6 sm6 md3>
                     <v-text-field
                       v-model="skyStatus"
                       label="날씨"
@@ -18,7 +35,7 @@
                       disabled
                     ></v-text-field>
                   </v-flex>
-                  <v-flex xs6 sm6 md6>
+                  <v-flex xs6 sm6 md3>
                     <v-text-field
                       v-model="RN1"
                       label="강수량"
@@ -27,8 +44,9 @@
                       disabled
                     ></v-text-field>
                   </v-flex>
+                  <v-flex xs6 sm6 md6/>
 
-                  <v-flex xs6 sm6 md4>
+                  <v-flex xs6 sm6 md2>
                     <v-text-field
                       v-model="avgT1H"
                       label="평균온도"
@@ -37,7 +55,7 @@
                       disabled
                     ></v-text-field>
                   </v-flex>
-                  <v-flex xs6 sm6 md4>
+                  <v-flex xs6 sm6 md2>
                     <v-text-field
                       v-model="maxT1H"
                       label="최대온도"
@@ -46,7 +64,7 @@
                       disabled
                     ></v-text-field>
                   </v-flex>
-                  <v-flex xs6 sm6 md4>
+                  <v-flex xs6 sm6 md2>
                     <v-text-field
                       v-model="minT1H"
                       label="최소온도"
@@ -56,7 +74,7 @@
                     ></v-text-field>
                   </v-flex>
 
-                  <v-flex xs6 sm6 md4>
+                  <v-flex xs6 sm6 md2>
                     <v-text-field
                       v-model="avgREH"
                       label="평균습도"
@@ -65,7 +83,7 @@
                       disabled
                     ></v-text-field>
                   </v-flex>
-                  <v-flex xs6 sm6 md4>
+                  <v-flex xs6 sm6 md2>
                     <v-text-field
                       v-model="maxREH"
                       label="최대습도"
@@ -74,7 +92,7 @@
                       disabled
                     ></v-text-field>
                   </v-flex>
-                  <v-flex xs6 sm6 md4>
+                  <v-flex xs6 sm6 md2>
                     <v-text-field
                       v-model="minREH"
                       label="최소습도"
@@ -109,7 +127,7 @@
                       disabled                                    
                       ></v-text-field>
                   </v-flex>
-                  <v-flex xs6 sm6 md3>
+                  <v-flex xs6 sm6 md2>
                     <v-select
                       v-validate="'required'"
                       :items="workType"
@@ -126,11 +144,8 @@
                       disabled                                        
                     ></v-select>
                   </v-flex>
-                  <v-flex xs6 sm6 md3>
-                    <!-- <v-btn outline color="black" @click.native="addWorkType">작업추가</v-btn> -->
-                  </v-flex>
-
-                  <v-flex xs6 sm6 md6>
+                  
+                  <v-flex xs6 sm6 md2>
                     <v-text-field
                       v-model="workTime"
                       label="작업시간"
@@ -138,7 +153,7 @@
                       disabled
                     ></v-text-field>
                   </v-flex>
-                  <v-flex xs6 sm6 md6>
+                  <v-flex xs6 sm6 md2>
                     <v-text-field
                       v-model="workerNumber"
                       label="작업인원"
@@ -352,7 +367,7 @@
                   
                 </v-layout>
               </v-container>
-              <small>*필수 입력 사항입니다</small>
+              <!-- <small>*필수 입력 사항입니다</small> -->
             </v-card-text>
             <v-card-actions>
               <v-spacer></v-spacer>
@@ -360,6 +375,15 @@
               <v-btn outline color="black" flat @click.native="dialog = false">닫기</v-btn>              
               <!-- <v-btn outline color="black" flat @click.native="save">수정</v-btn> -->
             </v-card-actions>
+
+                  </div>
+                </b-col>              
+              </b-row>              
+            </b-card>
+          </b-col>
+        </b-row>
+      </div>
+
           </v-card>
         <!-- 작 업 일 지 -->
     </v-dialog>
@@ -531,7 +555,7 @@ export default {
       const response = await ItemService.fetchItem({
         id: this.itemId
       })
-      this.Item_User_Profile = '자재관리 수정 - ' + response.data[0].date
+      this.Item_User_Profile = response.data[0].date
 
       // 구입품목
       this.getItems()
@@ -568,7 +592,7 @@ export default {
       const response = await JournalService.fetchJournal({
         id: this.journalId
       })
-      this.User_Profile = '영농일지 - ' + response.data[0].date
+      this.User_Profile = response.data[0].date
 
       // console.log(response.data)  //
       this.skyStatus = response.data[0].weather.sky
@@ -726,7 +750,8 @@ export default {
       await ItemService.updateItem({
         id: this.itemId,
         userId: this.userId,
-        date: this.Item_User_Profile.substring(10, 20),
+        // date: this.Item_User_Profile.substring(10, 20),
+        date: this.Item_User_Profile,
         item: this.selectItem,
         itemDetail: this.itemItems,
         purpose: this.purpose,
@@ -742,8 +767,10 @@ export default {
       })
       workTypeVal = response2.data[0].text
       this.updatedEvent.title = workTypeVal + ' 구입'
-      this.updatedEvent.start = this.Item_User_Profile.substring(10, 20)
-      this.updatedEvent.end = this.Item_User_Profile.substring(10, 20)
+      // this.updatedEvent.start = this.Item_User_Profile.substring(10, 20)
+      // this.updatedEvent.end = this.Item_User_Profile.substring(10, 20)
+      this.updatedEvent.start = this.Item_User_Profile
+      this.updatedEvent.end = this.Item_User_Profile
       this.updatedEvent.itemId = this.itemId
       this.updatedEvent.eventIndex = this.eventIndex
       this.updatedEvent.color = 'orange'
@@ -772,7 +799,8 @@ export default {
       await JournalService.updateJournal({
         id: this.journalId,
         userId: this.userId,
-        date: this.User_Profile.substring(10, 20),
+        // date: this.User_Profile.substring(10, 20),
+        date: this.User_Profile,
         landId: this.selectLand,
         workCode: this.selectedWorkTypeCode,
         workContent: this.workContent,
@@ -792,8 +820,10 @@ export default {
       this.fetchNameByLandId(this.selectLand)
       this.fetchCropNameByCropCode(this.selectedCropCode)
       this.fetchTextByCode(this.selectedWorkTypeCode)
-      this.updatedEvent.start = this.User_Profile.substring(10, 20)
-      this.updatedEvent.end = this.User_Profile.substring(10, 20)
+      // this.updatedEvent.start = this.User_Profile.substring(10, 20)
+      // this.updatedEvent.end = this.User_Profile.substring(10, 20)
+      this.updatedEvent.start = this.User_Profile
+      this.updatedEvent.end = this.User_Profile
       this.updatedEvent.journalId = this.journalId
       this.updatedEvent.eventIndex = this.eventIndex
     },

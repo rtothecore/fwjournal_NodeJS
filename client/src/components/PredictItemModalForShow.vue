@@ -3,9 +3,26 @@
     <v-dialog v-model="dialog" persistent max-width="1024px" height="768px" fullscreen hide-overlay transition="dialog-bottom-transition">    
           <!-- 자 재 일 지 -->        
           <v-card color="white">
+
+            <div style="width:1200px; margin:0 auto;">
+              <!-- dummy --> <div style="height:20px"/>
+        <b-row>
+          <b-col md="12">
+            <b-card header="자재관리">
+              <b-row>
+                <b-col sm="12" lg="6">
+                  <div style="width:1150px; margin:0 auto;">                  
+
+            <!--
             <v-card-title>
               <span class="headline" style="color:black">{{Item_User_Profile}}</span> <v-btn outline color="black" flat @click.native="dialog = false">닫기</v-btn> 
             </v-card-title>
+            -->
+            <span class="headline" style="color:black; padding-left:40px; float:left">{{Item_User_Profile}}</span>               
+            <span style="float:right">
+              <v-btn outline color="black" flat @click.native="dialog = false">닫기</v-btn>
+            </span>
+
             <v-card-text>
               <v-container grid-list-md>
                 <v-layout wrap>   
@@ -150,7 +167,7 @@
                   
                 </v-layout>
               </v-container>
-              <small>*필수 입력 사항입니다</small>
+              <!-- <small>*필수 입력 사항입니다</small> -->
             </v-card-text>
             <v-card-actions>
               <v-spacer></v-spacer>
@@ -158,6 +175,15 @@
               <v-btn outline color="black" flat @click.native="dialog = false">닫기</v-btn>              
               <!-- <v-btn outline color="black" flat @click.native="itemSave">작성</v-btn> -->
             </v-card-actions>
+
+                  </div>
+                </b-col>              
+              </b-row>              
+            </b-card>
+          </b-col>
+        </b-row>
+      </div>
+
           </v-card>        
         <!-- 자 재 일 지 -->
     </v-dialog>
@@ -330,7 +356,7 @@ export default {
       const response = await ItemService.fetchItem({
         id: this.itemId
       })
-      this.Item_User_Profile = '자재관리 - ' + response.data[0].date
+      this.Item_User_Profile = response.data[0].date
 
       // 농장명
       this.selectLand = response.data[0].landId
@@ -514,7 +540,8 @@ export default {
       await ItemService.updateItem({
         id: this.itemId,
         userId: this.userId,
-        date: this.Item_User_Profile.substring(10, 20),
+        // date: this.Item_User_Profile.substring(10, 20),
+        date: this.Item_User_Profile,
         item: this.selectItem,
         itemDetail: this.itemItems,
         purpose: this.purpose,
@@ -530,8 +557,10 @@ export default {
       })
       workTypeVal = response2.data[0].text
       this.updatedEvent.title = workTypeVal + ' 구입'
-      this.updatedEvent.start = this.Item_User_Profile.substring(10, 20)
-      this.updatedEvent.end = this.Item_User_Profile.substring(10, 20)
+      // this.updatedEvent.start = this.Item_User_Profile.substring(10, 20)
+      // this.updatedEvent.end = this.Item_User_Profile.substring(10, 20)
+      this.updatedEvent.start = this.Item_User_Profile
+      this.updatedEvent.end = this.Item_User_Profile
       this.updatedEvent.itemId = this.itemId
       this.updatedEvent.eventIndex = this.eventIndex
       this.updatedEvent.color = 'orange'

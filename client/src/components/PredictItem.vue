@@ -1,12 +1,19 @@
 <template>
-  <v-container fluid>
-    <v-container grid-list-md text-xs-center fluid>
-    <v-layout row wrap>
+    <div style="width:1200px; margin:0 auto;">
+      <!-- dummy --> <div style="height:20px"/>
+        <b-row>
+          <b-col md="12">
+            <b-card header="자재구입일정 예측">
+              <b-row>
+                <b-col sm="12" lg="6">
+                  <div style="width:1150px; margin:0 auto;">
+      
+    <v-layout row wrap pl-4>
+      <!--
       <v-flex xs12 class="text-xs-center" mt-5>      
         <h1>자재구입 일정</h1>        
-      </v-flex>
-      
-      <v-flex md4 />
+      </v-flex>      
+      -->
 
       <v-flex xs6 sm6 md2>
         <v-menu
@@ -30,7 +37,9 @@
           ></v-text-field>
           <v-date-picker v-model="sDate" no-title @input="menu1 = false" v-on:change="onChangeDate" locale='euc-kr'></v-date-picker>
         </v-menu>
-      </v-flex>       
+      </v-flex>     
+
+       <v-flex md1/>  
       
       <v-flex xs6 sm6 md2>
         <v-select
@@ -44,14 +53,19 @@
         ></v-select>
       </v-flex>
 
-      <v-flex xs8 sm8 md2 class="text-xs-left">
+       <v-flex md5/>
+
+      <v-flex xs8 sm8 md1 class="text-xs-left">
         <v-btn          
           color="light-blue"
           class="white--text"
           @click.native="searchItems"
         >
           검색
-        </v-btn>
+        </v-btn>        
+      </v-flex>
+
+      <v-flex xs8 sm8 md1 class="text-xs-left">
         <v-btn
           color="orange lighten-3"
           class="white--text"
@@ -61,16 +75,11 @@
         </v-btn>
       </v-flex>
 
-      <v-flex md2 />
-
       </v-layout>
-      </v-container>
-
-       <v-container fluid pa-0>
-      <v-layout row wrap>
-        <v-flex md2 />
-
-        <v-flex xs12 sm12 md8>      
+      
+      <v-layout row wrap pl-4>
+      
+        <v-flex xs12 sm12 md12>      
         <div>
         <v-data-table
           :headers="headers"
@@ -112,11 +121,15 @@
         </div>
         </v-flex>
         <predictItemModalForShow></predictItemModalForShow>
-       </v-layout>
-      </v-container>    
-
-      <!-- <br/><br/><br/> -->    
-  </v-container>
+       </v-layout>        
+            
+                  </div>
+                </b-col>              
+              </b-row>              
+            </b-card>
+          </b-col>
+        </b-row>
+      </div>
 </template>
 
 <script>

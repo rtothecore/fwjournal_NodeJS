@@ -1,13 +1,16 @@
 <template>
-<v-container fluid>
-  <v-container grid-list-md text-xs-center fluid>
-    <v-layout row wrap>
-      <v-flex xs12 class="text-xs-center" mt-5>
-        <h1>작업일지 검색</h1>
-      </v-flex>
 
-      <v-flex md2 />
-
+<div style="width:1200px; margin:0 auto;">
+  <!-- dummy --> <div style="height:20px"/>
+        <b-row>
+          <b-col md="12">
+            <b-card header="작업일지 검색">
+              <b-row>
+                <b-col sm="12" lg="6">
+                  <div style="width:1150px; margin:0 auto;">
+            
+    <v-layout row wrap pl-4>      
+    
        <v-flex xs6 sm6 md2>
         <v-menu
           ref="menu"
@@ -36,6 +39,8 @@
           </v-date-picker>
         </v-menu>
       </v-flex>
+
+      <v-flex md1/>
 
       <v-flex xs6 sm6 md2>
         <v-menu
@@ -66,12 +71,16 @@
         </v-menu>
       </v-flex>
 
+      <v-flex md1/>
+
       <v-flex xs4 sm4 md1>        
         <v-text-field
           v-model="searchWord"
           label="검색어"                  
         ></v-text-field>
-      </v-flex>    
+      </v-flex>   
+
+      <v-flex md1/> 
 
       <v-flex xs6 sm6 md1>
         <v-select
@@ -85,7 +94,9 @@
         ></v-select>
       </v-flex>  
 
-      <v-flex xs8 sm8 md2 class="text-xs-left">
+      <v-flex md1/>
+
+      <v-flex xs8 sm8 md1 class="text-xs-left">
         <v-btn
           :loading="loading"
           :disabled="loading"
@@ -95,6 +106,8 @@
         >
           검색
         </v-btn>
+      </v-flex>
+      <v-flex xs8 sm8 md1 class="text-xs-left">
         <v-btn
           color="orange lighten-3"
           class="white--text"
@@ -102,20 +115,18 @@
         >
           초기화
         </v-btn>
-      </v-flex>
+      </v-flex>      
 
       <journalModalForEdit></journalModalForEdit>
       <addWorkTypeModal></addWorkTypeModal>
                      
     </v-layout>
-  </v-container>
+  
 
-  <v-container fluid pa-0>
-    <v-layout row wrap>
-    
-    <v-flex md2 />
+ 
+    <v-layout row wrap pl-4>
 
-    <v-flex xs12 sm12 md8>      
+    <v-flex xs12 sm12 md12>      
         <div>
         <v-data-table
           :headers="headers"
@@ -158,10 +169,19 @@
         </div>
       </div>      
     </v-flex>
-    <v-flex md2 />
+    
     </v-layout>
-  </v-container>
-</v-container>
+  
+
+
+        
+                  </div>
+                </b-col>              
+              </b-row>              
+            </b-card>
+          </b-col>
+        </b-row>
+      </div>
 </template>
 
 <script>

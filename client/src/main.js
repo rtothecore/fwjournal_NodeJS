@@ -22,6 +22,7 @@ import VueMq from 'vue-mq'
 // https://www.npmjs.com/package/vue-session
 import VueSession from 'vue-session'
 import axios from 'axios'
+import BootstrapVue from 'bootstrap-vue'
 
 Vue.component('registerModal', RegisterModal)
 Vue.component('journalModal', JournalModal)
@@ -54,6 +55,7 @@ Vue.use(VueMq, {
 })
 Vue.use(VueSession)
 Vue.prototype.$http = axios
+Vue.use(BootstrapVue)
 
 Vue.config.productionTip = false
 

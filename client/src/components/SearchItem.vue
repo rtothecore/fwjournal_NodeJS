@@ -1,12 +1,15 @@
 <template>
-<v-container fluid>
-  <v-container grid-list-md text-xs-center fluid>
-    <v-layout row wrap>
-      <v-flex xs12 class="text-xs-center" mt-5>
-        <h1>자재관리 검색</h1>
-      </v-flex>
 
-      <v-flex md2 />
+  <div style="width:1200px; margin:0 auto;">
+    <!-- dummy --> <div style="height:20px"/>
+        <b-row>
+          <b-col md="12">
+            <b-card header="자재관리 검색">
+              <b-row>
+                <b-col sm="12" lg="6">
+                  <div style="width:1150px; margin:0 auto;">
+            
+    <v-layout row wrap pl-4>      
 
        <v-flex xs6 sm6 md2>
         <v-menu
@@ -37,6 +40,8 @@
         </v-menu>
       </v-flex>
 
+      <v-flex md1/>
+
       <v-flex xs6 sm6 md2>
         <v-menu
           ref="menu2"
@@ -66,6 +71,8 @@
         </v-menu>
       </v-flex>
 
+      <v-flex md1/>
+
       <v-flex xs6 sm6 md1>
         <v-select
           :items="landItems"
@@ -78,6 +85,8 @@
         ></v-select>
       </v-flex>
 
+      <v-flex md1/>
+
       <v-flex xs4 sm4 md1>
         <v-select
           :items="WorkTypeitems"
@@ -88,9 +97,11 @@
           item-value="value"
           v-on:change="onChangeWorkType"
         ></v-select>
-      </v-flex>      
+      </v-flex>     
 
-      <v-flex xs8 sm8 md2 class="text-xs-left">
+      <v-flex md1/> 
+
+      <v-flex xs8 sm8 md1 class="text-xs-left">
         <v-btn
           :loading="loading"
           :disabled="loading"
@@ -99,7 +110,10 @@
           @click.native="searchItems"
         >
           검색
-        </v-btn>
+        </v-btn>        
+      </v-flex>
+
+      <v-flex xs8 sm8 md1 class="text-xs-left">
         <v-btn
           color="orange lighten-3"
           class="white--text"
@@ -110,18 +124,13 @@
       </v-flex>
 
       <journalModalForEdit></journalModalForEdit>
-      <addWorkTypeModal></addWorkTypeModal>
-      <!-- <v-flex md2 /> -->
+      <addWorkTypeModal></addWorkTypeModal>      
     
     </v-layout>
-  </v-container>
-
-  <v-container fluid pa-0>
-    <v-layout row wrap>
+ 
+    <v-layout row wrap pl-4>
     
-    <v-flex md2 />
-
-    <v-flex xs12 sm12 md8>      
+    <v-flex xs12 sm12 md12>      
         <div>
         <v-data-table
           :headers="headers"
@@ -164,11 +173,17 @@
           <v-pagination v-model="pagination.page" :length="pages"></v-pagination>
         </div>
       </div>      
-    </v-flex>
-    <v-flex md2 />
+    </v-flex>    
     </v-layout>
-  </v-container>
-</v-container>
+  
+        
+                  </div>
+                </b-col>              
+              </b-row>              
+            </b-card>
+          </b-col>
+        </b-row>
+      </div>
 </template>
 
 <script>
@@ -240,14 +255,14 @@ export default {
           align: 'left',
           sortable: false,
           value: 'date',
-          width: '10%'
+          width: '15%'
         },
         { text: '농장명', value: 'landName', align: 'left', width: '15%' },
         { text: '구입품목', value: 'item', align: 'left', width: '15%' },
         { text: '사용목적', value: 'purpose', align: 'left', width: '15%' },
-        { text: '구입수량', value: 'amount', align: 'left', width: '15%' },
-        { text: '사용수량', value: 'usage', align: 'left', width: '15%' },
-        { text: '재고수량', value: 'stock', align: 'left', width: '15%' },
+        { text: '구입수량', value: 'amount', align: 'left', width: '12%' },
+        { text: '사용수량', value: 'usage', align: 'left', width: '12%' },
+        { text: '재고수량', value: 'stock', align: 'left', width: '12%' },
         { text: '관리', value: 'name', sortable: false, align: 'left', width: '15%' }
       ],
       editedIndex: -1,
