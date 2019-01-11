@@ -3,7 +3,8 @@
     <!-- dummy --> <div style="height:20px"/>
         <b-row>
           <b-col md="12">
-            <b-card header="수입/지출 분석">
+            <b-card header="수입/지출 분석" header-tag="header">
+              <h3 slot="header" class="mb-0"><strong>수입/지출 분석</strong></h3>
               <b-row>
                 <b-col sm="12" lg="6">
                   <div style="width:1150px; margin:0 auto;">
@@ -16,19 +17,19 @@
           :key="1"
           @click.native="showTotal"
         >
-          전체
+          <h4>전체</h4>
         </v-tab>
         <v-tab          
           :key="2"
           @click.native="showIncome"
         >
-          수입
+          <h4>수입</h4>
         </v-tab>
         <v-tab          
           :key="3"
           @click.native="showExp"
         >
-          지출
+          <h4>지출</h4>
         </v-tab>
       </v-tabs>
       </v-flex>
@@ -100,7 +101,7 @@
             <v-btn
               :loading="loading"
               :disabled="loading"
-              color="light-blue"
+              color="primary"
               class="white--text"
               @click.native="searchJournals"
             >
@@ -121,13 +122,13 @@
         <v-layout row ma-2 justify-center>
           <!-- <v-flex xs2 md2 order-md1 order-xs1/> -->
           <v-flex xs8 md11 order-md2 order-xs2>
-            <h2>지출</h2>
+            <h4>지출</h4>
             <v-divider :key="`divider-1`"></v-divider>
             <!-- <h3>발생비용 &nbsp;&nbsp;&nbsp; {{ totalCooCost }}</h3> -->
-            <h3>발생비용 &nbsp;&nbsp;&nbsp; {{ getStrWithComma(totalCooCost) }}</h3>
-            <h3>자재구입 &nbsp;&nbsp;&nbsp; {{ getStrWithComma(totalItemCost) }}</h3>
+            <h4>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;발생비용 &nbsp;&nbsp;&nbsp; <span style="float:right">{{ getStrWithComma(totalCooCost) }}</span></h4>
+            <h4>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;자재구입 &nbsp;&nbsp;&nbsp; <span style="float:right">{{ getStrWithComma(totalItemCost) }}</span></h4>
             <v-divider :key="`divider-2`"></v-divider>
-            <h3>소계 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {{ getStrWithComma(totalExpenditure) }}</h3>
+            <h4>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;소계 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="float:right">{{ getStrWithComma(totalExpenditure) }}</span></h4>
           </v-flex>
           <!-- <v-flex xs2 md2 order-md3 order-xs3/> -->                                     
         </v-layout>
@@ -138,11 +139,11 @@
         <v-layout row ma-2 justify-center>
           <!-- <v-flex xs2 md2 order-md1 order-xs1/> -->
           <v-flex xs8 md11 order-md2 order-xs2>
-            <h2>수입</h2>
+            <h4>수입</h4>
             <v-divider :key="`divider-1`"></v-divider>
-            <h3>수입비용 &nbsp;&nbsp;&nbsp; {{ getStrWithComma(totalIncomeCost) }}</h3>            
+            <h4>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;수입비용 &nbsp;&nbsp;&nbsp; <span style="float:right">{{ getStrWithComma(totalIncomeCost) }}</span></h4>            
             <v-divider :key="`divider-2`"></v-divider>
-            <h3>소계 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {{ getStrWithComma(totalIncomeCost) }}</h3>
+            <h4>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;소계 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="float:right">{{ getStrWithComma(totalIncomeCost) }}</span></h4>
           </v-flex>
           <!-- <v-flex xs2 md2 order-md3 order-xs3/> -->
         </v-layout>
@@ -153,9 +154,9 @@
         <v-layout row ma-2 justify-center>
           <!-- <v-flex xs2 md2 order-md1 order-xs1/> -->
           <v-flex xs8 md11 order-md2 order-xs2>
-            <h2>수입/지출 분석</h2>
+            <h4>수입/지출 분석</h4>
             <v-divider :key="`divider-1`"></v-divider>
-            <h3>수입-지출 &nbsp;&nbsp;&nbsp; {{ getStrWithComma(totalIncMinusExp) }}</h3>                        
+            <h4>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;수입-지출 &nbsp;&nbsp;&nbsp; <span style="float:right">{{ getStrWithComma(totalIncMinusExp) }}</span></h4>                        
           </v-flex>
           <!-- <v-flex xs2 md2 order-md3 order-xs3/> -->
         </v-layout>         
@@ -231,7 +232,7 @@
             <v-btn
               :loading="loading"
               :disabled="loading"
-              color="light-blue"
+              color="primary"
               class="white--text"
               @click.native="searchIncomes"
             >
@@ -252,7 +253,7 @@
         <v-layout row ma-2 justify-center>
           <!-- <v-flex xs2 md2 order-md1 order-xs1/> -->
           <v-flex xs8 md11 order-md2 order-xs2>
-            <h2>출하/생산</h2>
+            <h4>출하/생산</h4>
             <v-divider :key="`divider-1`"></v-divider> 
 
             <v-data-table
@@ -261,12 +262,30 @@
               class="elevation-1"
               hide-actions
             >
+
+              <template slot="headerCell" slot-scope="props">
+                <v-tooltip bottom>
+                  <span slot="activator">
+                    <h4><strong>{{ props.header.text }}</strong></h4>
+                  </span>
+                  <span>
+                    {{ props.header.text }}
+                  </span>
+                </v-tooltip>
+              </template>
+
               <template slot="items" slot-scope="props">
-                <td>{{ props.item.date }}</td>
-                <td>{{ props.item.landName }}</td>
-                <td>{{ props.item.cropName }}</td>
-                <td>{{ props.item.income.detail }}</td>
-                <td>{{ getStrWithComma(props.item.income.amount) }}</td>                
+                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ getDateWithKorean(props.item.date) }}</h4></td>
+                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.landName }}</h4></td>
+                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.cropName }}</h4></td>
+                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.income.detail }}</h4></td>
+                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ getStrWithComma(props.item.income.amount) }}</h4></td>                                
+                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="justify-center layout px-0">
+                  <v-btn icon class="mx-0" @click="showItem(props.item)">
+                    <v-icon color="teal">remove_red_eye</v-icon>
+                  </v-btn>                  
+                </td>
+
               </template>
               <template slot="footer">
                 <!--
@@ -278,7 +297,7 @@
                 <td></td>
                 <td></td>
                 <td></td>
-                <td><strong>소계 : {{ getStrWithComma(incomeTotal) }}</strong></td> 
+                <td><h4><strong>소계 : {{ getStrWithComma(incomeTotal) }}</strong></h4></td> 
               </template>
             </v-data-table>
 
@@ -356,7 +375,7 @@
             <v-btn
               :loading="loading"
               :disabled="loading"
-              color="light-blue"
+              color="primary"
               class="white--text"
               @click.native="searchExpenditure"
             >
@@ -395,7 +414,7 @@
         <v-layout row ma-2 justify-center>
           <!-- <v-flex xs2 md2 order-md1 order-xs1/> -->
           <v-flex xs8 md11 order-md2 order-xs2>
-            <h2>발생비용</h2>
+            <h4>발생비용</h4>
             <v-divider :key="`divider-1`"></v-divider> 
 
             <v-data-table
@@ -404,17 +423,36 @@
               class="elevation-1"
               hide-actions
             >
+
+              <template slot="headerCell" slot-scope="props">
+                <v-tooltip bottom>
+                  <span slot="activator">
+                    <h4><strong>{{ props.header.text }}</strong></h4>
+                  </span>
+                  <span>
+                    {{ props.header.text }}
+                  </span>
+                </v-tooltip>
+              </template>
+
               <template slot="items" slot-scope="props">
-                <td>{{ props.item.date }}</td>
-                <td>{{ props.item.landName }}</td>
-                <td>{{ props.item.category }}</td>
-                <td>{{ getStrWithComma(props.item.cost) }}</td>                
+                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ getDateWithKorean(props.item.date) }}</h4></td>
+                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.landName }}</h4></td>
+                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.category }}</h4></td>
+                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ getStrWithComma(props.item.cost) }}</h4></td>
+
+                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="justify-center layout px-0">
+                  <v-btn icon class="mx-0" @click="showItem(props.item)">
+                    <v-icon color="teal">remove_red_eye</v-icon>
+                  </v-btn>                  
+                </td>
+
               </template>
               <template slot="footer">                                
                 <td></td>
                 <td></td>
                 <td></td>
-                <td><strong>소계 : {{ getStrWithComma(cooTotal) }}</strong></td> 
+                <td><h4><strong>소계 : {{ getStrWithComma(cooTotal) }}</strong></h4></td> 
               </template>
             </v-data-table>
 
@@ -429,7 +467,7 @@
         <v-layout row ma-2 justify-center>
           <!-- <v-flex xs2 md2 order-md1 order-xs1/> -->
           <v-flex xs8 md11 order-md2 order-xs2>
-            <h2>자재구입</h2>
+            <h4>자재구입</h4>
             <v-divider :key="`divider-2`"></v-divider> 
 
             <v-data-table
@@ -438,17 +476,36 @@
               class="elevation-1"
               hide-actions
             >
+
+              <template slot="headerCell" slot-scope="props">
+                <v-tooltip bottom>
+                  <span slot="activator">
+                    <h4><strong>{{ props.header.text }}</strong></h4>
+                  </span>
+                  <span>
+                    {{ props.header.text }}
+                  </span>
+                </v-tooltip>
+              </template>
+
               <template slot="items" slot-scope="props">
-                <td>{{ props.item.date }}</td>                
-                <td>{{ props.item.itemName }}</td>
-                <td>{{ props.item.amount }}</td>
-                <td>{{ getStrWithComma(props.item.cost) }}</td>                
+                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ getDateWithKorean(props.item.date) }}</h4></td>                
+                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.itemName }}</h4></td>
+                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.amount }}</h4></td>
+                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ getStrWithComma(props.item.cost) }}</h4></td> 
+
+                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="justify-center layout px-0">
+                  <v-btn icon class="mx-0" @click="showItemForItem(props.item)">
+                    <v-icon color="teal">remove_red_eye</v-icon>
+                  </v-btn>                  
+                </td>
+
               </template>
               <template slot="footer">                
                 <td></td>
                 <td></td>
                 <td></td>                
-                <td><strong>소계 : {{ getStrWithComma(itemTotal) }}</strong></td> 
+                <td><h4><strong>소계 : {{ getStrWithComma(itemTotal) }}</strong></h4></td> 
               </template>
             </v-data-table>
 
@@ -460,6 +517,9 @@
       <!-- 지 출 끝 -->
 
     </v-layout>
+
+    <predictModalForShow></predictModalForShow>
+    <predictItemModalForShow></predictItemModalForShow>
           
                   </div>
                 </b-col>              
@@ -471,6 +531,7 @@
 </template>
 
 <script>
+import {bus} from '../main'
 import moment from 'moment'
 import ItemService from '@/services/ItemService'
 import JournalService from '@/services/JournalService'
@@ -495,12 +556,13 @@ export default {
         {
           text: '날짜',
           align: 'left',
-          sortable: true,
+          sortable: false,
           value: 'date'
         },
-        { text: '품목명', value: 'itemName' },
-        { text: '수량', value: 'amount' },
-        { text: '금액', value: 'cost' }
+        { text: '품목명', sortable: false, value: 'itemName' },
+        { text: '수량', sortable: false, value: 'amount' },
+        { text: '금액', sortable: false, value: 'cost' },
+        { text: '상세', value: 'name', sortable: false, align: 'left', width: '5%' }
       ],
       //
       cooTotal: 0,
@@ -509,12 +571,13 @@ export default {
         {
           text: '날짜',
           align: 'left',
-          sortable: true,
+          sortable: false,
           value: 'date'
         },
-        { text: '농장명', value: 'landName' },
-        { text: '발생품목', value: 'category' },
-        { text: '금액', value: 'cost' }
+        { text: '농장명', sortable: false, value: 'landName' },
+        { text: '발생품목', sortable: false, value: 'category' },
+        { text: '금액', sortable: false, value: 'cost' },
+        { text: '상세', value: 'name', sortable: false, align: 'left', width: '5%' }
       ],
       row: 'radio-total',
       //
@@ -524,13 +587,14 @@ export default {
         {
           text: '날짜',
           align: 'left',
-          sortable: true,
+          sortable: false,
           value: 'date'
         },
-        { text: '농장명', value: 'landName' },
-        { text: '항목', value: 'cropName' },
-        { text: '내역', value: 'income.detail' },
-        { text: '금액', value: 'income.amount' }
+        { text: '농장명', sortable: false, value: 'landName' },
+        { text: '항목', sortable: false, value: 'cropName' },
+        { text: '내역', sortable: false, value: 'income.detail' },
+        { text: '금액', sortable: false, value: 'income.amount' },
+        { text: '상세', value: 'name', sortable: false, align: 'left', width: '5%' }
       ],
       //
       totalIncMinusExp: 0,
@@ -579,6 +643,10 @@ export default {
         /*
         title: {
           text: '가계 수입, 지출'
+        },
+        axisX: {
+          // title: 'Axis Labels with formatting',
+          valueFormatString: ' '
         },
         */
         data: [
@@ -636,6 +704,10 @@ export default {
           text: '가계 수입, 지출'
         },
         */
+        axisX: {
+          // title: 'Axis Labels with formatting',
+          valueFormatString: 'YYYY-MM'
+        },
         data: [
           {
             type: 'line',
@@ -670,6 +742,10 @@ export default {
           text: '가계 수입, 지출'
         },
         */
+        axisX: {
+          // title: 'Axis Labels with formatting',
+          valueFormatString: 'YYYY-MM'
+        },
         data: [
           {
             type: 'line',
@@ -871,6 +947,7 @@ export default {
       this.showTotalContent = false
       this.chartOptionsForIncome.data[0].dataPoints = []
       this.incomeItems = []
+      this.incomeTotal = 0
     },
     showTotal () {
       console.log('showTotal')
@@ -916,6 +993,7 @@ export default {
     getStrWithComma: function (dataVal) {
       var tmpStr = dataVal + ''
       tmpStr = tmpStr.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+      tmpStr = '￦' + tmpStr
       return tmpStr
     },
     getTotalCalculate: function () {
@@ -928,6 +1006,7 @@ export default {
       var tmpDataPoints = []
       var tmpData = {}
       // tmpData.x = new Date(this.sDate)
+      tmpData.label = this.sDate + '~' + this.eDate
       tmpData.y = this.totalExpenditure
       tmpDataPoints.push(tmpData)
       this.chartOptionsForTotal.data[0].dataPoints = tmpDataPoints
@@ -958,23 +1037,43 @@ export default {
       this.chartOptionsForExp.axisY.title = '원'
       this.chartForExp.render()
     },
-    // 지출 토탈(발생비용 + 자재구입) 차트 데이터 계산
-    async getExpTotalChartData () {
-      var tmpDataPoints = []
-      for (var i = 0; i < this.expCooDataPoints.length; i++) {
-        for (var j = 0; j < this.expItemDataPoints.length; j++) {
-          var tmpDataPoint = {}
-          if (this.expCooDataPoints[i].x.getTime() === this.expItemDataPoints[j].x.getTime()) { // 날짜가 같은 데이터가 있으면 두개의 값을 더한다
-            tmpDataPoint.x = new Date(this.expCooDataPoints[i].x)
-            tmpDataPoint.y = this.expCooDataPoints[i].y + this.expItemDataPoints[j].y
-          } else {
-            tmpDataPoint.x = new Date(this.expCooDataPoints[i].x)
-            tmpDataPoint.y = this.expCooDataPoints[i].y
-          }
-          tmpDataPoints.push(tmpDataPoint)
+    findSameLabel: function (targetArray, sourceTime) {
+      for (var i = 0; i < targetArray.length; i++) {
+        if (targetArray[i].label === sourceTime) {
+          return i
         }
       }
-      this.expTotalDataPoints = tmpDataPoints
+      return -999
+    },
+    // 지출 토탈(발생비용 + 자재구입) 차트 데이터 계산
+    async getExpTotalChartData () {
+      // 같은 날짜의 발생비용 데이터를 합침
+      var tmpDataPointsForAll = []
+      for (var i = 0; i < this.expCooDataPoints.length; i++) {
+        var existIdx = this.findSameLabel(tmpDataPointsForAll, this.expCooDataPoints[i].label)
+        if (existIdx !== -999) { // 같은 날짜의 데이터가 이미 존재하는 경우
+          tmpDataPointsForAll[existIdx].y += this.expCooDataPoints[i].y
+        } else {  // 같은 날짜의 데이터가 없는 경우
+          var tmpDataPoint = {}
+          tmpDataPoint.label = this.expCooDataPoints[i].label
+          tmpDataPoint.y = this.expCooDataPoints[i].y
+          tmpDataPointsForAll.push(tmpDataPoint)
+        }
+      }
+      // 같은 날짜의 자재구입 데이터를 합침
+      for (var j = 0; j < this.expItemDataPoints.length; j++) {
+        var existIdx2 = this.findSameLabel(tmpDataPointsForAll, this.expItemDataPoints[j].label)
+        if (existIdx2 !== -999) { // 같은 날짜의 데이터가 이미 존재하는 경우
+          tmpDataPointsForAll[existIdx2].y += this.expItemDataPoints[j].y
+        } else {  // 같은 날짜의 데이터가 없는 경우
+          var tmpDataPoint2 = {}
+          tmpDataPoint2.label = this.expItemDataPoints[j].label
+          tmpDataPoint2.y = this.expItemDataPoints[j].y
+          tmpDataPointsForAll.push(tmpDataPoint2)
+        }
+      }
+      this.expTotalDataPoints = tmpDataPointsForAll
+      // console.log(this.expTotalDataPoints)
     },
     // 자재구입 차트 데이터 얻기
     async getExpItemChartData () {
@@ -988,7 +1087,8 @@ export default {
         var tmpDataPoints = []
         for (var i = 0; i < response.data.length; i++) {
           var tmpData = {}
-          tmpData.x = new Date(response.data[i]._id.date)
+          // tmpData.x = new Date(response.data[i]._id.date)
+          tmpData.label = response.data[i]._id.date
           tmpData.y = response.data[i].totalExpenditure
           tmpDataPoints.push(tmpData)
         }
@@ -1007,7 +1107,8 @@ export default {
         var tmpDataPoints = []
         for (var i = 0; i < response.data.length; i++) {
           var tmpData = {}
-          tmpData.x = new Date(response.data[i]._id.date)
+          // tmpData.x = new Date(response.data[i]._id.date)
+          tmpData.label = response.data[i]._id.date
           tmpData.y = response.data[i].totalCooCost
           tmpDataPoints.push(tmpData)
         }
@@ -1023,9 +1124,13 @@ export default {
 
       var tmpItemItems = []
       var tmpItemTotal = 0
+
       for (var i = 0; i < response.data.length; i++) {
         for (var j = 0; j < response.data[i].itemDetail.length; j++) {
           var tmpItemItem = {}
+          // _id
+          tmpItemItem._id = response.data[i]._id
+
           // 날짜
           tmpItemItem.date = response.data[i].date
 
@@ -1058,6 +1163,9 @@ export default {
       for (var i = 0; i < response.data.length; i++) {
         for (var j = 0; j < response.data[i].COO.length; j++) {
           var tmpCooItem = {}
+          // _id
+          tmpCooItem._id = response.data[i]._id
+
           // 날짜
           tmpCooItem.date = response.data[i].date
 
@@ -1116,11 +1224,13 @@ export default {
         endDate: this.eDate
       })
       var incomeData = response.data
+      console.log(response.data)
 
       var tmpDataPoints = []
       for (var i = 0; i < incomeData.length; i++) {
         var tmpData = {}
-        tmpData.x = new Date(incomeData[i]._id.date)
+        // tmpData.x = new Date(incomeData[i]._id.date)
+        tmpData.label = incomeData[i]._id.date
         tmpData.y = incomeData[i].totalIncome
         tmpDataPoints.push(tmpData)
       }
@@ -1171,12 +1281,29 @@ export default {
       }
       this.totalCooCost = tmpTotal
     },
+    showItem (item) {
+      var emitParams = {'journalId': item._id, 'origin': 'fromPredict'}
+      bus.$emit('dialogForShow', emitParams)
+    },
+    showItemForItem (item) {
+      var emitParams = {'itemId': item._id, 'origin': 'fromPredict'}
+      bus.$emit('dialogForShowItem', emitParams)
+    },
     submit () {
       if (this.$refs.form.validate()) {
       }
     },
     clear () {
       this.$refs.form.reset()
+    },
+    replaceAt: function (data, index, replacement) {
+      return data.substr(0, index) + replacement + data.substr(index + replacement.length)
+    },
+    getDateWithKorean: function (dataVal) {
+      var tmpStr = this.replaceAt(dataVal, 4, '년')
+      tmpStr = this.replaceAt(tmpStr, 7, '월')
+      tmpStr += '일'
+      return tmpStr
     }
   }
 }

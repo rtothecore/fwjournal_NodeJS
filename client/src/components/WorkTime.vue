@@ -3,7 +3,8 @@
     <!-- dummy --> <div style="height:20px"/>
         <b-row>
           <b-col md="12">
-            <b-card header="작업시간">
+            <b-card header="작업시간" header-tag="header">
+              <h3 slot="header" class="mb-0"><strong>작업시간</strong></h3>
               <b-row>
                 <b-col sm="12" lg="6">
                   <div style="width:1150px; margin:0 auto;">
@@ -93,7 +94,7 @@
         <v-btn
           :loading="loading"
           :disabled="loading"
-          color="light-blue"
+          color="primary"
           class="white--text"
           @click.native="searchJournals"
         >

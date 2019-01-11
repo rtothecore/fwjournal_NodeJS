@@ -3,7 +3,8 @@
     <!-- dummy --> <div style="height:20px"/>
         <b-row>
           <b-col md="12">
-            <b-card header="농장정보 설정">
+            <b-card header="농장정보 설정" header-tag="header">
+              <h3 slot="header" class="mb-0"><strong>농장정보 설정</strong></h3>
               <b-row>
                 <b-col sm="12" lg="6">
                   <div style="width:1150px; margin:0 auto;">
@@ -16,21 +17,27 @@
 
         <v-dialog v-model="dialog" max-width="500px">
           <v-btn slot="activator" color="primary" dark class="mb-2">새 농장</v-btn>
-          <v-card>
-            <v-card-title>
-              <span class="headline">{{ formTitle }}</span>
-            </v-card-title>
-            <v-card-text>
-              <v-container grid-list-md>
+
+          
+          <div style="width:470px; margin:0 auto;">
+            <!-- dummy --> <div style="height:20px"/>
+          <b-row>
+            <b-col md="12">
+              <b-card header="영농일지 캘린더" header-tag="header">
+                <h3 slot="header" class="mb-0"><strong>새 농장</strong></h3>
+                <b-row>
+                  <b-col sm="12" lg="6">
+                    <div style="width:450px; margin:0 auto;">
+
                 <v-layout wrap>
-                  <v-flex xs12 sm6 md12>
+                  <v-flex xs12 sm6 md6>
                     <v-text-field 
                         v-model="editedItem.name" 
-                        :counter="10" 
+                        :counter="20" 
                         :error-messages="errors.collect('landName')" 
                         label="농장명" 
                         required 
-                        v-validate="'required|max:10'" 
+                        v-validate="'required|max:20'" 
                         data-vv-name="landName"
                     ></v-text-field>
                   </v-flex>
@@ -49,7 +56,7 @@
                   <v-flex xs4 sm6 md4>
                      <v-btn outline color="indigo" @click.native="searchAddr">주소찾기</v-btn>
                   </v-flex>
-                  <v-flex xs12 sm6 md12>
+                  <v-flex xs12 sm6 md3>
                     <v-text-field 
                         v-model="editedItem.size"
                         :counter="10"
@@ -58,10 +65,13 @@
                         required
                         v-validate="'required|max:10'"
                         data-vv-name="size"
+                        type="number"
                     ></v-text-field>
                   </v-flex>
 
-                  <v-flex xs12 sm6 md12>
+                  <v-flex xs12 sm6 md1/>
+
+                  <v-flex xs12 sm6 md3>
                     <v-text-field 
                         v-model="editedItem.sizeDetail"                                                
                         label="규모상세"                                                
@@ -69,7 +79,9 @@
                     ></v-text-field>
                   </v-flex>
 
-                  <v-flex xs4 sm6 md3>
+                  <v-flex xs12 sm6 md5/>
+
+                  <v-flex xs4 sm6 md4>
                     <v-select
                       :items="items0"
                       v-model="editedItem.bcs"
@@ -84,7 +96,7 @@
                       item-value="bCode"
                     ></v-select>
                   </v-flex>
-                  <v-flex xs4 sm6 md3>
+                  <v-flex xs4 sm6 md4>
                     <v-select
                       :items="items1"
                       v-model="editedItem.mcs"
@@ -99,7 +111,7 @@
                       item-value="mCode"
                     ></v-select>
                   </v-flex>
-                  <v-flex xs4 sm6 md3>
+                  <v-flex xs4 sm6 md4>
                     <v-select
                       :items="items2"
                       v-model="editedItem.scs"
@@ -114,7 +126,7 @@
                       item-value="sCode"
                     ></v-select>
                   </v-flex>
-                  <v-flex xs4 sm6 md3>                    
+                  <v-flex xs4 sm6 md4>                    
                     <v-select
                       :items="items3"
                       v-model="editedItem.cropCode"
@@ -129,15 +141,24 @@
                       item-value="dCode"
                     ></v-select>
                   </v-flex>
+                  <v-flex xs12 sm6 md8/>
+
+                  <v-flex xs12 sm6 md6/>
+
+                  <v-flex xs12 sm6 md6>
+                    <v-btn color="primary" @click.native="close">취소</v-btn>
+                    <v-btn color="primary" @click.native="save">저장</v-btn>
+                  </v-flex>
                 </v-layout>
-              </v-container>
-            </v-card-text>
-            <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn color="blue darken-1" flat @click.native="close">취소</v-btn>
-              <v-btn color="blue darken-1" flat @click.native="save">저장</v-btn>
-            </v-card-actions>
-          </v-card>
+            
+                  </div>
+                </b-col>              
+              </b-row>              
+            </b-card>
+          </b-col>
+        </b-row>
+      </div>            
+            
         </v-dialog>
       
         <v-flex xs12 sm12 md12>   
@@ -147,12 +168,24 @@
             hide-actions
             class="elevation-1"
           >
+
+            <template slot="headerCell" slot-scope="props">
+              <v-tooltip bottom>
+                <span slot="activator">
+                  <h4><strong>{{ props.header.text }}</strong></h4>
+                </span>
+                <span>
+                  {{ props.header.text }}
+                </span>
+              </v-tooltip>
+            </template>
+
             <template slot="items" slot-scope="props">
-              <td>{{ props.item.name }}</td>
-              <td>{{ props.item.address }}</td>
-              <td>{{ props.item.size }}</td>
-              <td>{{ props.item.cropCode }}</td>
-              <td class="layout px-0">
+              <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.name }}</h4></td>
+              <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.address }}</h4></td>
+              <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ getStrWithComma(props.item.size) }}</h4></td>
+              <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.cropCode }}</h4></td>
+              <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="layout px-0">
                 <v-btn icon class="mx-0" @click="editItem(props.item)">
                   <v-icon color="teal">edit</v-icon>
                 </v-btn>
@@ -191,7 +224,7 @@ export default {
       custom: {
         landName: {
           required: () => '농장명을 입력해주세요',
-          max: '농장명은 10자 이하여야 합니다'
+          max: '농장명은 20자 이하여야 합니다'
         },
         address: {
           required: () => '주소를 입력해주세요',
@@ -233,9 +266,9 @@ export default {
         sortable: false,
         value: 'name'
       },
-      { text: '주소', value: 'address' },
-      { text: '규모', value: 'size' },
-      { text: '작물,가축명', value: 'cropCode' },
+      { text: '주소', sortable: false, value: 'address' },
+      { text: '규모', sortable: false, value: 'size' },
+      { text: '작물,가축명', sortable: false, value: 'cropCode' },
       { text: 'Actions', value: 'name', sortable: false }
     ],
     headersForMobile: [
@@ -287,7 +320,7 @@ export default {
     var vm = this
     this.$validator.localize('ko', this.dictionary)
     bus.$on('dialogForSearchAddressReturn', function (value) {
-      console.log(value)
+      // console.log(value)
       vm.editedItem.address = value
       // vm.dialog = true
     })
@@ -376,6 +409,8 @@ export default {
         sizeDetail: this.editedItem.sizeDetail,
         cropCode: this.cropCode
       })
+      this.getLands()
+      this.getBCS()
     },
     async deleteLand (id) {
       await LandService.deleteLand(id)
@@ -389,7 +424,7 @@ export default {
     initialize () {
     },
     editItem (item) {
-      console.log(item)
+      // console.log(item)
       this.editedIndex = this.lands.indexOf(item)
       this.editedItem = Object.assign({}, item)
       this.editedItem.bcs = item.bcsCode
@@ -461,6 +496,11 @@ export default {
     onChangeSelect2: function (event) {
       this.cropCode = event
       // console.log(event)
+    },
+    getStrWithComma: function (dataVal) {
+      var tmpStr = dataVal + ''
+      tmpStr = tmpStr.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+      return tmpStr
     }
   }
 }

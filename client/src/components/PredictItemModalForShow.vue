@@ -8,7 +8,8 @@
               <!-- dummy --> <div style="height:20px"/>
         <b-row>
           <b-col md="12">
-            <b-card header="자재관리">
+            <b-card header="자재관리" header-tag="header">
+              <h3 slot="header" class="mb-0"><strong>자재관리</strong></h3>
               <b-row>
                 <b-col sm="12" lg="6">
                   <div style="width:1150px; margin:0 auto;">                  
@@ -18,7 +19,7 @@
               <span class="headline" style="color:black">{{Item_User_Profile}}</span> <v-btn outline color="black" flat @click.native="dialog = false">닫기</v-btn> 
             </v-card-title>
             -->
-            <span class="headline" style="color:black; padding-left:40px; float:left">{{Item_User_Profile}}</span>               
+            <span class="headline" style="color:black; padding-left:40px; float:left">{{getDateWithKorean(Item_User_Profile)}}</span>               
             <span style="float:right">
               <v-btn outline color="black" flat @click.native="dialog = false">닫기</v-btn>
             </span>
@@ -38,7 +39,7 @@
                       v-on:change="onChangeLand"
                       item-text="name"
                       item-value="_id"
-                      disabled                     
+                      readonly                     
                     ></v-select>
                   </v-flex>
 
@@ -55,7 +56,7 @@
                       item-value="wCode"   
                       hint="작업분류와 매칭되는 구입품목 선택"
                       persistent-hint  
-                      disabled                                      
+                      readonly                                      
                     ></v-select>
                   </v-flex>
                   <v-flex xs6 sm6 md3>
@@ -67,11 +68,12 @@
                   
                   <v-flex xs12>
                     <div slot="label">
-                      품목상세 <small>(optional)</small>
+                      <h4>품목상세 <small>(optional)</small>
                       <!--
                       <v-btn outline color="black" flat @click.native="addItemRow">추가</v-btn>
                       <v-btn outline color="black" flat @click.native="deleteItemRow">삭제</v-btn>
                       -->
+                      </h4>
                     </div>
                   </v-flex>
                   
@@ -80,14 +82,14 @@
                       <v-text-field
                         label="품목명"                      
                         v-model="item.itemName"
-                        disabled
+                        readonly
                       ></v-text-field>
                     </v-flex>
                     <v-flex xs4 sm4 md4 :key="'D' + index">
                       <v-text-field
                         label="수량"
                         v-model="item.itemAmount"                        
-                        disabled
+                        readonly
                       ></v-text-field>
                     </v-flex>
                     <v-flex xs4 sm4 md4 :key="'E' + index">
@@ -95,7 +97,7 @@
                         label="가격"
                         v-model="item.itemPrice"
                         v-on:change="onChangeItemPrice"
-                        disabled
+                        readonly
                       ></v-text-field>
                     </v-flex>  
                   </template>                                                     
@@ -107,7 +109,7 @@
                       v-model="itemPriceTotal"
                       label="총 가격"
                       placeholder="Placeholder"
-                      disabled
+                      readonly
                     ></v-text-field>
                   </v-flex>                      
                   
@@ -119,7 +121,7 @@
                       color="deep-purple"
                       label="사용목적"
                       rows="3"
-                      disabled
+                      readonly
                     ></v-textarea>
                   </v-flex>
                   
@@ -319,7 +321,7 @@ export default {
   mounted () {
     this.$validator.localize('ko', this.dictionary)
     var vm = this
-    bus.$on('dialogForShow', function (value) {
+    bus.$on('dialogForShowItem', function (value) {
       Object.assign(vm.$data, vm.$options.data.call(vm))  // initialize this data
       // console.log(value)
       vm.journalId = value.journalId
@@ -374,19 +376,19 @@ export default {
 
       // 사진
       if (response.data[0].pictureA) {
-        this.iavatar.imageURL = 'http://59.8.37.86:8081/getJournalImg/' + response.data[0].pictureA
+        this.iavatar.imageURL = 'http://59.8.37.86:8081/getJournalImg/' + this.userId + '/' + response.data[0].pictureA
         this.iavatar.uploadedFilename = response.data[0].pictureA
       } else {
         this.iavatar = null
       }
       if (response.data[0].pictureB) {
-        this.iavatar2.imageURL = 'http://59.8.37.86:8081/getJournalImg/' + response.data[0].pictureB
+        this.iavatar2.imageURL = 'http://59.8.37.86:8081/getJournalImg/' + this.userId + '/' + response.data[0].pictureB
         this.iavatar2.uploadedFilename = response.data[0].pictureB
       } else {
         this.iavatar2 = null
       }
       if (response.data[0].pictureC) {
-        this.iavatar3.imageURL = 'http://59.8.37.86:8081/getJournalImg/' + response.data[0].pictureC
+        this.iavatar3.imageURL = 'http://59.8.37.86:8081/getJournalImg/' + this.userId + '/' + response.data[0].pictureC
         this.iavatar3.uploadedFilename = response.data[0].pictureC
       } else {
         this.iavatar3 = null
@@ -459,19 +461,19 @@ export default {
       this.remarks = response.data[0].remarks
 
       if (response.data[0].pictureA) {
-        this.avatar.imageURL = 'http://59.8.37.86:8081/getJournalImg/' + response.data[0].pictureA
+        this.avatar.imageURL = 'http://59.8.37.86:8081/getJournalImg/' + this.userId + '/' + response.data[0].pictureA
         this.avatar.uploadedFilename = response.data[0].pictureA
       } else {
         this.avatar = null
       }
       if (response.data[0].pictureB) {
-        this.avatar2.imageURL = 'http://59.8.37.86:8081/getJournalImg/' + response.data[0].pictureB
+        this.avatar2.imageURL = 'http://59.8.37.86:8081/getJournalImg/' + this.userId + '/' + response.data[0].pictureB
         this.avatar2.uploadedFilename = response.data[0].pictureB
       } else {
         this.avatar2 = null
       }
       if (response.data[0].pictureC) {
-        this.avatar3.imageURL = 'http://59.8.37.86:8081/getJournalImg/' + response.data[0].pictureC
+        this.avatar3.imageURL = 'http://59.8.37.86:8081/getJournalImg/' + this.userId + '/' + response.data[0].pictureC
         this.avatar3.uploadedFilename = response.data[0].pictureC
       } else {
         this.avatar3 = null
@@ -644,6 +646,9 @@ export default {
         this.itemPriceTotal = Number(this.itemPriceTotal)
         this.itemPriceTotal += Number(this.itemItems[i].itemPrice)
       }
+      this.itemPriceTotal += ''
+      this.itemPriceTotal = this.itemPriceTotal.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+      this.itemPriceTotal = '￦' + this.itemPriceTotal
     },
     onChangeItem: function (event) {
       this.selectedItem = event
@@ -780,6 +785,15 @@ export default {
       if (this.usageItems.length > 1) {
         this.usageItems.splice(this.usageItems.length - 1, 1)
       }
+    },
+    replaceAt: function (data, index, replacement) {
+      return data.substr(0, index) + replacement + data.substr(index + replacement.length)
+    },
+    getDateWithKorean: function (dataVal) {
+      var tmpStr = this.replaceAt(dataVal, 4, '년')
+      tmpStr = this.replaceAt(tmpStr, 7, '월')
+      tmpStr += '일'
+      return tmpStr
     }
   }
 }

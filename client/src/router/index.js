@@ -12,7 +12,7 @@ const routerOptions = [
   { path: '/predictItem', component: 'PredictItem' },
   { path: '/stats', component: 'Stats' },
   // { path: '/config', component: 'Config' },
-  { path: '/configPrivate', component: 'ConfigPrivate' },
+  { path: '/configPrivate', name: 'nameConfigPrivate', component: 'ConfigPrivate' },
   { path: '/configLand', component: 'ConfigLand' },
   { path: '/workTime', component: 'WorkTime' },
   { path: '/environment', component: 'Environment' },
@@ -20,8 +20,8 @@ const routerOptions = [
   { path: '/suStep1', component: 'SignUpStep1' },
   { path: '/suStep2', component: 'SignUpStep2' },
   { path: '/suStep3', name: 'nameSuStep3', component: 'SignUpStep3' },
-  { path: '/changePw', component: 'ChangePassword' },
-  { path: '/changePhoneNo', component: 'ChangePhoneNo' },
+  // { path: '/changePw', component: 'ChangePassword' },
+  // { path: '/changePhoneNo', component: 'ChangePhoneNo' },
   { path: '/account', component: 'Account' }
 ]
 

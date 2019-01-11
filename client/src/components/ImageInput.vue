@@ -61,6 +61,7 @@
             let formData = new FormData()
             let imageURL = URL.createObjectURL(imageFile)
             formData.append(fieldName, imageFile)
+            formData.append('userId', this.$session.get('userId'))
 
             var uploadedFilename = ''
 

@@ -4,7 +4,8 @@
   <!-- dummy --> <div style="height:20px"/>
         <b-row>
           <b-col md="12">
-            <b-card header="작업일지 검색">
+            <b-card header="작업일지 검색" header-tag="header">
+              <h3 slot="header" class="mb-0"><strong>작업일지 검색</strong></h3>
               <b-row>
                 <b-col sm="12" lg="6">
                   <div style="width:1150px; margin:0 auto;">
@@ -100,7 +101,7 @@
         <v-btn
           :loading="loading"
           :disabled="loading"
-          color="light-blue"
+          color="primary"
           class="white--text"
           @click.native="searchJournals"
         >
@@ -109,7 +110,8 @@
       </v-flex>
       <v-flex xs8 sm8 md1 class="text-xs-left">
         <v-btn
-          color="orange lighten-3"
+          outline
+          color="indigo"
           class="white--text"
           @click.native="searchReset"
         >
@@ -139,8 +141,8 @@
 
           <template slot="headerCell" slot-scope="props">
             <v-tooltip bottom>
-              <span slot="activator">
-                {{ props.header.text }}
+              <span slot="activator">                
+                <h4><strong>{{ props.header.text }}</strong></h4>
               </span>
               <span>
                 {{ props.header.text }}
@@ -148,13 +150,13 @@
             </v-tooltip>
           </template>
           <template slot="items" slot-scope="props">
-            <td class="text-xs-left">{{ props.item.date }}</td>
-            <td class="text-xs-left">{{ props.item.farmName }}</td>
-            <td class="text-xs-left">{{ props.item.cropName }}</td>
-            <td class="text-xs-left">{{ props.item.workType }}</td>
-            <td class="text-xs-left">{{ props.item.workContent }}</td>
-            <td class="text-xs-left">{{ props.item.remarks }}</td>
-            <td class="justify-center layout px-0">
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="text-xs-left"><h4>{{ getDateWithKorean(props.item.date) }}</h4></td>
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="text-xs-left"><h4>{{ props.item.farmName }}</h4></td>
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="text-xs-left"><h4>{{ props.item.cropName }}</h4></td>
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="text-xs-left"><h4>{{ props.item.workType }}</h4></td>
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="text-xs-left"><h4>{{ props.item.workContent }}</h4></td>
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="text-xs-left"><h4>{{ props.item.remarks }}</h4></td>
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="justify-center layout px-0">
               <v-btn icon class="mx-0" @click="editItem(props.item)">
                 <v-icon color="teal">edit</v-icon>
               </v-btn>
@@ -256,14 +258,14 @@ export default {
           align: 'left',
           sortable: false,
           value: 'date',
-          width: '15%'
+          width: '22%'
         },
-        { text: '농장명', value: 'farmName', align: 'left', width: '5%' },
-        { text: '작물명', value: 'cropName', align: 'left', width: '5%' },
-        { text: '작업분류', value: 'workType', align: 'left', width: '5%' },
-        { text: '작업내용', value: 'workContent', align: 'left', width: '30%' },
-        { text: '특기사항', value: 'remarks', align: 'left', width: '30%' },
-        { text: '관리', value: 'name', sortable: false, align: 'left', width: '5%' }
+        { text: '농장명', value: 'farmName', align: 'left', sortable: false, width: '15%' },
+        { text: '작물명', value: 'cropName', align: 'left', sortable: false, width: '5%' },
+        { text: '작업분류', value: 'workType', align: 'left', sortable: false, width: '5%' },
+        { text: '작업내용', value: 'workContent', align: 'left', sortable: false, width: '30%' },
+        { text: '특기사항', value: 'remarks', align: 'left', sortable: false, width: '30%' },
+        { text: '관리', value: 'name', align: 'left', sortable: false, width: '5%' }
       ],
       editedIndex: -1,
       journals: [],
@@ -561,6 +563,15 @@ export default {
       this.getJournals()
       this.getLands()
       this.$validator.reset()
+    },
+    replaceAt: function (data, index, replacement) {
+      return data.substr(0, index) + replacement + data.substr(index + replacement.length)
+    },
+    getDateWithKorean: function (dataVal) {
+      var tmpStr = this.replaceAt(dataVal, 4, '년')
+      tmpStr = this.replaceAt(tmpStr, 7, '월')
+      tmpStr += '일'
+      return tmpStr
     }
   }
 }

@@ -2,7 +2,7 @@
   <v-layout align-center justify-center fill-height>
     <div
       id="e3"
-      style="width: 800px; margin: auto;"
+      style="width: 500px; height: 520px; margin: auto;"
       class="grey lighten-3"
     >
       <v-toolbar
@@ -14,7 +14,7 @@
         <v-spacer></v-spacer>
       </v-toolbar>
 
-      <v-card>
+      <v-card style="height:88%">
         <v-container fluid grid-list-lg>
           <v-layout row wrap justify-center>
             <v-text-field
@@ -27,7 +27,7 @@
               type="number"
               @input="onPhoneNoChange"
             ></v-text-field>
-            <v-btn block color="success" :disabled="sendAuthButtonDisabled" @click="sendAuthCode()">인증번호 발송</v-btn>        
+            <v-btn block outline color="indigo" :disabled="sendAuthButtonDisabled" @click="sendAuthCode()">인증번호 발송</v-btn>        
           </v-layout>
           <v-layout row wrap justify-center>
             <v-text-field
@@ -52,9 +52,12 @@
           </v-layout>
         </v-container>       
         
-        <v-card-actions>
-          <v-btn block color="warning" :disabled="nextButtonDisabled" @click="goToStep3()">다음</v-btn>          
-        </v-card-actions>
+        <v-flex xs12 style="height:210px"/>
+
+        <v-flex xs12 ma-3>
+          <v-btn block color="primary" :disabled="nextButtonDisabled" @click="goToStep3()">다음</v-btn>          
+        </v-flex>
+
       </v-card>
     </div>  
   </v-layout>

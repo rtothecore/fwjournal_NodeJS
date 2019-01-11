@@ -34,7 +34,8 @@
               <!-- dummy --> <div style="height:20px"/>
         <b-row>
           <b-col md="12">
-            <b-card header="작업일지 수정">
+            <b-card header="작업일지 수정" header-tag="header">
+              <h3 slot="header" class="mb-0"><strong>작업일지 수정</strong></h3>
               <b-row>
                 <b-col sm="12" lg="6">
                   <div style="width:1150px; margin:0 auto;">
@@ -44,7 +45,7 @@
               <span class="headline" style="color:black">{{User_Profile}}</span> <v-btn outline color="black" flat @click.native="dialog = false">닫기</v-btn>
             </v-card-title>
             -->
-            <span class="headline" style="color:black; padding-left:40px; float:left">{{User_Profile}}</span>               
+            <span class="headline" style="color:black; padding-left:40px; float:left">{{getDateWithKorean(User_Profile)}}</span>               
             <span style="float:right">
               <v-btn outline color="black" flat @click.native="dialog = false">닫기</v-btn>
             </span>
@@ -58,7 +59,7 @@
                       label="날씨"
                       placeholder="날씨"
                       hint="자동입력"
-                      disabled
+                      readonly
                     ></v-text-field>
                   </v-flex>
                   <v-flex xs6 sm6 md3>
@@ -67,7 +68,7 @@
                       label="강수량"
                       placeholder="강수량"
                       hint="자동입력"
-                      disabled
+                      readonly
                     ></v-text-field>
                   </v-flex>
                   <v-flex xs6 sm6 md6/>
@@ -78,7 +79,7 @@
                       label="평균온도"
                       placeholder="평균온도"
                       hint="자동입력"
-                      disabled
+                      readonly
                     ></v-text-field>
                   </v-flex>
                   <v-flex xs6 sm6 md2>
@@ -87,7 +88,7 @@
                       label="최대온도"
                       placeholder="최대온도"
                       hint="자동입력"
-                      disabled
+                      readonly
                     ></v-text-field>
                   </v-flex>
                   <v-flex xs6 sm6 md2>
@@ -96,7 +97,7 @@
                       label="최소온도"
                       placeholder="최소온도"
                       hint="자동입력"
-                      disabled
+                      readonly
                     ></v-text-field>
                   </v-flex>
 
@@ -106,7 +107,7 @@
                       label="평균습도"
                       placeholder="평균습도"
                       hint="자동입력"
-                      disabled
+                      readonly
                     ></v-text-field>
                   </v-flex>
                   <v-flex xs6 sm6 md2>
@@ -115,7 +116,7 @@
                       label="최대습도"
                       placeholder="최대습도"
                       hint="자동입력"
-                      disabled
+                      readonly
                     ></v-text-field>
                   </v-flex>
                   <v-flex xs6 sm6 md2>
@@ -124,7 +125,7 @@
                       label="최소습도"
                       placeholder="최소습도"
                       hint="자동입력"
-                      disabled
+                      readonly
                     ></v-text-field>
                   </v-flex>
 
@@ -187,9 +188,10 @@
 
                   <v-flex xs12>
                     <div slot="label">
-                      발생비용 <small>(optional)</small>
+                      <h4>발생비용 <small>(optional)</small>
                       <v-btn outline color="black" flat @click.native="addCooRow">추가</v-btn>
                       <v-btn outline color="black" flat @click.native="deleteCooRow">삭제</v-btn>
+                      </h4>
                     </div>
                   </v-flex>
                   
@@ -217,7 +219,7 @@
                       v-model="CooTotal"
                       label="총 발생비용"
                       placeholder="Placeholder"
-                      disabled
+                      readonly
                     ></v-text-field>
                   </v-flex>    
 
@@ -260,20 +262,15 @@
                   <template v-if='showUsage'>
                     <v-flex xs12>
                       <div slot="label">
-                        사용량 <small>(optional)</small>
+                        <h4>사용량 <small>(optional)</small>
                         <v-btn outline color="black" flat @click.native="addUsageRow">추가</v-btn>
                         <v-btn outline color="black" flat @click.native="deleteUsageRow">삭제</v-btn>
+                        </h4>
                       </div>
                     </v-flex>
 
                     <template v-for="(item, index) in usageItems">
                       <v-flex xs6 sm6 md6 :key="'C' + index">
-                        <!--
-                        <v-text-field
-                          label="품목명"
-                          v-model="item.itemName"
-                        ></v-text-field>
-                        -->
                         <v-select                          
                           :items="itemNames"
                           v-model="item.itemName"
@@ -282,7 +279,8 @@
                           data-vv-name="item.itemName"
                           required                           
                           hint="품목명 선택"
-                          persistent-hint                                        
+                          persistent-hint
+                          v-on:change="onChangeItemName(item.itemName, index)"                                        
                         ></v-select>
                       </v-flex>
                       <v-flex xs6 sm6 md6 :key="'D' + index">
@@ -382,7 +380,7 @@
                   
                 </v-layout>
               </v-container>
-              <small>*필수 입력 사항입니다</small>
+              <!-- <small>*필수 입력 사항입니다</small> -->
             </v-card-text>
             <v-card-actions>
               <v-spacer></v-spacer>
@@ -413,7 +411,8 @@
               <!-- dummy --> <div style="height:20px"/>
         <b-row>
           <b-col md="12">
-            <b-card header="자재관리 수정">
+            <b-card header="자재관리 수정" header-tag="header">
+              <h3 slot="header" class="mb-0"><strong>자재관리 수정</strong></h3>
               <b-row>
                 <b-col sm="12" lg="6">
                   <div style="width:1150px; margin:0 auto;">            
@@ -423,7 +422,7 @@
               <span class="headline" style="color:black">{{Item_User_Profile}}</span> <v-btn outline color="black" flat @click.native="dialog = false">닫기</v-btn>
             </v-card-title>
             -->
-            <span class="headline" style="color:black; padding-left:40px; float:left">{{Item_User_Profile}}</span>               
+            <span class="headline" style="color:black; padding-left:40px; float:left">{{getDateWithKorean(Item_User_Profile)}}</span>               
             <span style="float:right">
               <v-btn outline color="black" flat @click.native="dialog = false">닫기</v-btn>
             </span>
@@ -470,9 +469,10 @@
                   
                   <v-flex xs12>
                     <div slot="label">
-                      품목상세 <small>(optional)</small>
+                      <h4>품목상세 <small>(optional)</small>
                       <v-btn outline color="black" flat @click.native="addItemRow">추가</v-btn>
                       <v-btn outline color="black" flat @click.native="deleteItemRow">삭제</v-btn>
+                      </h4>
                     </div>
                   </v-flex>
                   
@@ -521,7 +521,7 @@
                       v-model="itemPriceTotal"
                       label="총 가격"
                       placeholder="총 가격"
-                      disabled
+                      readonly
                     ></v-text-field>
                   </v-flex>                      
                   
@@ -583,7 +583,7 @@
                   
                 </v-layout>
               </v-container>
-              <small>*필수 입력 사항입니다</small>
+              <!-- <small>*필수 입력 사항입니다</small> -->
             </v-card-text>
             <v-card-actions>
               <v-spacer></v-spacer>
@@ -785,6 +785,10 @@ export default {
         }
       }
     })
+    bus.$on('fromAddCustomItemModalEdit', function (value) {
+      vm.itemNames.push(value.itemName)
+      vm.usageItems[value.selectIdx].itemName = value.itemName
+    })
   },
   created () {
     // this.getLands()
@@ -817,19 +821,19 @@ export default {
 
       // 사진
       if (response.data[0].pictureA) {
-        this.iavatar.imageURL = 'http://59.8.37.86:8081/getJournalImg/' + response.data[0].pictureA
+        this.iavatar.imageURL = 'http://59.8.37.86:8081/getJournalImg/' + this.userId + '/' + response.data[0].pictureA
         this.iavatar.uploadedFilename = response.data[0].pictureA
       } else {
         this.iavatar = null
       }
       if (response.data[0].pictureB) {
-        this.iavatar2.imageURL = 'http://59.8.37.86:8081/getJournalImg/' + response.data[0].pictureB
+        this.iavatar2.imageURL = 'http://59.8.37.86:8081/getJournalImg/' + this.userId + '/' + response.data[0].pictureB
         this.iavatar2.uploadedFilename = response.data[0].pictureB
       } else {
         this.iavatar2 = null
       }
       if (response.data[0].pictureC) {
-        this.iavatar3.imageURL = 'http://59.8.37.86:8081/getJournalImg/' + response.data[0].pictureC
+        this.iavatar3.imageURL = 'http://59.8.37.86:8081/getJournalImg/' + this.userId + '/' + response.data[0].pictureC
         this.iavatar3.uploadedFilename = response.data[0].pictureC
       } else {
         this.iavatar3 = null
@@ -898,9 +902,16 @@ export default {
         this.showShipment = false
         this.showIncome = false
         this.showUsage = true
+
+        // 셀렉트 박스에 커스텀 입력 사항을 추가
+        this.itemNames = []
+        for (var i = 0; i < response.data[0].usage.length; i++) {
+          this.itemNames.push(response.data[0].usage[i].itemName)
+        }
+
         this.usageItems = response.data[0].usage
 
-        this.fetchItemsByWcode(this.selectedWorkTypeCode) //
+        this.fetchItemsByWcodeForEdit(this.selectedWorkTypeCode) //
 
         this.showOutput = false
       } else if (this.selectedWorkTypeText === '생산') {
@@ -922,19 +933,19 @@ export default {
       this.remarks = response.data[0].remarks
 
       if (response.data[0].pictureA) {
-        this.avatar.imageURL = 'http://59.8.37.86:8081/getJournalImg/' + response.data[0].pictureA
+        this.avatar.imageURL = 'http://59.8.37.86:8081/getJournalImg/' + this.userId + '/' + response.data[0].pictureA
         this.avatar.uploadedFilename = response.data[0].pictureA
       } else {
         this.avatar = null
       }
       if (response.data[0].pictureB) {
-        this.avatar2.imageURL = 'http://59.8.37.86:8081/getJournalImg/' + response.data[0].pictureB
+        this.avatar2.imageURL = 'http://59.8.37.86:8081/getJournalImg/' + this.userId + '/' + response.data[0].pictureB
         this.avatar2.uploadedFilename = response.data[0].pictureB
       } else {
         this.avatar2 = null
       }
       if (response.data[0].pictureC) {
-        this.avatar3.imageURL = 'http://59.8.37.86:8081/getJournalImg/' + response.data[0].pictureC
+        this.avatar3.imageURL = 'http://59.8.37.86:8081/getJournalImg/' + this.userId + '/' + response.data[0].pictureC
         this.avatar3.uploadedFilename = response.data[0].pictureC
       } else {
         this.avatar3 = null
@@ -951,6 +962,20 @@ export default {
           this.itemNames.push(response.data[i].itemDetail[j].itemName)
         }
       }
+      this.itemNames.push('직접입력')
+    },
+    async fetchItemsByWcodeForEdit (workCode) {
+      const response = await ItemService.fetchItemsByWcode({
+        userId: this.userId,
+        wCode: workCode
+      })
+      // this.itemNames = []
+      for (var i = 0; i < response.data.length; i++) {
+        for (var j = 0; j < response.data[i].itemDetail.length; j++) {
+          this.itemNames.push(response.data[i].itemDetail[j].itemName)
+        }
+      }
+      this.itemNames.push('직접입력')
     },
     async getLands () {
       const response = await LandService.fetchLands({
@@ -1083,6 +1108,7 @@ export default {
       this.updatedEvent.end = this.User_Profile
       this.updatedEvent.journalId = this.journalId
       this.updatedEvent.eventIndex = this.eventIndex
+      this.updatedEvent.textColor = 'white'
     },
     async deleteItem (id) {
       await ItemService.deleteItem(id)
@@ -1168,6 +1194,7 @@ export default {
       }
       this.itemPriceTotal += ''
       this.itemPriceTotal = this.itemPriceTotal.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+      this.itemPriceTotal = '￦' + this.itemPriceTotal
     },
     onChangeItem: function (event) {
       this.selectedItem = event
@@ -1184,6 +1211,7 @@ export default {
       }
       this.CooTotal += ''
       this.CooTotal = this.CooTotal.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+      this.CooTotal = '￦' + this.CooTotal
     },
     onChangeLand: function (event) {
       this.selectedLandId = event
@@ -1196,6 +1224,11 @@ export default {
       } else {
         this.fetchTextByCcode(this.selectedWorkTypeCode)
         this.fetchItemsByWcode(this.selectedWorkTypeCode)
+      }
+    },
+    onChangeItemName: function (event, idx) {
+      if (event === '직접입력') {
+        this.addCustomItem(idx)
       }
     },
     onChangeWSTime: function (event) {
@@ -1301,6 +1334,12 @@ export default {
       paramForAWT.cropCode = this.selectedCropCode
       bus.$emit('dialogForAddWorkType', paramForAWT)
     },
+    addCustomItem (idx) {
+      var paramForACI = {}
+      paramForACI.selectIdx = idx
+      paramForACI.from = 'edit'
+      bus.$emit('dialogForAddCustomItem', paramForACI)
+    },
     addCooRow () {
       this.cooItems.push({
         category: '',
@@ -1380,6 +1419,15 @@ export default {
       imageWin.document.write('<html><title>Preview</title><body style="margin:0;cursor:pointer;" title="Close" onclick="window.close()">')
       imageWin.document.write('<img src="' + imgCommonPreview.src + '">')
       imageWin.document.write('</body></html>')
+    },
+    replaceAt: function (data, index, replacement) {
+      return data.substr(0, index) + replacement + data.substr(index + replacement.length)
+    },
+    getDateWithKorean: function (dataVal) {
+      var tmpStr = this.replaceAt(dataVal, 4, '년')
+      tmpStr = this.replaceAt(tmpStr, 7, '월')
+      tmpStr += '일'
+      return tmpStr
     }
   }
 }

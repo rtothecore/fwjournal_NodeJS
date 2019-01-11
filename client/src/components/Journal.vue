@@ -7,7 +7,8 @@
         
         <b-row>
           <b-col md="12">
-            <b-card header="날씨 정보">
+            <b-card header="날씨 정보" header-tag="header">
+              <h3 slot="header" class="mb-0"><strong>날씨 정보</strong></h3>
               <b-row>
                 <b-col sm="12" lg="6">
                   <div style="width:1150px; margin:0 auto;">
@@ -204,7 +205,8 @@
       <div style="width:1200px; margin:0 auto;">
         <b-row>
           <b-col md="12">
-            <b-card header="영농일지 캘린더">
+            <b-card header="영농일지 캘린더" header-tag="header">
+              <h3 slot="header" class="mb-0"><strong>영농일지 캘린더</strong></h3>
               <b-row>
                 <b-col sm="12" lg="6">
                   <div style="width:1150px; margin:0 auto;">
@@ -224,6 +226,7 @@
         <journalModal></journalModal>
         <journalModalForEdit></journalModalForEdit>
         <addWorkTypeModal></addWorkTypeModal>
+        <addCustomItemModal></addCustomItemModal>
       </div>            
       <!-- </div> -->
 
@@ -242,7 +245,8 @@
         -->
         <b-row>
           <b-col md="12">
-            <b-card header="판매가격 정보">
+            <b-card header="판매가격 정보" header-tag="header">
+              <h3 slot="header" class="mb-0"><strong>판매가격 정보</strong></h3>
               <b-row>
                 <b-col sm="12" lg="6">
                   <div style="width:1150px; margin:0 auto;">
@@ -298,7 +302,8 @@
 
         <b-row>
           <b-col md="12">
-            <b-card header="농작업일정 예측">
+            <b-card header="농작업일정 예측" header-tag="header">
+              <h3 slot="header" class="mb-0"><strong>농작업일정 예측</strong></h3>
               <b-row>
                 <b-col sm="12" lg="6">
                   <div style="width:1150px; margin:0 auto;">
@@ -312,19 +317,19 @@
                       <template slot="headerCell" slot-scope="props">
                         <v-tooltip bottom>
                           <span slot="activator">
-                            {{ props.header.text }}
+                            <h4><strong>{{ props.header.text }}</strong></h4>
                           </span>
                           <span>
                             {{ props.header.text }}
                           </span>
                         </v-tooltip>
                       </template>
-                      <template slot="items" slot-scope="props">
-                        <td>{{ props.item.landName }}</td>
-                        <td>{{ props.item.date }}</td>
-                        <td>{{ props.item.workName }}</td>
-                        <td>{{ props.item.sky }}</td>
-                        <td>{{ props.item.t1h }}</td>            
+                      <template slot="items" slot-scope="props">                        
+                        <td :style="{backgroundColor: (props.index % 2 ? '#E0E4FF' : 'transparent')}"><h4>{{ props.item.landName }}</h4></td>
+                        <td :style="{backgroundColor: (props.index % 2 ? '#E0E4FF' : 'transparent')}"><h4>{{ getDateWithKorean(props.item.date) }}</h4></td>
+                        <td :style="{backgroundColor: (props.index % 2 ? '#E0E4FF' : 'transparent')}"><h4>{{ props.item.workName }}</h4></td>
+                        <td :style="{backgroundColor: (props.index % 2 ? '#E0E4FF' : 'transparent')}"><h4>{{ props.item.sky }}</h4></td>
+                        <td :style="{backgroundColor: (props.index % 2 ? '#E0E4FF' : 'transparent')}"><h4>{{ props.item.t1h }}</h4></td>            
                       </template>
                     </v-data-table>
                   </div>
@@ -351,6 +356,7 @@
     import PriceService from '@/services/PriceService'
     import DcService from '@/services/DcService'
     import proj4 from 'proj4'
+    
     export default {
   data () {
         return {
@@ -368,13 +374,13 @@
             {
               text: '농장명',
               align: 'left',
-              sortable: true,
+              sortable: false,
               value: 'landName'
             },
-            { text: '작업일', value: 'date' },
-            { text: '작업명', value: 'workName' },
-            { text: '날씨', value: 'sky' },
-            { text: '온도', value: 't1h' }
+            { text: '작업일', sortable: false, value: 'date' },
+            { text: '작업명', sortable: false, value: 'workName' },
+            { text: '날씨', sortable: false, value: 'sky' },
+            { text: '온도', sortable: false, value: 't1h' }
           ],
           headersForPredictMobile: [
             {
@@ -490,9 +496,14 @@
   mounted () {
         var vm = this
         bus.$on('toJournalForNew', function (value) {
-          vm.events.push(value)
+          // vm.events.push(value)
+          vm.events = []
+          vm.getJournal()
+          vm.getItem()
+          vm.getLands()
         })
         bus.$on('toJournalForUpdate', function (value) {
+          // console.log(value)
           vm.events.splice(value.eventIndex, 1)
           vm.events.push(value)
         })
@@ -589,6 +600,7 @@
             tmpEvent.start = tmpTime
             tmpEvent.end = tmpTime
             tmpEvent.journalId = response.data[i]._id
+            tmpEvent.textColor = 'white'
             this.events.push(tmpEvent)
             tmpEvent.eventIndex = this.events.indexOf(tmpEvent)
             // console.log(this.events.indexOf(tmpEvent))
@@ -615,6 +627,7 @@
             // tmpEvent.journalId = response.data[i]._id
             tmpEvent.itemId = response.data[i]._id
             tmpEvent.color = 'orange'
+            tmpEvent.textColor = 'white'
             this.events.push(tmpEvent)
             tmpEvent.eventIndex = this.events.indexOf(tmpEvent)
           }
@@ -1035,6 +1048,15 @@
         },
         numberWithCommas: function (x) {
           return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+        },
+        replaceAt: function (data, index, replacement) {
+          return data.substr(0, index) + replacement + data.substr(index + replacement.length)
+        },
+        getDateWithKorean: function (dataVal) {
+          var tmpStr = this.replaceAt(dataVal, 4, '년')
+          tmpStr = this.replaceAt(tmpStr, 7, '월')
+          tmpStr += '일'
+          return tmpStr
         }
   }
 }

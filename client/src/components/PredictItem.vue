@@ -3,7 +3,8 @@
       <!-- dummy --> <div style="height:20px"/>
         <b-row>
           <b-col md="12">
-            <b-card header="자재구입일정 예측">
+            <b-card header="자재구입일정 예측" header-tag="header">
+              <h3 slot="header" class="mb-0"><strong>자재구입일정 예측</strong></h3>
               <b-row>
                 <b-col sm="12" lg="6">
                   <div style="width:1150px; margin:0 auto;">
@@ -57,7 +58,7 @@
 
       <v-flex xs8 sm8 md1 class="text-xs-left">
         <v-btn          
-          color="light-blue"
+          color="primary"
           class="white--text"
           @click.native="searchItems"
         >
@@ -67,7 +68,8 @@
 
       <v-flex xs8 sm8 md1 class="text-xs-left">
         <v-btn
-          color="orange lighten-3"
+          outline
+          color="indigo"
           class="white--text"
           @click.native="searchReset"
         >
@@ -92,7 +94,7 @@
           <template slot="headerCell" slot-scope="props">
             <v-tooltip bottom>
               <span slot="activator">
-                {{ props.header.text }}
+                <h4><strong>{{ props.header.text }}</strong></h4>
               </span>
               <span>
                 {{ props.header.text }}
@@ -100,15 +102,15 @@
             </v-tooltip>
           </template>
           <template slot="items" slot-scope="props">
-            <td>{{ props.item.date }}</td>
-            <td class="text-xs-right">{{ props.item.landName }}</td>
-            <td class="text-xs-right">{{ props.item.item }}</td>
-            <td class="text-xs-right">{{ props.item.purpose }}</td>
-            <td class="text-xs-right">{{ props.item.itemAmount }}</td>
-            <td class="text-xs-right">{{ props.item.itemUsage }}</td>
-            <td class="text-xs-right">{{ props.item.itemStock }}</td>
-            <td class="text-xs-right">{{ props.item.itemTotalPrice }}</td>
-            <td class="justify-center layout px-0">
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ getDateWithKorean(props.item.date) }}</h4></td>
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.landName }}</h4></td>
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.item }}</h4></td>
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.purpose }}</h4></td>
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.itemAmount }}</h4></td>
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.itemUsage }}</h4></td>
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.itemStock }}</h4></td>
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.itemTotalPrice }}</h4></td>
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="justify-center layout px-0">
               <v-btn icon class="mx-0" @click="showItem(props.item)">
                 <v-icon color="teal">remove_red_eye</v-icon>
               </v-btn>
@@ -163,13 +165,13 @@ export default {
           sortable: false,
           value: 'date'
         },
-        { text: '농장명', value: 'landName' },
-        { text: '구입품목', value: 'item' },
-        { text: '사용목적', value: 'purpose' },
-        { text: '구입수량', value: 'itemAmount' },
-        { text: '사용수량', value: 'itemUsage' },
-        { text: '재고수량', value: 'itemStock' },
-        { text: '총 구입가격', value: 'itemTotalPrice' },
+        { text: '농장명', sortable: false, value: 'landName' },
+        { text: '구입품목', sortable: false, value: 'item' },
+        { text: '사용목적', sortable: false, value: 'purpose' },
+        { text: '구입수량', sortable: false, value: 'itemAmount' },
+        { text: '사용수량', sortable: false, value: 'itemUsage' },
+        { text: '재고수량', sortable: false, value: 'itemStock' },
+        { text: '총 구입가격', sortable: false, value: 'itemTotalPrice' },
         { text: '관리', value: 'name', sortable: false, align: 'left', width: '5%' }
       ],
       items: []
@@ -185,6 +187,7 @@ export default {
   created: function () {
     this.userId = this.$session.get('userId')
     var today = moment().format('YYYY-MM-DD')
+    this.sDate = today
     this.onChangeDate(today)
     this.getLands()
   },
@@ -288,7 +291,7 @@ export default {
     showItem (item) {
       // console.log(item)
       var emitParams = {'itemId': item._id, 'origin': 'fromPredict'}
-      bus.$emit('dialogForShow', emitParams)
+      bus.$emit('dialogForShowItem', emitParams)
     },
     searchItems () {
       this.getItemsByDate()
@@ -298,6 +301,15 @@ export default {
       this.endDate = ''
       this.sDate = ''
       this.selectLand = ''
+    },
+    replaceAt: function (data, index, replacement) {
+      return data.substr(0, index) + replacement + data.substr(index + replacement.length)
+    },
+    getDateWithKorean: function (dataVal) {
+      var tmpStr = this.replaceAt(dataVal, 4, '년')
+      tmpStr = this.replaceAt(tmpStr, 7, '월')
+      tmpStr += '일'
+      return tmpStr
     }
   },
   computed: {

@@ -8,7 +8,8 @@
               <!-- dummy --> <div style="height:20px"/>
         <b-row>
           <b-col md="12">
-            <b-card header="작업일지">
+            <b-card header="작업일지" header-tag="header">
+              <h3 slot="header" class="mb-0"><strong>작업일지</strong></h3>
               <b-row>
                 <b-col sm="12" lg="6">
                   <div style="width:1150px; margin:0 auto;">
@@ -18,7 +19,7 @@
               <span class="headline" style="color:black">{{User_Profile}}</span> <v-btn outline color="black" flat @click.native="dialog = false">닫기</v-btn> 
             </v-card-title>
             -->
-            <span class="headline" style="color:black; padding-left:40px; float:left">{{User_Profile}}</span>               
+            <span class="headline" style="color:black; padding-left:40px; float:left">{{getDateWithKorean(User_Profile)}}</span>               
             <span style="float:right">
               <v-btn outline color="black" flat @click.native="dialog = false">닫기</v-btn>
             </span>
@@ -32,7 +33,7 @@
                       label="날씨"
                       placeholder="날씨"
                       hint="자동입력"
-                      disabled
+                      readonly
                     ></v-text-field>
                   </v-flex>
                   <v-flex xs6 sm6 md3>
@@ -41,7 +42,7 @@
                       label="강수량"
                       placeholder="강수량"
                       hint="자동입력"
-                      disabled
+                      readonly
                     ></v-text-field>
                   </v-flex>
                   <v-flex xs6 sm6 md6/>
@@ -52,7 +53,7 @@
                       label="평균온도"
                       placeholder="평균온도"
                       hint="자동입력"
-                      disabled
+                      readonly
                     ></v-text-field>
                   </v-flex>
                   <v-flex xs6 sm6 md2>
@@ -61,7 +62,7 @@
                       label="최대온도"
                       placeholder="최대온도"
                       hint="자동입력"
-                      disabled
+                      readonly
                     ></v-text-field>
                   </v-flex>
                   <v-flex xs6 sm6 md2>
@@ -70,7 +71,7 @@
                       label="최소온도"
                       placeholder="최소온도"
                       hint="자동입력"
-                      disabled
+                      readonly
                     ></v-text-field>
                   </v-flex>
 
@@ -80,7 +81,7 @@
                       label="평균습도"
                       placeholder="평균습도"
                       hint="자동입력"
-                      disabled
+                      readonly
                     ></v-text-field>
                   </v-flex>
                   <v-flex xs6 sm6 md2>
@@ -89,7 +90,7 @@
                       label="최대습도"
                       placeholder="최대습도"
                       hint="자동입력"
-                      disabled
+                      readonly
                     ></v-text-field>
                   </v-flex>
                   <v-flex xs6 sm6 md2>
@@ -98,7 +99,7 @@
                       label="최소습도"
                       placeholder="최소습도"
                       hint="자동입력"
-                      disabled
+                      readonly
                     ></v-text-field>
                   </v-flex>
 
@@ -114,7 +115,7 @@
                       v-on:change="onChangeLand"
                       item-text="name"
                       item-value="_id"
-                      disabled                     
+                      readonly                     
                     ></v-select>
                   </v-flex>
                   <v-flex xs6 sm6 md3>
@@ -124,7 +125,7 @@
                       hint="농장명을 선택하면 자동입력됩니다"
                       persistent-hint
                       required       
-                      disabled                                    
+                      readonly                                    
                       ></v-text-field>
                   </v-flex>
                   <v-flex xs6 sm6 md2>
@@ -141,7 +142,7 @@
                       item-value="wCode"   
                       hint="작물명에 따른 작업분류 선택"
                       persistent-hint
-                      disabled                                        
+                      readonly                                        
                     ></v-select>
                   </v-flex>
                   
@@ -150,7 +151,7 @@
                       v-model="workTime"
                       label="작업시간"
                       placeholder="Placeholder"
-                      disabled
+                      readonly
                     ></v-text-field>
                   </v-flex>
                   <v-flex xs6 sm6 md2>
@@ -158,17 +159,18 @@
                       v-model="workerNumber"
                       label="작업인원"
                       placeholder="Placeholder"
-                      disabled
+                      readonly
                     ></v-text-field>
                   </v-flex>                  
 
                   <v-flex xs12>
                     <div slot="label">
-                      발생비용 <small>(optional)</small>
+                      <h4>발생비용 <small>(optional)</small>
                       <!--
                       <v-btn outline color="black" flat @click.native="addCooRow">추가</v-btn>
                       <v-btn outline color="black" flat @click.native="deleteCooRow">삭제</v-btn>
                       -->
+                      </h4>
                     </div>
                   </v-flex>
                   
@@ -177,7 +179,7 @@
                       <v-text-field
                         label="발생분류"                      
                         v-model="item.category"
-                        disabled
+                        readonly
                       ></v-text-field>
                     </v-flex>
                     <v-flex xs6 sm6 md6 :key="'B' + index">
@@ -185,7 +187,7 @@
                         label="발생비용"
                         v-model="item.cost"
                         v-on:change="onChangeItemCost"
-                        disabled
+                        readonly
                       ></v-text-field>
                     </v-flex> 
                   </template>                                                     
@@ -197,7 +199,7 @@
                       v-model="CooTotal"
                       label="총 발생비용"
                       placeholder="Placeholder"
-                      disabled
+                      readonly
                     ></v-text-field>
                   </v-flex>    
 
@@ -207,7 +209,7 @@
                         v-model="shipmentAmount"
                         label="출하량"
                         placeholder="Placeholder"
-                        disabled
+                        readonly
                       ></v-text-field>
                     </v-flex>
                     <v-flex xs6 sm6 md6>
@@ -215,7 +217,7 @@
                         v-model="shipmentDetail"
                         label="출하량 상세"
                         placeholder="Placeholder"
-                        disabled
+                        readonly
                       ></v-text-field>
                     </v-flex>
                   </template>
@@ -226,7 +228,7 @@
                         v-model="incomeAmount"
                         label="수입량"
                         placeholder="Placeholder"
-                        disabled
+                        readonly
                       ></v-text-field>
                     </v-flex>
                     <v-flex xs6 sm6 md6>
@@ -234,7 +236,7 @@
                         v-model="incomeDetail"
                         label="수입량 상세"
                         placeholder="Placeholder"
-                        disabled
+                        readonly
                       ></v-text-field>
                     </v-flex>
                   </template>
@@ -242,11 +244,12 @@
                   <template v-if='showUsage'>
                     <v-flex xs12>
                       <div slot="label">
-                        사용량 <small>(optional)</small>
+                        <h4>사용량 <small>(optional)</small>
                         <!--
                         <v-btn outline color="black" flat @click.native="addUsageRow">추가</v-btn>
                         <v-btn outline color="black" flat @click.native="deleteUsageRow">삭제</v-btn>
                         -->
+                        </h4>
                       </div>
                     </v-flex>
 
@@ -267,14 +270,14 @@
                           required                           
                           hint="품목명 선택"
                           persistent-hint
-                          disabled                                        
+                          readonly                                        
                         ></v-select>
                       </v-flex>
                       <v-flex xs6 sm6 md6 :key="'D' + index">
                         <v-text-field
                           label="사용량"
                           v-model="item.usage"
-                          disabled
+                          readonly
                         ></v-text-field>
                       </v-flex>
                     </template>
@@ -286,7 +289,7 @@
                         v-model="outputAmount"
                         label="생산량"
                         placeholder="Placeholder"
-                        disabled
+                        readonly
                       ></v-text-field>
                     </v-flex>
                     <v-flex xs6 sm6 md6>
@@ -294,7 +297,7 @@
                         v-model="outputDetail"
                         label="생산량 상세"
                         placeholder="Placeholder"
-                        disabled
+                        readonly
                       ></v-text-field>
                     </v-flex>
                   </template>
@@ -307,7 +310,7 @@
                       color="deep-purple"
                       label="작업내용"
                       rows="3"
-                      disabled
+                      readonly
                     ></v-textarea>
                   </v-flex>
 
@@ -319,7 +322,7 @@
                       color="deep-purple"
                       label="특이사항"
                       rows="3"
-                      disabled
+                      readonly
                     ></v-textarea>
                   </v-flex>
 
@@ -570,19 +573,19 @@ export default {
 
       // 사진
       if (response.data[0].pictureA) {
-        this.iavatar.imageURL = 'http://59.8.37.86:8081/getJournalImg/' + response.data[0].pictureA
+        this.iavatar.imageURL = 'http://59.8.37.86:8081/getJournalImg/' + this.userId + '/' + response.data[0].pictureA
         this.iavatar.uploadedFilename = response.data[0].pictureA
       } else {
         this.iavatar = null
       }
       if (response.data[0].pictureB) {
-        this.iavatar2.imageURL = 'http://59.8.37.86:8081/getJournalImg/' + response.data[0].pictureB
+        this.iavatar2.imageURL = 'http://59.8.37.86:8081/getJournalImg/' + this.userId + '/' + response.data[0].pictureB
         this.iavatar2.uploadedFilename = response.data[0].pictureB
       } else {
         this.iavatar2 = null
       }
       if (response.data[0].pictureC) {
-        this.iavatar3.imageURL = 'http://59.8.37.86:8081/getJournalImg/' + response.data[0].pictureC
+        this.iavatar3.imageURL = 'http://59.8.37.86:8081/getJournalImg/' + this.userId + '/' + response.data[0].pictureC
         this.iavatar3.uploadedFilename = response.data[0].pictureC
       } else {
         this.iavatar3 = null
@@ -669,19 +672,19 @@ export default {
       this.remarks = response.data[0].remarks
 
       if (response.data[0].pictureA) {
-        this.avatar.imageURL = 'http://59.8.37.86:8081/getJournalImg/' + response.data[0].pictureA
+        this.avatar.imageURL = 'http://59.8.37.86:8081/getJournalImg/' + this.userId + '/' + response.data[0].pictureA
         this.avatar.uploadedFilename = response.data[0].pictureA
       } else {
         this.avatar = null
       }
       if (response.data[0].pictureB) {
-        this.avatar2.imageURL = 'http://59.8.37.86:8081/getJournalImg/' + response.data[0].pictureB
+        this.avatar2.imageURL = 'http://59.8.37.86:8081/getJournalImg/' + this.userId + '/' + response.data[0].pictureB
         this.avatar2.uploadedFilename = response.data[0].pictureB
       } else {
         this.avatar2 = null
       }
       if (response.data[0].pictureC) {
-        this.avatar3.imageURL = 'http://59.8.37.86:8081/getJournalImg/' + response.data[0].pictureC
+        this.avatar3.imageURL = 'http://59.8.37.86:8081/getJournalImg/' + this.userId + '/' + response.data[0].pictureC
         this.avatar3.uploadedFilename = response.data[0].pictureC
       } else {
         this.avatar3 = null
@@ -868,6 +871,9 @@ export default {
         this.CooTotal = Number(this.CooTotal)
         this.CooTotal += Number(this.cooItems[i].cost)
       }
+      this.CooTotal += ''
+      this.CooTotal = this.CooTotal.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+      this.CooTotal = '￦' + this.CooTotal
     },
     onChangeLand: function (event) {
       this.selectedLandId = event
@@ -993,6 +999,15 @@ export default {
       if (this.usageItems.length > 1) {
         this.usageItems.splice(this.usageItems.length - 1, 1)
       }
+    },
+    replaceAt: function (data, index, replacement) {
+      return data.substr(0, index) + replacement + data.substr(index + replacement.length)
+    },
+    getDateWithKorean: function (dataVal) {
+      var tmpStr = this.replaceAt(dataVal, 4, '년')
+      tmpStr = this.replaceAt(tmpStr, 7, '월')
+      tmpStr += '일'
+      return tmpStr
     }
   }
 }

@@ -2,7 +2,7 @@
   <v-layout align-center justify-center fill-height>
     <div
       id="e3"
-      style="width: 800px; margin: auto;"
+      style="width: 500px; height: 520px; margin: auto;"
       class="grey lighten-3"
     >
       <v-toolbar
@@ -14,7 +14,7 @@
         <v-spacer></v-spacer>
       </v-toolbar>
 
-      <v-card>
+      <v-card style="height:88%">
         <v-container fluid grid-list-lg>
           <v-layout row wrap justify-center>
             <v-text-field
@@ -24,9 +24,9 @@
               :error-messages="errors.collect('id')"
               label="아이디"
               data-vv-name="id"
-              @input="onIdChange"              
+              @input="onIdChange"
             ></v-text-field>
-            <v-btn block color="success" @click="chkDuplicatedId()">중복체크</v-btn>        
+            <v-btn block outline color="indigo" @click="chkDuplicatedId()">중복체크</v-btn>        
           </v-layout>
           <v-layout row wrap justify-center>
             <v-text-field
@@ -36,7 +36,7 @@
               :error-messages="errors.collect('pw')"
               label="비밀번호(소문자, 대문자, 숫자, 특수기호로 이루어진 8글자)"
               data-vv-name="pw"
-              type="password"             
+              type="password"
             ></v-text-field>            
           </v-layout>
           <v-layout row wrap justify-center>
@@ -57,8 +57,7 @@
               v-model="name"
               :error-messages="errors.collect('name')"
               label="이름"
-              data-vv-name="name"
-              @input="onIdChange"              
+              data-vv-name="name"             
             ></v-text-field>
             <v-text-field
               prepend-icon="fab fa-pagelines"
@@ -82,9 +81,10 @@
           </v-layout>
         </v-container>       
         
-        <v-card-actions>
-          <v-btn block color="warning" @click="goToStep4()">회원가입</v-btn>          
-        </v-card-actions>
+        <v-flex xs12 ma-3>
+          <v-btn block color="primary" @click="goToStep4()">회원가입</v-btn>          
+        </v-flex>
+        
       </v-card>
     </div>  
   </v-layout>
@@ -200,8 +200,29 @@ export default {
       this.isIdDuplicateCheck = false
     },
     goToStep4 () {
+      /*
+      var strongRegex = new RegExp('^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\\$%\\^&\\*])(?=.{8,})')
+      if (strongRegex.test(this.pw)) {
+        alert('비밀번호는 소문자, 대문자, 특수기호로 이루어져야 합니다')
+        return
+      }
+      */
+
       this.$validator.validateAll().then((result) => {
         if (!result) {
+          return
+        }
+
+        var pattern = /[^a-zA-Z]/gi
+        if (pattern.test(this.id)) {
+          this.$swal({
+            type: 'warning',
+            title: '아이디는 영문만 가능합니다',
+            showConfirmButton: false,
+            timer: 777
+          }).then((result) => {
+          })
+          this.id = ''
           return
         }
 
