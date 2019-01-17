@@ -7,25 +7,37 @@ import Vuetify from 'vuetify'
 // import 'vuetify/dist/vuetify.min.css'
 import 'vuetify/dist/vuetify_mod.css'
 import FullCalendar from 'vue-full-calendar'
-import 'fullcalendar/dist/fullcalendar.min.css'
+// import 'fullcalendar/dist/fullcalendar.min.css'
+import 'fullcalendar/dist/fullcalendar_mod.css'
 import RegisterModal from './components/RegisterModal.vue'
 import JournalModal from './components/JournalModal.vue'
 import JournalModalForEdit from './components/JournalModalForEdit.vue'
 import AddWorkTypeModal from './components/AddWorkTypeModal.vue'
+import AddCustomItemModal from './components/AddCustomItemModal.vue'
 import SearchAddressModal from './components/SearchAddressModal.vue'
+import PredictModalForShow from './components/PredictModalForShow.vue'
+import PredictItemModalForShow from './components/PredictItemModalForShow.vue'
+import ChangePhoneNoModal from './components/ChangePhoneNoModal.vue'
+import ChangePasswordModal from './components/ChangePasswordModal.vue'
 import VeeValidate from 'vee-validate'
 import VueSweetalert2 from 'vue-sweetalert2'
 // https://alligator.io/vuejs/vue-media-queries/
 import VueMq from 'vue-mq'
 // https://www.npmjs.com/package/vue-session
 import VueSession from 'vue-session'
-// import axios from 'axios'
+import axios from 'axios'
+import BootstrapVue from 'bootstrap-vue'
 
 Vue.component('registerModal', RegisterModal)
 Vue.component('journalModal', JournalModal)
 Vue.component('journalModalForEdit', JournalModalForEdit)
 Vue.component('addWorkTypeModal', AddWorkTypeModal)
+Vue.component('addCustomItemModal', AddCustomItemModal)
 Vue.component('searchAddressModal', SearchAddressModal)
+Vue.component('predictModalForShow', PredictModalForShow)
+Vue.component('predictItemModalForShow', PredictItemModalForShow)
+Vue.component('changePhoneNoModal', ChangePhoneNoModal)
+Vue.component('changePasswordModal', ChangePasswordModal)
 
 Vue.use(Vuetify)
 Vue.use(FullCalendar)
@@ -49,7 +61,8 @@ Vue.use(VueMq, {
   }
 })
 Vue.use(VueSession)
-// Vue.prototype.$http = axios
+Vue.prototype.$http = axios
+Vue.use(BootstrapVue)
 
 Vue.config.productionTip = false
 

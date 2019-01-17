@@ -53,6 +53,7 @@
         </v-container>       
         
         <v-card-actions>
+          <v-btn block outline color="indigo"  @click="close()">창 닫기</v-btn>          
           <v-btn block color="primary" :disabled="nextButtonDisabled" @click="goToStep3()">휴대폰번호 변경</v-btn>          
         </v-card-actions>
       </v-card>
@@ -192,6 +193,9 @@ export default {
         this.isTimeout = true
         // console.log('timeout!')
       }
+    },
+    close () {
+      this.dialog = false
     }
   },
   computed: {

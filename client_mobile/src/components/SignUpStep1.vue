@@ -1,8 +1,8 @@
 <template>
-    <v-layout align-center justify-center fill-height>
+    <v-layout align-center justify-center fill-height mb-5>
       <div
         id="e3"
-        style="width: 800px; margin: auto;"
+        style="width: 95%; height: 480px; margin: auto;"
         class="grey lighten-3"
       >
         <v-toolbar
@@ -14,27 +14,43 @@
           <v-spacer></v-spacer>
         </v-toolbar>
 
-        <v-card>
+        <v-card style="height:88%">
           <v-container fluid grid-list-lg>
-            <v-layout row wrap justify-center>
-              <v-checkbox :label="`서비스 약관`" v-model="checkbox1" @change="onCb1Change"></v-checkbox>
-              <p class="text-lg-right" style="cursor:pointer" @click="showServicePolicy()">상세보기</p>            
+            <v-layout row wrap align-center>
+              <v-flex xs8>
+                <v-checkbox :label="`서비스 약관`" v-model="checkbox1" @change="onCb1Change"></v-checkbox>
+              </v-flex>
+
+              <v-flex xs4>
+                <h5><p class="text-lg-right" style="cursor:pointer" @click="showServicePolicy()">상세보기</p></h5>
+              </v-flex>
             </v-layout>
-            <v-layout row wrap justify-center>
-              <v-checkbox :label="`개인정보 취급방침`" v-model="checkbox2" @change="onCb2Change"></v-checkbox>
-              <p class="text-lg-right" style="cursor:pointer" @click="showPrivatePolicy()">상세보기</p>            
+
+            <v-layout row wrap align-center>
+              <v-flex xs8>
+                <v-checkbox :label="`개인정보 취급방침`" v-model="checkbox2" @change="onCb2Change"></v-checkbox>
+              </v-flex>
+
+              <v-flex xs4>
+                <h5><p class="text-lg-right" style="cursor:pointer" @click="showPrivatePolicy()">상세보기</p></h5>
+              </v-flex>
             </v-layout>
           </v-container> 
 
           <v-container fluid grid-list-lg>
-            <v-layout row wrap justify-center>
+            <v-layout row wrap align-center>
+              <v-flex xs6>
                 <v-checkbox :label="`전체동의`" v-model="checkbox3" @change="onCbAllAgreeChange"></v-checkbox>          
+              </v-flex>
             </v-layout>
           </v-container> 
           
-          <v-card-actions>
-            <v-btn block color="warning" :disabled="nextButtonDisabled" @click="goToStep2()">다음</v-btn>          
-          </v-card-actions>
+          <v-flex xs12 style="height:55px"/>
+
+          <v-flex xs12 ma-3>
+              <v-btn block color="primary" :disabled="nextButtonDisabled" @click="goToStep2()">다음</v-btn>          
+          </v-flex>
+
         </v-card>
       </div>
 

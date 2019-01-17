@@ -1,8 +1,8 @@
 <template>
-    <v-layout align-center justify-center fill-height>
+    <v-layout align-center justify-center fill-height flex-column>
       <div
         id="e3"
-        style="width: 500px; height: 520px; margin: auto;"
+        :style=mainStyle
         class="grey lighten-3"
       >
         <v-toolbar
@@ -95,9 +95,12 @@
 </template>
 
 <script>
+const { detect } = require('detect-browser')
+const browser = detect()
 export default {
   data () {
     return {
+      mainStyle: 'width: 500px; height: 520px; margin: auto;',
       nextButtonDisabled: true,
       policy_contents: '',
       policy_title: '',
@@ -120,6 +123,16 @@ export default {
     }
   },
   mounted () {
+    if (browser) {
+      console.log(browser.name)
+      console.log(browser.version)
+      console.log(browser.os)
+      if (browser.name === 'chrome') {
+        this.mainStyle = 'width: 500px; height: 520px; margin: auto;'
+      } else if (browser.name === 'ie') {
+        this.mainStyle = 'width: 500px; height: 520px; margin-bottom: auto;'
+      }
+    }
   },
   methods: {
     goToStep2 () {

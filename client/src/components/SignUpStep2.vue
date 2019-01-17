@@ -1,8 +1,8 @@
 <template>
-  <v-layout align-center justify-center fill-height>
+  <v-layout align-center justify-center fill-height flex-column>
     <div
       id="e3"
-      style="width: 500px; height: 520px; margin: auto;"
+      :style=mainStyle
       class="grey lighten-3"
     >
       <v-toolbar
@@ -52,7 +52,7 @@
           </v-layout>
         </v-container>       
         
-        <v-flex xs12 style="height:210px"/>
+        <v-flex xs12 :style=dummyStyle />
 
         <v-flex xs12 ma-3>
           <v-btn block color="primary" :disabled="nextButtonDisabled" @click="goToStep3()">다음</v-btn>          
@@ -66,9 +66,13 @@
 <script>
 import moment from 'moment'
 import SmsAuthService from '@/services/SmsAuthService'
+const { detect } = require('detect-browser')
+const browser = detect()
 export default {
   data () {
     return {
+      dummyStyle: 'height:210px',
+      mainStyle: 'width: 500px; height: 520px; margin: auto;',
       isTimeout: false,
       after3Min: '',
       authTimer: '',
@@ -80,6 +84,18 @@ export default {
     }
   },
   mounted () {
+    if (browser) {
+      console.log(browser.name)
+      console.log(browser.version)
+      console.log(browser.os)
+      if (browser.name === 'chrome') {
+        this.mainStyle = 'width: 500px; height: 520px; margin: auto;'
+        this.dummyStyle = 'height:210px'
+      } else if (browser.name === 'ie') {
+        this.mainStyle = 'width: 500px; height: 520px; margin-bottom: auto;'
+        this.dummyStyle = 'height:110px'
+      }
+    }
   },
   methods: {
     async createNewAuthCode () {

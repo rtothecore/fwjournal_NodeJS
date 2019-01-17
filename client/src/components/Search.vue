@@ -9,81 +9,71 @@
               <b-row>
                 <b-col sm="12" lg="6">
                   <div style="width:1150px; margin:0 auto;">
-            
+    
+    <v-container grid-list-md ma-0 pa-0>
+
     <v-layout row wrap pl-4>      
     
-       <v-flex xs6 sm6 md2>
+       <v-flex xs3 sm3 md3>
         <v-menu
           ref="menu"
           :close-on-content-click="false"
           v-model="menu"
-          :nudge-right="40"
-          :return-value.sync="startDate"
+          :nudge-right="40"          
           lazy
           transition="scale-transition"
           offset-y
         >
           <v-text-field
             slot="activator"
-            v-model="startDate"
+            v-model="computedDateFormatted"
             :error-messages="errors.collect('startDate')" 
             label="시작날짜"
             prepend-icon="event"
             readonly
             required=""
+            v-validate="'required'"
             data-vv-name="startDate"
           ></v-text-field>
-          <v-date-picker v-model="startDate" no-title scrollable locale='euc-kr'>
-            <v-spacer></v-spacer>
-            <v-btn flat color="primary" @click="menu = false">Cancel</v-btn>
-            <v-btn flat color="primary" @click="$refs.menu.save(startDate)">OK</v-btn>
+          <v-date-picker v-model="startDate" no-title @input="menu = false" locale='euc-kr'>           
           </v-date-picker>
         </v-menu>
       </v-flex>
 
-      <v-flex md1/>
-
-      <v-flex xs6 sm6 md2>
+      <v-flex xs3 sm3 md3>
         <v-menu
           ref="menu2"
           :close-on-content-click="false"
           v-model="menu2"
-          :nudge-right="40"
-          :return-value.sync="endDate"
+          :nudge-right="40"          
           lazy
           transition="scale-transition"
           offset-y
         >
           <v-text-field
             slot="activator"
-            v-model="endDate"
+            v-model="computedDateFormatted2"
             :error-messages="errors.collect('endDate')" 
             label="종료날짜"
             prepend-icon="event"
             readonly
             required=""
+            v-validate="'required'"
             data-vv-name="endDate"
           ></v-text-field>
-          <v-date-picker v-model="endDate" no-title scrollable locale='euc-kr'>
-            <v-spacer></v-spacer>
-            <v-btn flat color="primary" @click="menu2 = false">Cancel</v-btn>
-            <v-btn flat color="primary" @click="$refs.menu2.save(endDate)">OK</v-btn>
+          <v-date-picker v-model="endDate" no-title @input="menu2 = false" locale='euc-kr'>           
           </v-date-picker>
         </v-menu>
-      </v-flex>
+      </v-flex>      
 
-      <v-flex md1/>
-
-      <v-flex xs4 sm4 md1>        
+      <v-flex xs3 sm3 md3>        
         <v-text-field
           v-model="searchWord"
           label="검색어"                  
         ></v-text-field>
       </v-flex>   
 
-      <v-flex md1/> 
-
-      <v-flex xs6 sm6 md1>
+      <v-flex xs3 sm3 md3>
         <v-select
           :items="landItems"
           v-model="selectLand"
@@ -92,12 +82,21 @@
           item-text="name"
           item-value="_id"
           v-on:change="onChangeLand"
+          :error-messages="errors.collect('selectLand')" 
+          v-validate="'required'"
+          data-vv-name="selectLand"
         ></v-select>
-      </v-flex>  
+      </v-flex>      
 
-      <v-flex md1/>
-
-      <v-flex xs8 sm8 md1 class="text-xs-left">
+      <v-flex xs12 sm12 md12 class="text-xs-right">
+        <v-btn
+          outline
+          color="indigo"
+          class="white--text"
+          @click.native="searchReset"
+        >
+          초기화
+        </v-btn>
         <v-btn
           :loading="loading"
           :disabled="loading"
@@ -107,25 +106,13 @@
         >
           검색
         </v-btn>
-      </v-flex>
-      <v-flex xs8 sm8 md1 class="text-xs-left">
-        <v-btn
-          outline
-          color="indigo"
-          class="white--text"
-          @click.native="searchReset"
-        >
-          초기화
-        </v-btn>
-      </v-flex>      
+      </v-flex>     
 
       <journalModalForEdit></journalModalForEdit>
       <addWorkTypeModal></addWorkTypeModal>
                      
     </v-layout>
   
-
- 
     <v-layout row wrap pl-4>
 
     <v-flex xs12 sm12 md12>      
@@ -155,8 +142,8 @@
             <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="text-xs-left"><h4>{{ props.item.cropName }}</h4></td>
             <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="text-xs-left"><h4>{{ props.item.workType }}</h4></td>
             <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="text-xs-left"><h4>{{ props.item.workContent }}</h4></td>
-            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="text-xs-left"><h4>{{ props.item.remarks }}</h4></td>
-            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="justify-center layout px-0">
+            <!-- <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="text-xs-left"><h4>{{ props.item.remarks }}</h4></td> -->
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="text-xs-left">
               <v-btn icon class="mx-0" @click="editItem(props.item)">
                 <v-icon color="teal">edit</v-icon>
               </v-btn>
@@ -173,7 +160,7 @@
     </v-flex>
     
     </v-layout>
-  
+    </v-container>
 
 
         
@@ -188,6 +175,7 @@
 
 <script>
 import {bus} from '../main'
+import moment from 'moment'
 import JournalService from '@/services/JournalService'
 import LandService from '@/services/LandService'
 import ScService from '@/services/ScService'
@@ -258,14 +246,14 @@ export default {
           align: 'left',
           sortable: false,
           value: 'date',
-          width: '22%'
+          width: '20%'
         },
         { text: '농장명', value: 'farmName', align: 'left', sortable: false, width: '15%' },
-        { text: '작물명', value: 'cropName', align: 'left', sortable: false, width: '5%' },
-        { text: '작업분류', value: 'workType', align: 'left', sortable: false, width: '5%' },
-        { text: '작업내용', value: 'workContent', align: 'left', sortable: false, width: '30%' },
-        { text: '특기사항', value: 'remarks', align: 'left', sortable: false, width: '30%' },
-        { text: '관리', value: 'name', align: 'left', sortable: false, width: '5%' }
+        { text: '작물명', value: 'cropName', align: 'left', sortable: false, width: '15%' },
+        { text: '작업분류', value: 'workType', align: 'left', sortable: false, width: '15%' },
+        { text: '작업내용', value: 'workContent', align: 'left', sortable: false, width: '20%' },
+        // { text: '특기사항', value: 'remarks', align: 'left', sortable: false, width: '10%' },
+        { text: '관리', value: 'name', align: 'left', sortable: false, width: '12%' }
       ],
       editedIndex: -1,
       journals: [],
@@ -276,6 +264,9 @@ export default {
           },
           endDate: {
             required: '검색 종료날짜를 입력해주세요'
+          },
+          selectLand: {
+            required: '농장명을 선택해주세요'
           }
         }
       }
@@ -283,6 +274,13 @@ export default {
   },
   mounted () {
     this.$validator.localize('ko', this.dictionary)
+    var vm = this
+    bus.$on('toJournalForUpdate', function (value) {
+      vm.getJournalsBy4()
+    })
+    bus.$on('toJournalForDel', function (value) {
+      vm.getJournalsBy4()
+    })
   },
   beforeCreate: function () {
     if (!this.$session.exists()) {
@@ -292,6 +290,7 @@ export default {
   },
   created () {
     this.userId = this.$session.get('userId')
+    this.init()
     this.getJournals()
     this.getLands()
     this.getWorkTypeItems()
@@ -314,6 +313,14 @@ export default {
     }
   },
   computed: {
+    computedDateFormatted () {
+      console.log(this.startDate)
+      return this.startDate
+    },
+    computedDateFormatted2 () {
+      console.log(this.endDate)
+      return this.endDate
+    },
     pages () {
       if (this.pagination.rowsPerPage == null ||
         this.pagination.totalItems == null
@@ -355,7 +362,9 @@ export default {
       this.landItems = response.data.lands
     },
     async getJournals () {
-      const response = await JournalService.fetchJournals({
+      const response = await JournalService.fetchJournalsByDateNUserId({
+        startDate: this.startDate,
+        endDate: this.endDate,
         userId: this.userId
       })
       var tmpJournals = response.data
@@ -560,6 +569,7 @@ export default {
       this.selectLand = ''
       this.e2 = null
       this.workContent = null
+      this.init()
       this.getJournals()
       this.getLands()
       this.$validator.reset()
@@ -572,6 +582,10 @@ export default {
       tmpStr = this.replaceAt(tmpStr, 7, '월')
       tmpStr += '일'
       return tmpStr
+    },
+    init: function () {
+      this.startDate = moment().year() + '-01-01'
+      this.endDate = moment().format('YYYY-MM-DD')
     }
   }
 }

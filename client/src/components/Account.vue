@@ -532,11 +532,13 @@
 
 <script>
 import {bus} from '../main'
-import moment from 'moment'
+import Moment from 'moment'
+import { extendMoment } from 'moment-range'
 import ItemService from '@/services/ItemService'
 import JournalService from '@/services/JournalService'
 import LandService from '@/services/LandService'
 const CanvasJS = require('../../canvasjs.min.js')
+const moment = extendMoment(Moment)
 export default {
   $_veeValidate: {
     validator: 'new'
@@ -799,7 +801,7 @@ export default {
     this.eDate = moment().format('YYYY-MM-DD').substr(0, 7)
 
     // 전체 페이지
-    this.getTotalCalculate()
+    // this.getTotalCalculate()
   },
   computed: {
     computedDateFormatted () {
@@ -1047,50 +1049,48 @@ export default {
     },
     // 지출 토탈(발생비용 + 자재구입) 차트 데이터 계산
     async getExpTotalChartData () {
+      // 시작날짜와 종료날짜 사이의 월을 이용하여 데이터배열을 만든다
+      var tmpDataPointsForAll = this.getBetweenMonthData(this.sDate, this.eDate)
+
       // 같은 날짜의 발생비용 데이터를 합침
-      var tmpDataPointsForAll = []
       for (var i = 0; i < this.expCooDataPoints.length; i++) {
-        var existIdx = this.findSameLabel(tmpDataPointsForAll, this.expCooDataPoints[i].label)
-        if (existIdx !== -999) { // 같은 날짜의 데이터가 이미 존재하는 경우
-          tmpDataPointsForAll[existIdx].y += this.expCooDataPoints[i].y
-        } else {  // 같은 날짜의 데이터가 없는 경우
-          var tmpDataPoint = {}
-          tmpDataPoint.label = this.expCooDataPoints[i].label
-          tmpDataPoint.y = this.expCooDataPoints[i].y
-          tmpDataPointsForAll.push(tmpDataPoint)
+        for (var j = 0; j < tmpDataPointsForAll.length; j++) {
+          if (this.expCooDataPoints[i].label === tmpDataPointsForAll[j].label) {
+            tmpDataPointsForAll[j].y += this.expCooDataPoints[i].y
+          }
         }
       }
+
       // 같은 날짜의 자재구입 데이터를 합침
-      for (var j = 0; j < this.expItemDataPoints.length; j++) {
-        var existIdx2 = this.findSameLabel(tmpDataPointsForAll, this.expItemDataPoints[j].label)
-        if (existIdx2 !== -999) { // 같은 날짜의 데이터가 이미 존재하는 경우
-          tmpDataPointsForAll[existIdx2].y += this.expItemDataPoints[j].y
-        } else {  // 같은 날짜의 데이터가 없는 경우
-          var tmpDataPoint2 = {}
-          tmpDataPoint2.label = this.expItemDataPoints[j].label
-          tmpDataPoint2.y = this.expItemDataPoints[j].y
-          tmpDataPointsForAll.push(tmpDataPoint2)
+      for (var k = 0; k < this.expItemDataPoints.length; k++) {
+        for (var l = 0; l < tmpDataPointsForAll.length; l++) {
+          if (this.expItemDataPoints[k].label === tmpDataPointsForAll[l].label) {
+            tmpDataPointsForAll[l].y += this.expItemDataPoints[k].y
+          }
         }
       }
+
       this.expTotalDataPoints = tmpDataPointsForAll
       // console.log(this.expTotalDataPoints)
     },
     // 자재구입 차트 데이터 얻기
     async getExpItemChartData () {
-      if (this.expItemDataPoints.length === 0) {  // 데이터를 로드하지 않았다면 DB로 부터 데이터를 로드한다
+      if (this.expItemDataPoints.length === 0) { // 데이터를 로드하지 않았다면 DB로 부터 데이터를 로드한다
+        // 시작날짜와 종료날짜 사이의 월을 이용하여 데이터배열을 만든다
+        var tmpDataPoints = this.getBetweenMonthData(this.sDate, this.eDate)
+
         const response = await ItemService.fetchItemExp({
           userId: this.userId,
           startDate: this.sDate,
           endDate: this.eDate
         })
 
-        var tmpDataPoints = []
         for (var i = 0; i < response.data.length; i++) {
-          var tmpData = {}
-          // tmpData.x = new Date(response.data[i]._id.date)
-          tmpData.label = response.data[i]._id.date
-          tmpData.y = response.data[i].totalExpenditure
-          tmpDataPoints.push(tmpData)
+          for (var j = 0; j < tmpDataPoints.length; j++) {
+            if (response.data[i]._id.date === tmpDataPoints[j].label) {
+              tmpDataPoints[j].y = response.data[i].totalExpenditure
+            }
+          }
         }
         this.expItemDataPoints = tmpDataPoints
       }
@@ -1098,19 +1098,21 @@ export default {
     // 발생비용 차트 데이터 얻기
     async getExpCooChartData () {
       if (this.expCooDataPoints.length === 0) { // 데이터를 로드하지 않았다면 DB로 부터 데이터를 로드한다
+        // 시작날짜와 종료날짜 사이의 월을 이용하여 데이터배열을 만든다
+        var tmpDataPoints = this.getBetweenMonthData(this.sDate, this.eDate)
+
         const response = await JournalService.fetchJournalCOOSum({
           userId: this.userId,
           startDate: this.sDate,
           endDate: this.eDate
         })
 
-        var tmpDataPoints = []
         for (var i = 0; i < response.data.length; i++) {
-          var tmpData = {}
-          // tmpData.x = new Date(response.data[i]._id.date)
-          tmpData.label = response.data[i]._id.date
-          tmpData.y = response.data[i].totalCooCost
-          tmpDataPoints.push(tmpData)
+          for (var j = 0; j < tmpDataPoints.length; j++) {
+            if (response.data[i]._id.date === tmpDataPoints[j].label) {
+              tmpDataPoints[j].y = response.data[i].totalCooCost
+            }
+          }
         }
         this.expCooDataPoints = tmpDataPoints
       }
@@ -1304,6 +1306,21 @@ export default {
       tmpStr = this.replaceAt(tmpStr, 7, '월')
       tmpStr += '일'
       return tmpStr
+    },
+    getBetweenMonthData: function (startDate, endDate) {
+      // https://www.npmjs.com/package/moment-range
+      const start = moment(this.sDate, 'YYYY-MM')
+      const end = moment(this.eDate, 'YYYY-MM')
+      const range = moment.range(start, end)
+      var tmpDatas = []
+      for (let month of range.by('month')) {
+        var tmpData = {}
+        tmpData.label = month.format('YYYY-MM')
+        // console.log(month.format('YYYY-MM'))
+        tmpData.y = 0
+        tmpDatas.push(tmpData)
+      }
+      return tmpDatas
     }
   }
 }

@@ -1,271 +1,146 @@
 <template>
-<v-container fluid>
-  <v-container grid-list-md text-xs-center fluid>
-    <v-layout row wrap>
-      <v-flex xs12 class="text-xs-center" mt-5>
-        <h1>일지 검색</h1>
-      </v-flex>
 
-       <v-flex xs6 sm6 md2>
+<div style="width:100%; margin:0 auto;">
+         
+         <!-- dummy --> <div style="height:20px"/>
+        <b-row>
+          <b-col md="12">
+            <b-card>
+              <b-row>
+                <b-col sm="12" lg="6">
+                  <div style="width:100%; margin:0 auto;">
+         
+    <v-layout row wrap pl-4>      
+    
+    <!-- R O W 1 -->
+      <v-flex xs5>
         <v-menu
           ref="menu"
           :close-on-content-click="false"
           v-model="menu"
-          :nudge-right="40"
-          :return-value.sync="startDate"
+          :nudge-right="40"          
           lazy
           transition="scale-transition"
           offset-y
         >
           <v-text-field
             slot="activator"
-            v-model="startDate"
+            v-model="computedDateFormatted"
             :error-messages="errors.collect('startDate')" 
             label="시작날짜"
             prepend-icon="event"
             readonly
             required=""
-            v-validate="'required'" 
+            v-validate="'required'"
             data-vv-name="startDate"
           ></v-text-field>
-          <v-date-picker v-model="startDate" no-title scrollable locale='euc-kr'>
-            <v-spacer></v-spacer>
-            <v-btn flat color="primary" @click="menu = false">Cancel</v-btn>
-            <v-btn flat color="primary" @click="$refs.menu.save(startDate)">OK</v-btn>
+          <v-date-picker v-model="startDate" no-title @input="menu = false" locale='euc-kr'>           
           </v-date-picker>
         </v-menu>
       </v-flex>
 
-      <v-flex xs6 sm6 md2>
+      <v-flex xs1/>
+
+      <v-flex xs5>
         <v-menu
           ref="menu2"
           :close-on-content-click="false"
           v-model="menu2"
-          :nudge-right="40"
-          :return-value.sync="endDate"
+          :nudge-right="40"          
           lazy
           transition="scale-transition"
           offset-y
         >
           <v-text-field
             slot="activator"
-            v-model="endDate"
+            v-model="computedDateFormatted2"
             :error-messages="errors.collect('endDate')" 
             label="종료날짜"
             prepend-icon="event"
             readonly
             required=""
-            v-validate="'required'" 
+            v-validate="'required'"
             data-vv-name="endDate"
           ></v-text-field>
-          <v-date-picker v-model="endDate" no-title scrollable locale='euc-kr'>
-            <v-spacer></v-spacer>
-            <v-btn flat color="primary" @click="menu2 = false">Cancel</v-btn>
-            <v-btn flat color="primary" @click="$refs.menu2.save(endDate)">OK</v-btn>
+          <v-date-picker v-model="endDate" no-title @input="menu2 = false" locale='euc-kr'>           
           </v-date-picker>
         </v-menu>
       </v-flex>
 
-      <v-flex xs4 sm4 md2>
-        <!-- 
-        <v-text-field
-            v-model="workType"
-            label="작업분류 입력"
-            required
-          ></v-text-field>
-        -->
-        <v-select
-          :items="WorkTypeitems"
-          v-model="e2"
-          label="작업분류"
-          class="input-group--focused"
-          item-text="text"
-          item-value="value"
-          v-on:change="onChangeWorkType"
-        ></v-select>
-      </v-flex>
-      <!--
-      <v-flex xs6 sm6 md2>
-        <v-text-field
-            v-model="workContent"
-            label="작업내용 입력"
-            required
-            outline
-          ></v-text-field>
-      </v-flex>
-      -->
+      <v-flex xs1/>
+    <!-- R O W 1 -->
 
-      <v-flex xs8 sm8 md2 class="text-xs-left">
+    <!-- R O W 2 -->
+      <v-flex xs5>        
+        <v-text-field
+          v-model="searchWord"
+          label="검색어"                  
+        ></v-text-field>
+      </v-flex>   
+
+      <v-flex xs1/>     
+
+      <v-flex xs5>
+        <v-select
+          :items="landItems"
+          v-model="selectLand"
+          label="농장명"
+          class="input-group--focused"
+          item-text="name"
+          item-value="_id"
+          v-on:change="onChangeLand"
+          :error-messages="errors.collect('selectLand')" 
+          v-validate="'required'"
+          data-vv-name="selectLand"
+        ></v-select>
+      </v-flex>  
+
+      <v-flex xs1/>
+    <!-- R O W 2 -->
+
+    <!-- R O W 3 -->
+      <v-flex xs12 class="text-xs-right" pr-3>
         <v-btn
-          :loading="loading"
-          :disabled="loading"
-          color="light-blue"
-          class="white--text"
-          @click.native="searchJournals"
-        >
-          검색
-        </v-btn>
-        <v-btn
-          color="orange lighten-3"
+          outline
+          color="indigo"
           class="white--text"
           @click.native="searchReset"
         >
           초기화
         </v-btn>
+        <v-btn
+          :loading="loading"
+          :disabled="loading"
+          color="primary"
+          class="white--text"
+          @click.native="searchJournals"
+        >
+          검색
+        </v-btn>        
       </v-flex>
-      
-      <!-- <div> -->
-      
-      <v-dialog v-model="dialog" max-width="500px">
-      <!-- <v-btn slot="activator" color="primary" dark class="mb-2">New Item</v-btn> -->
-      <v-card color="teal">
-        <v-card-title>
-          <span class="headline" style="color:white">{{ formTitle }}</span>
-        </v-card-title>
-        <v-card-text>
-          <v-container grid-list-md>
-            <v-layout wrap>
-              <v-flex xs6 sm6 md4>
-                <!-- <v-text-field v-model="editedItem.farmName" label="농장명"></v-text-field> -->
-                <v-select
-                  :items="landItems"
-                  v-model="editedItem.farmName"
-                  label="농장명"
-                  required
-                  v-on:change="onChangeLand"
-                  item-text="name"
-                  item-value="_id"
-                  solo
-                ></v-select>
-              </v-flex>
-              <v-flex xs6 sm6 md4>
-                <!-- <v-text-field v-model="editedItem.cropName" label="작물명"></v-text-field> -->
-                <v-text-field
-                  v-model="editedItem.cropName"
-                  label="작물명" 
-                  hint="농장명을 선택하면 자동입력됩니다"
-                  persistent-hint
-                  required
-                  solo
-                  ></v-text-field>
-              </v-flex>
-              <v-flex xs6 sm6 md4>
-                <!-- <v-text-field v-model="editedItem.workType" label="작업분류"></v-text-field> -->
-                <v-select
-                  :items="editeWorkTypeItems"
-                  v-model="editedItem.workType"
-                  label="작업분류"
-                  required
-                  v-on:change="onChangeEditWorkType"
-                  item-text="text"
-                  item-value="_id"
-                  hint="작물명에 따른 작업분류 선택"
-                  persistent-hint
-                  solo                  
-                ></v-select>
-              </v-flex>
-              <v-flex xs6 sm12 md12>
-                <v-text-field v-model="editedItem.workContent" label="작업내용" solo></v-text-field>
-              </v-flex>
-              <v-flex xs6 sm6 md6>
-                <!-- <v-text-field v-model="editedItem.workSTime" label="시작시간"></v-text-field> -->
-                <v-menu
-                  lazy
-                  :close-on-content-click="false"
-                  v-model="menu4"
-                  transition="scale-transition"
-                  offset-y
-                  :nudge-left="40"
-                  disabled
-                >
-                  <v-text-field
-                    v-model="e6"
-                    label="작업시작 시간"
-                    required
-                    slot="activator"
-                    prepend-icon="access_time"
-                    readonly
-                    v-on:change="onChangeWSTime"
-                    disabled
-                    solo
-                  ></v-text-field>
-                  <!-- <v-time-picker v-model="e6" format="24hr" autosave></v-time-picker> -->
-                </v-menu>
-              </v-flex>
-              <v-flex xs6 sm6 md6>
-                <!-- <v-text-field v-model="editedItem.workETime" label="종료시간"></v-text-field> -->
-                <v-menu
-                  lazy
-                  :close-on-content-click="false"
-                  v-model="menu5"
-                  transition="scale-transition"
-                  offset-y
-                  :nudge-left="40"
-                  disabled
-                >
-                  <v-text-field
-                    v-model="e7"
-                    label="작업종료 시간"
-                    required
-                    slot="activator"
-                    prepend-icon="access_time"
-                    readonly
-                    v-on:change="onChangeWETime"
-                    disabled
-                    solo
-                  ></v-text-field>
-                  <!-- <v-time-picker v-model="e7" format="24hr" autosave></v-time-picker> -->
-                </v-menu>
-              </v-flex>
-              <!--
-               <v-flex xs3 sm6 md3>
-                <v-text-field v-model="editedItem.sky" label="날씨" disabled solo></v-text-field>
-              </v-flex>
-              <v-flex xs3 sm6 md3>
-                <v-text-field v-model="editedItem.t1h" label="온도" disabled solo></v-text-field>
-              </v-flex>
-              <v-flex xs3 sm6 md3>
-                <v-text-field v-model="editedItem.reh" label="습도" disabled solo></v-text-field>
-              </v-flex>
-              <v-flex xs3 sm6 md3>
-                <v-text-field v-model="editedItem.rn1" label="강수량" disabled solo></v-text-field>
-              </v-flex>
-              -->
-              <v-flex xs12>
-                <v-text-field v-model="editedItem.remarks" label="특기사항" solo></v-text-field>
-              </v-flex>
-            </v-layout>
-          </v-container>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn outline color="white" flat @click.native="save">수정</v-btn>
-          <v-btn outline color="white" flat @click.native="close">닫기</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-    
+    <!-- R O W 3 -->
+      <journalModalForEdit></journalModalForEdit>
+      <addWorkTypeModal></addWorkTypeModal>
+                     
     </v-layout>
-  </v-container>
+   
+    <v-layout row wrap pl-4 pr-4>
 
-  <v-container fluid pa-0>
-    <v-layout row wrap>
-        
-    <v-flex xs12 sm12 md8>      
-      <!-- For Mobile -->
-      <div>
+    <v-flex xs12 sm12 md12>      
+        <div>
         <v-data-table
-          :headers="headersForMobile"
+          :headers="headers"
           :items="journals"
           :search="search"
           :pagination.sync="pagination"
           hide-actions
           class="elevation-1"
         >
+
           <template slot="headerCell" slot-scope="props">
             <v-tooltip bottom>
-              <span slot="activator">
-                {{ props.header.text }}
+              <span slot="activator">                
+                <h4><strong>{{ props.header.text }}</strong></h4>
               </span>
               <span>
                 {{ props.header.text }}
@@ -273,10 +148,11 @@
             </v-tooltip>
           </template>
           <template slot="items" slot-scope="props">
-            <td class="text-xs-left">{{ props.item.date }}</td>
-            <td class="text-xs-left">{{ props.item.cropName }}</td>
-            <td class="text-xs-left">{{ props.item.workType }}</td>
-            <td class="justify-center layout px-0">
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="text-xs-left" @click="editItem(props.item)"><h5>{{ getDateWithSimple(props.item.date) }}</h5></td>
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="text-xs-left" @click="editItem(props.item)"><h5>{{ props.item.farmName }}</h5></td>          
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="text-xs-left" @click="editItem(props.item)"><h5>{{ props.item.workType }}</h5></td>      
+            <!--      
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="justify-center layout px-0">
               <v-btn icon class="mx-0" @click="editItem(props.item)">
                 <v-icon color="teal">edit</v-icon>
               </v-btn>
@@ -284,29 +160,47 @@
                 <v-icon color="pink">delete</v-icon>
               </v-btn>
             </td>
+            -->
           </template>
         </v-data-table>
         <div class="text-xs-center pt-2">
           <v-pagination v-model="pagination.page" :length="pages"></v-pagination>
         </div>
-      </div>
-    </v-flex>    
+      </div>      
+    </v-flex>
+    
     </v-layout>
-  </v-container>
-</v-container>
+    
+      </div>
+                </b-col>              
+              </b-row>              
+            </b-card>
+          </b-col>
+        </b-row>
+
+    </div>
+                
 </template>
 
 <script>
+import {bus} from '../main'
+import moment from 'moment'
 import JournalService from '@/services/JournalService'
 import LandService from '@/services/LandService'
 import ScService from '@/services/ScService'
 import WcService from '@/services/WcService'
+import DcService from '@/services/DcService'
+import ItemService from '@/services/ItemService'
+import ImageInput from './ImageInput.vue'
 export default {
   $_veeValidate: {
     validator: 'new'
   },
   data () {
     return {
+      selectLand: '',
+      landItems: [],
+      searchWord: '',
       editWorkCode: '',
       editDate: '',
       e7: null,
@@ -317,7 +211,6 @@ export default {
       editeWorkTypeItems: [],
       selectedCropCode: '',
       selectedLandId: '',
-      landItems: [],
       selectedWorkType: '',
       e2: null,
       WorkTypeitems: [
@@ -340,7 +233,6 @@ export default {
         */
       ],
       workContent: '',
-      // userId: '5af4fa281a1ee4261039149f',
       userId: '',
       menu: false,
       menu2: false,
@@ -363,40 +255,13 @@ export default {
           align: 'left',
           sortable: false,
           value: 'date',
-          width: '15%'
+          width: '40%'
         },
-        { text: '작물명', value: 'cropName', align: 'left', width: '5%' },
-        { text: '작업분류', value: 'workType', align: 'left', width: '5%' },
-        { text: '작업내용', value: 'workContent', align: 'left', width: '30%' },
-        { text: '특기사항', value: 'remarks', align: 'left', width: '30%' },
-        { text: '관리', value: 'name', sortable: false, align: 'left', width: '5%' }
-      ],
-      headersForMobile: [
-        {
-          text: '날짜',
-          align: 'left',
-          sortable: false,
-          value: 'date'
-        },
-        { text: '작물명', value: 'cropName', algin: 'left' },
-        { text: '작업분류', value: 'workType', algin: 'left' },
-        { text: 'Actions', value: 'name', sortable: false, algin: 'left' }
+        { text: '농장명', value: 'farmName', align: 'left', sortable: false, width: '40%' },
+        { text: '작업', value: 'workType', align: 'left', sortable: false, width: '20%' }
+        // { text: '관리', value: 'name', align: 'left', sortable: false, width: '5%' }
       ],
       editedIndex: -1,
-      editedItem: {
-        date: '',
-        farmName: '',
-        cropName: '',
-        workType: '',
-        workContent: '',
-        workSTime: '08',
-        workETime: '18',
-        sky: '00',
-        t1h: '01',
-        reh: '02',
-        rn1: '03',
-        remarks: ''
-      },
       journals: [],
       dictionary: {
         custom: {
@@ -405,6 +270,9 @@ export default {
           },
           endDate: {
             required: '검색 종료날짜를 입력해주세요'
+          },
+          selectLand: {
+            required: '농장명을 선택해주세요'
           }
         }
       }
@@ -412,6 +280,13 @@ export default {
   },
   mounted () {
     this.$validator.localize('ko', this.dictionary)
+    var vm = this
+    bus.$on('toJournalForUpdate', function (value) {
+      vm.getJournalsBy4()
+    })
+    bus.$on('toJournalForDel', function (value) {
+      vm.getJournalsBy4()
+    })
   },
   beforeCreate: function () {
     if (!this.$session.exists()) {
@@ -421,9 +296,13 @@ export default {
   },
   created () {
     this.userId = this.$session.get('userId')
+    this.init()
     this.getJournals()
     this.getLands()
     this.getWorkTypeItems()
+  },
+  components: {
+    ImageInput: ImageInput
   },
   watch: {
     loader () {
@@ -431,15 +310,23 @@ export default {
       this[l] = !this[l]
       setTimeout(() => (this[l] = false), 1000)
       this.loader = null
+    },
+    // https://github.com/vuetifyjs/vuetify/issues/4455
+    journals () {
+      this.$nextTick(() => {
+        this.pagination.totalItems = this.journals.length
+      })
     }
   },
   computed: {
-    // formTitle () {
-      // return this.editedIndex === -1 ? 'New Item' : 'Edit Item'
-      // return this.journals[0].date
-      // var tmpVal = this.editedIndex
-      // return this.journals[tmpVal].date
-    // },
+    computedDateFormatted () {
+      // console.log(this.startDate)
+      return this.startDate
+    },
+    computedDateFormatted2 () {
+      // console.log(this.endDate)
+      return this.endDate
+    },
     pages () {
       if (this.pagination.rowsPerPage == null ||
         this.pagination.totalItems == null
@@ -457,7 +344,8 @@ export default {
         })
         var tmpItem = {}
         tmpItem.text = '작물>' + response2.data.text
-        tmpItem.value = response2.data.bCode + response2.data.wCode
+        // tmpItem.value = response2.data.bCode + response2.data.wCode
+        tmpItem.value = response2.data.wCode
         this.WorkTypeitems.push(tmpItem)
       }
 
@@ -468,7 +356,8 @@ export default {
         })
         var tmpItem2 = {}
         tmpItem2.text = '가축>' + response4.data.text
-        tmpItem2.value = response4.data.bCode + response4.data.wCode
+        // tmpItem2.value = response4.data.bCode + response4.data.wCode
+        tmpItem2.value = response4.data.wCode
         this.WorkTypeitems.push(tmpItem2)
       }
     },
@@ -479,7 +368,9 @@ export default {
       this.landItems = response.data.lands
     },
     async getJournals () {
-      const response = await JournalService.fetchJournals({
+      const response = await JournalService.fetchJournalsByDateNUserId({
+        startDate: this.startDate,
+        endDate: this.endDate,
         userId: this.userId
       })
       var tmpJournals = response.data
@@ -488,69 +379,85 @@ export default {
           landId: response.data[i].landId
         })
         tmpJournals[i].farmName = response2.data[0].name
+        tmpJournals[i].cropCode = response2.data[0].cropCode
 
-        const response3 = await ScService.fetchCropNameByCropCode({
-          cropCode: response.data[i].workCode.substring(0, 11)
+        const response3 = await DcService.fetchCropNameByCropCode({
+          cropCode: response2.data[0].cropCode
         })
         tmpJournals[i].cropName = response3.data[0].text
 
-        const response4 = await WcService.fetchTextByCode({
+        const response4 = await WcService.fetchOneTextByCcode({
           code: response.data[i].workCode
         })
         tmpJournals[i].workType = response4.data[0].text
+
+        const response5 = await WcService.fetchWorkCodesByWorkcode({
+          code: response.data[i].workCode
+        })
+        tmpJournals[i].workItems = response5.data
+
+        tmpJournals[i].itemNames = []
+        const response6 = await ItemService.fetchItemsByWcode({
+          userId: this.userId,
+          wCode: response.data[i].workCode
+        })
+        for (var j = 0; j < response6.data.length; j++) {
+          for (var k = 0; k < response6.data[j].itemDetail.length; k++) {
+            tmpJournals[i].itemNames.push(response6.data[j].itemDetail[k].itemName)
+          }
+        }
       }
       this.journals = tmpJournals
     },
     async getJournalsBy4 () {
-      var tmpWorkType = this.selectedWorkType
-      if (!tmpWorkType) {
-        tmpWorkType = 0
+      var tmpStartDate = this.startDate
+      if (!tmpStartDate) {
+        tmpStartDate = 0
       }
-      var tmpWorkContent = this.workContent
-      if (!tmpWorkContent) {
-        tmpWorkContent = 0
+
+      var tmpEndDate = this.endDate
+      if (!tmpEndDate) {
+        tmpEndDate = 0
       }
-      const response = await JournalService.fetchJournalsBy4({
-        startDate: this.startDate,
-        endDate: this.endDate,
-        workType: tmpWorkType,
-        workContent: tmpWorkContent
+
+      var tmpSearchWord = this.searchWord
+      if (!tmpSearchWord) {
+        tmpSearchWord = 0
+      }
+
+      if (!this.selectLand) {
+        this.selectLand = 0
+      }
+
+      const response = await JournalService.fetchJournalsBy4LandId({
+        startDate: tmpStartDate,
+        endDate: tmpEndDate,
+        searchWord: tmpSearchWord,
+        landId: this.selectLand
       })
       var tmpJournals = response.data
+
       for (var i = 0; i < response.data.length; i++) {
-        const response2 = await LandService.fetchNameByLandId({
+        // 농장명
+        const response4 = await LandService.fetchNameByLandId({
           landId: response.data[i].landId
         })
-        tmpJournals[i].farmName = response2.data[0].name
-
-        const response3 = await ScService.fetchCropNameByCropCode({
-          cropCode: response.data[i].workCode.substring(0, 11)
+        tmpJournals[i].farmName = response4.data[0].name
+        // 작물명
+        const response2 = await LandService.fetchCropNameByLandId({
+          landId: response.data[i].landId
         })
-        tmpJournals[i].cropName = response3.data[0].text
+        tmpJournals[i].cropName = response2.data[0].text
 
-        const response4 = await WcService.fetchTextByCode({
+        const response3 = await WcService.fetchOneTextByCcode({
           code: response.data[i].workCode
         })
-        tmpJournals[i].workType = response4.data[0].text
+        tmpJournals[i].workType = response3.data[0].text
       }
       this.journals = tmpJournals
     },
     async deleteJournal (id) {
       await JournalService.deleteJournal(id)
-    },
-    async updateJournal () {
-      await JournalService.updateJournal({
-        id: this.editedItem._id,
-        userId: this.userId,
-        date: this.editDate,
-        landId: this.selectedLandId,
-        workCode: this.editWorkCode,
-        workContent: this.editedItem.workContent,
-        workSTime: this.editedItem.workSTime,
-        workETime: this.editedItem.workETime,
-        weather: [{'baseTime': '1400', 'sky': '00', 't1h': '17', 'reh': '01', 'rn1': '02'}],
-        remarks: this.editedItem.remarks
-      })
     },
     async getCropCodeByLandId (landId) {
       const response = await LandService.fetchCropCodeByLandId({
@@ -598,29 +505,28 @@ export default {
       this.getWorkCodeById(event)
     },
     onChangeLand: function (event) {
+      /*
       this.selectedLandId = event
       this.getCropCodeByLandId(this.selectedLandId)
+      */
     },
     onChangeWorkType: function (event) {
       this.selectedWorkType = event
     },
+    onChangeEditItemWorkType: function (event) {
+      console.log(event)
+    },
+    onChangeItemCost: function (event) {
+      this.CooTotal = Number('0')
+      for (var i = 0; i < this.cooItems.length; i++) {
+        this.CooTotal = Number(this.CooTotal)
+        this.CooTotal += Number(this.cooItems[i].cost)
+      }
+    },
     editItem (item) {
-      this.editedIndex = this.journals.indexOf(item)
-      this.editedItem = Object.assign({}, item)
-      this.editedItem.farmName = this.journals[this.editedIndex].landId
-      this.selectedLandId = this.journals[this.editedIndex].landId
-      this.getCropCodeByLandId(this.journals[this.editedIndex].landId)
-      this.editWorkCode = this.journals[this.editedIndex].workCode
-      this.getIdByWorkCode(this.editWorkCode)
-      this.e6 = this.journals[this.editedIndex].workSTime.substring(0, 2) + ':' + this.journals[this.editedIndex].workSTime.substring(2, 4)
-      this.e7 = this.journals[this.editedIndex].workETime.substring(0, 2) + ':' + this.journals[this.editedIndex].workETime.substring(2, 4)
-      this.editedItem.sky = this.journals[this.editedIndex].weather[0].sky
-      this.editedItem.t1h = this.journals[this.editedIndex].weather[0].t1h
-      this.editedItem.reh = this.journals[this.editedIndex].weather[0].reh
-      this.editedItem.rn1 = this.journals[this.editedIndex].weather[0].rn1
-      this.dialog = true
-      this.editDate = this.journals[this.editedIndex].date
-      this.formTitle = '영농일지 - ' + this.journals[this.editedIndex].date
+      // console.log(item)
+      var emitParams = {'journalId': item._id, 'origin': 'fromSearch'}
+      bus.$emit('dialogForEdit', emitParams)
     },
     deleteItem (item) {
       const index = this.journals.indexOf(item)
@@ -665,30 +571,27 @@ export default {
     searchReset () {
       this.startDate = ''
       this.endDate = ''
+      this.searchWord = ''
+      this.selectLand = ''
       this.e2 = null
       this.workContent = null
+      this.init()
       this.getJournals()
       this.getLands()
       this.$validator.reset()
     },
-    save () {
-      this.updateJournal()
-      this.$swal({
-        type: 'success',
-        title: '일지를 수정하였습니다',
-        showConfirmButton: false,
-        timer: 777
-      })
-      this.dialog = false
-      /*
-      this.$validator.validateAll().then((result) => {
-        if (!result) {
-          return
-        }
-        this.updateJournal()
-        this.dialog = false
-      }).catch(() => {})
-      */
+    replaceAt: function (data, index, replacement) {
+      return data.substr(0, index) + replacement + data.substr(index + replacement.length)
+    },
+    getDateWithSimple: function (dataVal) {
+      var tmpStr = this.replaceAt(dataVal, 4, '.')
+      tmpStr = this.replaceAt(tmpStr, 7, '.')
+      tmpStr = tmpStr.substring(2, tmpStr.length)
+      return tmpStr
+    },
+    init: function () {
+      this.startDate = moment().year() + '-01-01'
+      this.endDate = moment().format('YYYY-MM-DD')
     }
   }
 }

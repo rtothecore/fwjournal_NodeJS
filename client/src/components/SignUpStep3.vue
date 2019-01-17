@@ -1,8 +1,8 @@
 <template>
-  <v-layout align-center justify-center fill-height>
+  <v-layout align-center justify-center fill-height flex-column>
     <div
       id="e3"
-      style="width: 500px; height: 520px; margin: auto;"
+      :style=mainStyle
       class="grey lighten-3"
     >
       <v-toolbar
@@ -51,6 +51,7 @@
             ></v-text-field>            
           </v-layout>
           <v-layout row wrap justify-center>
+            <!--
             <v-text-field
               prepend-icon="fas fa-id-badge"
               v-validate="'required'"
@@ -59,6 +60,7 @@
               label="이름"
               data-vv-name="name"             
             ></v-text-field>
+            -->
             <v-text-field
               prepend-icon="fab fa-pagelines"
               v-validate="'required'"
@@ -81,6 +83,8 @@
           </v-layout>
         </v-container>       
         
+        <!-- <v-flex xs12 style="height:0px"/> -->
+
         <v-flex xs12 ma-3>
           <v-btn block color="primary" @click="goToStep4()">회원가입</v-btn>          
         </v-flex>
@@ -93,12 +97,15 @@
 <script>
 import JoinUserService from '@/services/JoinUserService'
 import UserService from '@/services/UserService'
+const { detect } = require('detect-browser')
+const browser = detect()
 export default {
   $_veeValidate: {
     validator: 'new'
   },
   data () {
     return {
+      mainStyle: 'width: 500px; height: 520px; margin: auto;',
       name: '',
       phoneNo: '',
       id: '',
@@ -138,6 +145,17 @@ export default {
   },
   mounted () {
     this.$validator.localize('ko', this.dictionary)
+
+    if (browser) {
+      console.log(browser.name)
+      console.log(browser.version)
+      console.log(browser.os)
+      if (browser.name === 'chrome') {
+        this.mainStyle = 'width: 500px; height: 520px; margin: auto;'
+      } else if (browser.name === 'ie') {
+        this.mainStyle = 'width: 500px; height: 520px; margin-bottom: auto;'
+      }
+    }
   },
   methods: {
     async checkDuplicateUserId () {
@@ -183,7 +201,7 @@ export default {
           timer: 777
         }).then((result) => {
           this.$session.start()
-          this.$session.set('userId', response.data.result._id)
+          this.$session.set('userId', response.data.result.id)
           this.$router.push('/configLand')  // 농장 추가 페이지로 이동
         })
       } else {
@@ -213,11 +231,12 @@ export default {
           return
         }
 
-        var pattern = /[^a-zA-Z]/gi
+        // var pattern = /[^a-zA-Z]/gi
+        var pattern = /[^a-zA-Z0-9]/gi
         if (pattern.test(this.id)) {
           this.$swal({
             type: 'warning',
-            title: '아이디는 영문만 가능합니다',
+            title: '아이디는 영문,숫자만 가능합니다',
             showConfirmButton: false,
             timer: 777
           }).then((result) => {

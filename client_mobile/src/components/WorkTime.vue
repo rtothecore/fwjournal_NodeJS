@@ -1,11 +1,17 @@
 <template>
-  <v-container fluid>
-    <v-layout row wrap justify-center>
-      <v-flex xs12 class="text-xs-center" mt-5>
-        <h1>작업시간</h1>
-      </v-flex>
+  <div style="width:100%; margin:0 auto;">
+    <!-- dummy --> <div style="height:20px"/>
+        <b-row>
+          <b-col md="12">
+            <b-card>              
+              <b-row>
+                <b-col sm="12" lg="6">
+                  <div style="width:100%; margin:0 auto;">
+            
+    <v-layout row wrap pl-4>
       
-       <v-flex xs6 sm6 md2>
+      <!-- R O W 1 -->
+       <v-flex xs5>
         <v-menu
           :close-on-content-click="false"
           v-model="menu1"
@@ -33,7 +39,9 @@
         </v-menu>
       </v-flex>
 
-      <v-flex xs6 sm6 md2>
+      <v-flex xs1/>  
+
+      <v-flex xs5>
         <v-menu
           :close-on-content-click="false"
           v-model="menu2"
@@ -61,7 +69,11 @@
         </v-menu>
       </v-flex>
 
-      <v-flex xs8 sm4 md2>
+      <v-flex xs1/>  
+    <!-- R O W 1 -->
+
+    <!-- R O W 2 -->
+      <v-flex xs5>
         <v-select
           :items="landItems"
           v-model="e2"
@@ -78,23 +90,33 @@
         ></v-select>
       </v-flex>
 
-      <v-flex xs4 sm8 md2 class="text-xs-left">
+      <v-flex xs1/>  
+
+      <v-flex xs5 class="text-xs-right">
         <v-btn
           :loading="loading"
           :disabled="loading"
-          color="light-blue"
+          color="primary"
           class="white--text"
           @click.native="searchJournals"
         >
           검색
         </v-btn>
       </v-flex>
-                  
-      <!-- For Mobile -->
-      <div id="chartContainer" style="height: 260px; width: 100%;" />
       
+      <v-flex xs1 />
+    <!-- R O W 2 -->
+      <div id="chartContainer" style="height: 360px; width: 90%;" />
+          
     </v-layout>
-  </v-container>
+          
+                  </div>
+                </b-col>              
+              </b-row>              
+            </b-card>
+          </b-col>
+        </b-row>
+      </div>
 </template>
 
 <script>
@@ -219,24 +241,34 @@ export default {
         landId: landId
       })
       var tmpJournals = response.data
+      // console.log(tmpJournals)
       var tmpWorkDatas = []
       this.chartOptions.data[0].dataPoints = []
 
       for (var i = 0; i < tmpJournals.length; i++) {
         var tmpWorkData = {}
-        tmpWorkData.x = new Date(tmpJournals[i].date)
-
-        var tmpWorkTime = tmpJournals[i].workETime - tmpJournals[i].workSTime
-        var tmpStr = tmpWorkTime.toString()
-        if (tmpStr.length === 3) {
-          tmpWorkData.y = tmpStr.substring(0, 1) * 1
-        } else if (tmpStr.length === 4) {
-          tmpWorkData.y = tmpStr.substring(0, 2) * 1
-        }
+        tmpWorkData.label = tmpJournals[i].date
+        tmpWorkData.y = tmpJournals[i].workTime * 1
         tmpWorkDatas.push(tmpWorkData)
       }
       console.log(tmpWorkDatas)
-      this.chartOptions.data[0].dataPoints = tmpWorkDatas
+
+      // 같은 날짜의 데이터를 합침
+      var tmpWorkDatasResult = []
+      for (var j = 0; j < tmpWorkDatas.length; j++) {
+        var existIdx = this.findSameLabel(tmpWorkDatasResult, tmpWorkDatas[j].label)
+        if (existIdx !== -999) { // 같은 날짜의 데이터가 이미 존재하는 경우
+          tmpWorkDatasResult[existIdx].y += tmpWorkDatas[j].y
+        } else {  // 같은 날짜의 데이터가 없는 경우
+          var tmpDataPoint = {}
+          tmpDataPoint.label = tmpWorkDatas[j].label
+          tmpDataPoint.y = tmpWorkDatas[j].y
+          tmpWorkDatasResult.push(tmpDataPoint)
+        }
+      }
+      console.log(tmpWorkDatasResult)
+
+      this.chartOptions.data[0].dataPoints = tmpWorkDatasResult
       this.chart.render()
     },
     async getLands () {
@@ -244,6 +276,14 @@ export default {
         userId: this.userId
       })
       this.landItems = response.data.lands
+    },
+    findSameLabel: function (targetArray, sourceTime) {
+      for (var i = 0; i < targetArray.length; i++) {
+        if (targetArray[i].label === sourceTime) {
+          return i
+        }
+      }
+      return -999
     },
     onChangeLand: function (event) {
       console.log(event)

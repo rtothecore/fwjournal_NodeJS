@@ -7,5 +7,9 @@ export default {
 
   fetchAllDataOfWcDataAgg (params) {
     return Api().get('wcData/getAllDataOfAggData/' + params.startDate + '/' + params.endDate, params)
+  },
+
+  fetchWeatherAggDataByAddr (params) {
+    return Api().get('wcData/getWeatherAggDataByAddr/' + params.startDate + '/' + params.endDate + '/' + params.address, params)
   }
 }

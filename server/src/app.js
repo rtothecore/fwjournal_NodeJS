@@ -60,6 +60,7 @@ const path = require('path');
 const upload = multer({
   storage: multer.diskStorage({
     destination: function (req, file, cb) {
+      console.log(file)
       cb(null, 'journalImgs/');
     },
     filename: function (req, file, cb) {
@@ -136,9 +137,47 @@ const serviceKey = '73Jjl5lZRvBRKkGsPnGmZ7EL9JtwsWNi3hhCIN8cpVJzMdRRgyzntwz2lHmT
 const serviceKeyForPrice = '8d8857fa9186167880dafee9a8c55dda0d2711b96cd4ae893983f7d870941d2e'
 
 // https://www.zerocho.com/category/NodeJS/post/5950a6c4f7934c001894ea83
+/*
 app.post('/journalImg/upload', upload.single('file'), (req, res) => {
-	console.log(req.file);
+	// console.log(req.file);
+	// console.log(req.body);
 	res.status(200).json([{error: "uploaded successfully", imgName: req.file.filename}]);	
+});
+*/
+// https://stackoverflow.com/questions/35847293/uploading-a-file-and-passing-a-additional-parameter-with-multer
+app.post('/journalImg/upload', function(req, res) {
+	// console.log(req.body)
+    var storage = multer.diskStorage({
+        destination: 'journalImgs/',
+        filename: function (req, file, cb) {
+	      cb(null, new Date().valueOf() + path.extname(file.originalname));
+	    }	      
+    });
+    var upload = multer({storage : storage}).any();
+
+    upload(req,res,function(err) {
+        if(err) {
+            console.log(err);
+            return res.end("Error uploading file.");
+        } else {
+           // console.log(req.body);
+           var fileName = ''
+           req.files.forEach( function(f) {
+             // console.log(f);
+             fileName = f.filename
+             // Move file to final destination...                                       
+             var oldPath = f.path
+             var newPath = 'journalImgs/' + req.body.userId
+             if (!fs.existsSync(newPath)){
+             	fs.mkdirSync(newPath);
+			 }
+			 newPath += '/' + f.filename
+             fs.rename(oldPath, newPath, function (err) { if (err) throw err; console.log('renamed complete'); })
+           });
+           // res.end("File has been uploaded");           
+           res.status(200).json([{error: "uploaded successfully", imgName: fileName}]);
+        }
+    });
 });
 
 // Fetch all data of wcData with aggregate
@@ -206,6 +245,50 @@ app.get('/wcData/getAggData/:startDate/:endDate', (req, res) => {
         },
         {
         	"$sort" : { "_id": 1 } 
+        }
+    ], function (err, result) {
+        if (err) {
+            next(err);
+        } else {
+            res.send(result);
+        }
+    });
+})
+
+// Fetch wcData with aggregate
+app.get('/wcData/getWeatherAggDataByAddr/:startDate/:endDate/:address', (req, res) => {
+	// http://www.fun-coding.org/mongodb_advanced5.html
+	// https://stackoverflow.com/questions/18785707/mongodb-aggregate-embedded-document-values
+	// https://stackoverflow.com/questions/39158286/mongoose-aggregate-with-unwind-before-group
+	console.log(req.params)
+	WcData.aggregate([
+		{
+			"$unwind" : "$currentData"
+		},
+        {
+            "$group" : {
+                "_id" : { date : { "$substr" : [ "$currentData.insertDate", 0, 10 ] }, address : "$address" },
+                "t1hMin" : { "$min" : "$currentData.weather.t1h" },
+	            "t1hMax" : { "$max" : "$currentData.weather.t1h" },
+	            "t1hAvg" : { "$avg" : "$currentData.weather.t1h" },
+	            "rehMin" : { "$min" : "$currentData.weather.reh" },
+	            "rehMax" : { "$max" : "$currentData.weather.reh" },
+	            "rehAvg" : { "$avg" : "$currentData.weather.reh" },
+	            "sky": { "$first": '$currentData.weather.sky' },
+	            "pty": { "$first": '$currentData.weather.pty' },
+	            "rn1": { "$first": '$currentData.weather.rn1' }
+            }
+        },
+        {
+            "$match" : {
+            	"$and" : [
+            		{ "_id.date" : { "$gte" : req.params.startDate, "$lte" : req.params.endDate } },
+            		{ "_id.address" : req.params.address }
+            	]                
+            }
+        },
+        {
+        	"$sort" : { "_id.date": 1 } 
         }
     ], function (err, result) {
         if (err) {
@@ -886,6 +969,8 @@ app.get('/journals/searchWorktime/:userId/:startDate/:endDate/:landId', (req, re
   	query.where('landId').equals(landId)
   }
 
+  query.sort( { 'date': 1 } )
+
   query.exec().then(result => {
   	res.send(result)
   })
@@ -1044,6 +1129,7 @@ app.get('/journalsByYMNUserIdAndCoo/:startYM/:endYM/:userId', (req, res) => {
   .where('userId').equals(req.params.userId)
   .where('COO.cost').ne('')
   .where('COO.cost').ne(null)
+  .sort({'date': 1})
 })
 
 // Fetch journals by date, userId, landId
@@ -1571,17 +1657,31 @@ app.post('/user', (req, res) => {
 */
 
 // Fetch single user
-app.get('/user/:id', (req, res) => {
-  var db = req.db
-  User.findById(req.params.id, '', function (error, user) {
+app.get('/user/:id', (req, res) => {  
+  User.find({}, '', function (error, user) {
     if (error) { console.error(error); }
     res.send(user)
   })
+  .where('id').equals(req.params.id)
 })
 
 // Update a user age & sex
 app.put('/userBirthDateSex/:id', (req, res) => {
-  var db = req.db;
+	User.find({}, '', function (error, user) {
+		if (error) { console.error(error); }
+	    user[0].birth_date = req.body.birth_date
+	    user[0].sex = req.body.sex
+	    user[0].save(function (error) {
+	      if (error) {
+	        console.log(error)
+	      }
+	      res.send({
+	        success: true
+	      })
+	    })
+	})
+	.where('id').equals(req.params.id)
+/*
   User.findById(req.params.id, 'birth_date sex', function (error, user) {
     if (error) { console.error(error); }
     user.birth_date = req.body.birth_date
@@ -1595,6 +1695,7 @@ app.put('/userBirthDateSex/:id', (req, res) => {
       })
     })
   })
+*/
 })
 
 /*
@@ -1618,31 +1719,30 @@ app.put('/userPassword/:id', (req, res) => {
 */
 
 // Update a user phone_no
-app.put('/userPhoneNo/:id', (req, res) => {
-  var db = req.db;
-  User.findById(req.params.id, '', function (error, user) {
-    if (error) { console.error(error); }
-    user.phone_no = req.body.phone_no
+app.put('/userPhoneNo/:id', (req, res) => {  
+	User.find({}, '', function (error, user) {
+		if (error) { console.error(error); }
+		user[0].phone_no = req.body.phone_no
 
-    user.save(function (error) {
-      if (error) {
-        console.log(error)
-      }
-      res.send({
-        success: true
-      })
-    })
-  })
+	    user[0].save(function (error) {
+	      if (error) {
+	        console.log(error)
+	      }
+	      res.send({
+	        success: true
+	      })
+	    })
+	})
+	.where('id').equals(req.params.id)
 })
 
 // Update a user share_flag
 app.put('/userShareFlag/:id', (req, res) => {
-  var db = req.db;
-  User.findById(req.params.id, '', function (error, user) {
+  User.find({}, '', function (error, user) {
     if (error) { console.error(error); }
-    user.share_flag = req.body.share_flag
+    user[0].share_flag = req.body.share_flag
 
-    user.save(function (error) {
+    user[0].save(function (error) {
       if (error) {
         console.log(error)
       }
@@ -1651,6 +1751,7 @@ app.put('/userShareFlag/:id', (req, res) => {
       })
     })
   })
+  .where('id').equals(req.params.id)
 })
 
 // Fetch user by email
@@ -1738,7 +1839,7 @@ app.post('/addNewSMSAuth', (req, res) => {
 				  salt, 
 				  timestamp, 
 				  to: phone_no, 
-				  from: '01032795690', 
+				  from: '0647536677', 
 				  text: '(주)이지정보기술\n[영농일지]본인인증번호입니다.\n인증번호:[' + auth_code + ']' 
 				})
 
@@ -1925,6 +2026,18 @@ app.get('/findPassword/:id', (req, res) => {
 				    // 임시비밀번호 이메일로 전송
 				    // sendMail(req.params.email, "[주차왕파킹]임시비밀번호가 발급되었습니다.", "임시비밀번호 : " + newPw)
 				    // sendMailForTmpPW(req.params.email, "[이지파킹]임시비밀번호가 발급되었습니다.", "", newPw)
+				    timestamp = (Math.floor(Date.now() / 1000)).toString() 
+					salt = uniqid() 
+					signature = HmacMD5(timestamp + salt, apiSecret).toString()
+
+					sendSMS({ api_key: apiKeyForSendSMS, 
+							  signature, 
+							  salt, 
+							  timestamp, 
+							  to: users.phone_no, 
+							  from: '0647536677', 
+							  text: '(주)이지정보기술\n[영농일지]임시비밀번호입니다.\n비밀번호:[' + newPw + ']' 
+							})
 				    console.log(newPw)
 
 				    res.status(200).json([{error: "Password is sent"}]);
@@ -2008,7 +2121,7 @@ app.put('/updateUserPassword', (req, res) => {
 		    })
 	    })
 	})
-	.where('_id').equals(req.body.id)
+	.where('id').equals(req.body.id)
 })
 
 // Fetch all data of user
@@ -2058,36 +2171,35 @@ app.get('/users/searchBy4/:startDate/:endDate/:searchType/:searchContent', (req,
 
 // Update user
 app.put('/updateUser/:id', (req, res) => {
-  	// console.log(req.body)
-  	User.findById(req.params.id, '', function (error, users) {
+  	User.find({}, '', function (error, user) {
     	if (error) { console.error(error); }
-
-	    users.id = req.body.id;
+    	user[0].id = req.body.id;
 	    if (req.body.password == "") {
 	    } else {
-	    	users.password = CryptoJS.AES.encrypt(req.body.password, cryptoKey)	
+	    	user[0].password = CryptoJS.AES.encrypt(req.body.password, cryptoKey)	
 	    }	    
-	    users.birth_date = req.body.birth_date;
-	  	users.sex = req.body.sex;
-	    users.phone_no = req.body.phone_no;	    
-	  	users.level = req.body.level;
-	  	users.mod_date = getNowDate();
+	    user[0].birth_date = req.body.birth_date;
+	  	user[0].sex = req.body.sex;
+	    user[0].phone_no = req.body.phone_no;	    
+	  	user[0].level = req.body.level;
+	  	user[0].mod_date = getNowDate();
 	  	
-	    users.save(function (error) {
+	    user[0].save(function (error) {
 		    if (error) {
 		       	console.log(error)
 		    }
 		    res.send({
 		        success: true
 		    })
-	    })
-	})
+	    })    	
+  	})
+  	.where('id').equals(req.params.id)  	
 })
 
 // Delete user
-app.delete('/deleteUser/:id', (req, res) => {
+app.delete('/deleteUser/:id', (req, res) => {	
 	User.remove({
-		_id: req.params.id
+		id: req.params.id
 	}, function(err, lands) {
 		if (err) {
 			res.send(err)
@@ -2178,6 +2290,81 @@ app.get('/items/:userId', (req, res) => {
     res.send(items)
   })
   .where('userId').equals(req.params.userId)
+})
+
+// Fetch items with aggregate
+app.get('/item/agg/:userId/:startDate/:endDate', (req, res) => {	
+	Item.aggregate([
+		{
+			"$unwind" : "$itemDetail"
+		},
+        {
+            "$group" : {
+                "_id" : { "_id" : "$_id",
+                	      "date" : "$date",
+                		  "userId" : "$userId",
+                		  "landId" : "$landId", 
+		             	  "item" : "$item",
+		             	  "itemName" : "$itemDetail.itemName", 
+		             	  "itemAmount" : "$itemDetail.itemAmount", 
+		             	  "itemPrice" : "$itemDetail.itemPrice", 
+		             	  "itemUsage" : "$itemDetail.itemUsage" 
+                		}
+            }
+        },
+        {
+            "$match" : { "$and" : [ { "_id.userId" : req.params.userId },
+            					    { "_id.date" : { "$gte": req.params.startDate, "$lte": req.params.endDate } }            					    
+       						  	  ] 
+       				   }            	
+        },
+        { "$sort" : { "_id.date": 1 } }
+    ], function (err, result) {
+        if (err) {
+            next(err);
+        } else {
+            res.send(result);
+        }
+    });
+})
+
+// Fetch items with aggregate by 4
+app.get('/item/agg/searchBy5/:userId/:startDate/:endDate/:item/:landId', (req, res) => {	
+	Item.aggregate([
+		{
+			"$unwind" : "$itemDetail"
+		},
+        {
+            "$group" : {
+                "_id" : { 
+                		  "_id" : "$_id",
+                		  "date" : "$date",
+                		  "userId" : "$userId",
+                		  "landId" : "$landId", 
+		             	  "item" : "$item",
+		             	  "itemName" : "$itemDetail.itemName", 
+		             	  "itemAmount" : "$itemDetail.itemAmount", 
+		             	  "itemPrice" : "$itemDetail.itemPrice", 
+		             	  "itemUsage" : "$itemDetail.itemUsage" 
+                		}
+            }
+        },
+        {
+            "$match" : { "$and" : [ { "_id.userId" : req.params.userId },
+            					    { "_id.date" : { "$gte": req.params.startDate, "$lte": req.params.endDate } },
+            					    { "_id.landId" : req.params.landId },
+       						  		{ "_id.item" : req.params.item }
+       						  	  ] 
+       				   } 	
+        },
+        { "$sort" : { "_id.date": 1 } }
+    ], function (err, result) {
+        if (err) {
+            next(err);
+        } else {
+            res.send(result);
+        }
+    });
 })
 
 // Fetch item by id
@@ -2314,10 +2501,25 @@ app.get('/itemsByYMNUserIdAndDetail/:startDate/:endDate/:userId', (req, res) => 
     if (error) { console.error(error); }
     res.send(items)
   })
-  .where('date').gte(req.params.startDate).lte(req.params.endDate)
+  // .where('date').gte(req.params.startDate).lte(req.params.endDate)
+  .where('date').gte(req.params.startDate + '-01 00:00:00').lte(req.params.endDate + '-31 23:59:59')
   .where('userId').equals(req.params.userId)
   .where('itemDetail.itemPrice').ne('')
-  .where('itemDetail.itemPrice').ne(null)  
+  .where('itemDetail.itemPrice').ne(null)
+  .sort({'date' : 1})
+})
+
+// Fetch items by userId, landId, item, itemName
+app.get('/items/getByUserLandItemName/:userId/:landId/:item/:itemName', (req, res) => {
+  console.log(req.params)
+  Item.find({}, '', function (error, items) {
+    if (error) { console.error(error); }
+    res.send(items)
+  })
+  .where('userId').equals(req.params.userId)
+  .where('landId').equals(req.params.landId)
+  .where('item').equals(req.params.item)
+  .where('itemDetail.itemName').equals(req.params.itemName)
 })
 
 // Fetch item with aggregate
@@ -2340,7 +2542,8 @@ app.get('/itemsGetAggData/:userId/:startDate/:endDate', (req, res) => {
                 	{ "_id.userId" : req.params.userId }
             	]                
             }
-        }
+        },
+        { "$sort" : { "_id.date": 1 } }
     ], function (err, result) {
         if (err) {
             next(err);
@@ -2370,7 +2573,8 @@ app.get('/journalsGetAggData/:userId/:startDate/:endDate', (req, res) => {
             		{ "_id.userId" : req.params.userId }
             	]            	
             }
-        }
+        },
+        { "$sort" : { "_id.date": 1 } }
     ], function (err, result) {
         if (err) {
             next(err);
@@ -2400,7 +2604,8 @@ app.get('/journalsGetCOOAggData/:userId/:startDate/:endDate', (req, res) => {
             		{ "_id.userId" : req.params.userId }
             	]            	
             }
-        }
+        },
+        { "$sort" : { "_id.date": 1 } }
     ], function (err, result) {
         if (err) {
             next(err);
@@ -2411,8 +2616,8 @@ app.get('/journalsGetCOOAggData/:userId/:startDate/:endDate', (req, res) => {
 })
 
 // Get report images - https://stackoverflow.com/questions/5823722/how-to-serve-an-image-using-nodejs
-app.get('/getJournalImg/:imgName', (req, res) => {
-	var img = fs.readFileSync('journalImgs/' + req.params.imgName);
+app.get('/getJournalImg/:userId/:imgName', (req, res) => {
+	var img = fs.readFileSync('journalImgs/' + req.params.userId + '/' + req.params.imgName);
     res.writeHead(200, {'Content-Type': 'image/jpg' });
     res.end(img, 'binary');
 })

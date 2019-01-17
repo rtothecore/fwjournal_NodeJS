@@ -1,13 +1,18 @@
 <template>
-  <v-container fluid>
+  <div style="width:100%; margin:0 auto;">
+    <!-- dummy --> <div style="height:20px"/>
+        <b-row>
+          <b-col md="12">
+            <b-card>              
+              <b-row>
+                <b-col sm="12" lg="6">
+                  <div style="width:100%; margin:0 auto;">
+      
     <v-layout row wrap justify-center>
-      <v-flex xs12 class="text-xs-center" mt-5>
-        <h1>환경모니터링</h1>
-      </v-flex>
-
+      
       <v-flex xs12 class="text-xs-center" mt-1>
         <v-layout row ma-2 justify-center>
-          <v-flex xs4 md1 order-md1 order-xs1>
+          <v-flex xs4 order-xs1>
             <v-menu
               :close-on-content-click="false"
               v-model="menu1"
@@ -34,7 +39,8 @@
               <v-date-picker v-model="sDate" no-title @input="menu1 = false" locale='euc-kr'></v-date-picker>
             </v-menu>
           </v-flex>
-          <v-flex xs4 md1 order-md2 order-xs2>
+          
+          <v-flex xs4 order-xs2>
             <v-menu
               :close-on-content-click="false"
               v-model="menu2"
@@ -61,11 +67,11 @@
               <v-date-picker v-model="eDate" no-title @input="menu2 = false" locale='euc-kr'></v-date-picker>
             </v-menu>
           </v-flex>
-          <v-flex xs4 md1 order-md3 order-xs3>
+          <v-flex xs4 order-xs3>
             <v-btn
               :loading="loading"
               :disabled="loading"
-              color="light-blue"
+              color="primary"
               class="white--text"
               @click.native="searchJournals"
             >
@@ -77,7 +83,7 @@
 
       <v-flex xs12 class="text-xs-center" mt-1>
         <v-layout row ma-2 justify-center>
-          <v-flex xs8 md2 order-md1 order-xs1>
+          <v-flex xs8 md3 order-md1 order-xs1>
             <v-radio-group v-model="radioRow" row>
               <v-radio label="온도" value="radio-1" @change='radioChanged' checked></v-radio>
               <v-radio label="습도" value="radio-2" @change='radioChanged'></v-radio>
@@ -86,20 +92,25 @@
           </v-flex>
         </v-layout>
       </v-flex>
-      
-      <!-- For Mobile -->
-      <div id="chartContainerForWeather" style="height: 260px; width: 100%;" />
 
+      <div id="chartContainerForWeather" style="height: 360px; width: 90%;" />
+      
       <!-- dummy -->
       <div style="height: 50px; width: 100%;" />
-      
-      <!-- Form Mobile -->
-      <div id="chartContainerForSensorData" style="height: 260px; width: 100%;" />
+
+      <div id="chartContainerForSensorData" style="height: 360px; width: 90%;" />
 
       <!-- dummy -->
       <div style="height: 50px; width: 100%;" />
     </v-layout>
-  </v-container>
+  
+                  </div>
+                </b-col>              
+              </b-row>              
+            </b-card>
+          </b-col>
+        </b-row>
+      </div>
 </template>
 
 <script>

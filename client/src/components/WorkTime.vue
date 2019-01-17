@@ -245,20 +245,29 @@ export default {
 
       for (var i = 0; i < tmpJournals.length; i++) {
         var tmpWorkData = {}
-        tmpWorkData.x = new Date(tmpJournals[i].date)
-        // var tmpWorkTime = tmpJournals[i].workETime - tmpJournals[i].workSTime
-        /*
-        if (tmpStr.length === 3) {
-          tmpWorkData.y = tmpStr.substring(0, 1) * 1
-        } else if (tmpStr.length === 4) {
-          tmpWorkData.y = tmpStr.substring(0, 2) * 1
-        }
-        */
+        // tmpWorkData.x = new Date(tmpJournals[i].date)
+        tmpWorkData.label = tmpJournals[i].date
         tmpWorkData.y = tmpJournals[i].workTime * 1
         tmpWorkDatas.push(tmpWorkData)
       }
       console.log(tmpWorkDatas)
-      this.chartOptions.data[0].dataPoints = tmpWorkDatas
+
+      // 같은 날짜의 데이터를 합침
+      var tmpWorkDatasResult = []
+      for (var j = 0; j < tmpWorkDatas.length; j++) {
+        var existIdx = this.findSameLabel(tmpWorkDatasResult, tmpWorkDatas[j].label)
+        if (existIdx !== -999) { // 같은 날짜의 데이터가 이미 존재하는 경우
+          tmpWorkDatasResult[existIdx].y += tmpWorkDatas[j].y
+        } else {  // 같은 날짜의 데이터가 없는 경우
+          var tmpDataPoint = {}
+          tmpDataPoint.label = tmpWorkDatas[j].label
+          tmpDataPoint.y = tmpWorkDatas[j].y
+          tmpWorkDatasResult.push(tmpDataPoint)
+        }
+      }
+      console.log(tmpWorkDatasResult)
+
+      this.chartOptions.data[0].dataPoints = tmpWorkDatasResult
       this.chart.render()
     },
     async getLands () {
@@ -266,6 +275,14 @@ export default {
         userId: this.userId
       })
       this.landItems = response.data.lands
+    },
+    findSameLabel: function (targetArray, sourceTime) {
+      for (var i = 0; i < targetArray.length; i++) {
+        if (targetArray[i].label === sourceTime) {
+          return i
+        }
+      }
+      return -999
     },
     onChangeLand: function (event) {
       console.log(event)

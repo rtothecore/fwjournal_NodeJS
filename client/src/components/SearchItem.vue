@@ -9,72 +9,64 @@
               <b-row>
                 <b-col sm="12" lg="6">
                   <div style="width:1150px; margin:0 auto;">
-            
+
+    <v-container grid-list-md ma-0 pa-0>
+
     <v-layout row wrap pl-4>      
 
-       <v-flex xs6 sm6 md2>
+       <v-flex xs3 sm3 md3>
         <v-menu
           ref="menu"
           :close-on-content-click="false"
           v-model="menu"
-          :nudge-right="40"
-          :return-value.sync="startDate"
+          :nudge-right="40"          
           lazy
           transition="scale-transition"
           offset-y
         >
           <v-text-field
             slot="activator"
-            v-model="startDate"
+            v-model="computedDateFormatted"
             :error-messages="errors.collect('startDate')" 
             label="시작날짜"
             prepend-icon="event"
             readonly
-            required=""            
+            required=""
+            v-validate="'required'"
             data-vv-name="startDate"
           ></v-text-field>
-          <v-date-picker v-model="startDate" no-title scrollable locale='euc-kr'>
-            <v-spacer></v-spacer>
-            <v-btn flat color="primary" @click="menu = false">Cancel</v-btn>
-            <v-btn flat color="primary" @click="$refs.menu.save(startDate)">OK</v-btn>
-          </v-date-picker>
+          <v-date-picker v-model="startDate" no-title @input="menu = false" locale='euc-kr'>            
+          </v-date-picker>          
         </v-menu>
       </v-flex>
 
-      <v-flex md1/>
-
-      <v-flex xs6 sm6 md2>
+      <v-flex xs3 sm3 md3>
         <v-menu
           ref="menu2"
           :close-on-content-click="false"
           v-model="menu2"
-          :nudge-right="40"
-          :return-value.sync="endDate"
+          :nudge-right="40"          
           lazy
           transition="scale-transition"
           offset-y
         >
           <v-text-field
             slot="activator"
-            v-model="endDate"
+            v-model="computedDateFormatted2"
             :error-messages="errors.collect('endDate')" 
             label="종료날짜"
             prepend-icon="event"
             readonly
             required=""
+            v-validate="'required'"
             data-vv-name="endDate"
           ></v-text-field>
-          <v-date-picker v-model="endDate" no-title scrollable locale='euc-kr'>
-            <v-spacer></v-spacer>
-            <v-btn flat color="primary" @click="menu2 = false">Cancel</v-btn>
-            <v-btn flat color="primary" @click="$refs.menu2.save(endDate)">OK</v-btn>
-          </v-date-picker>
+          <v-date-picker v-model="endDate" no-title @input="menu2 = false" locale='euc-kr'>          
+          </v-date-picker>        
         </v-menu>
       </v-flex>
 
-      <v-flex md1/>
-
-      <v-flex xs6 sm6 md1>
+      <v-flex xs3 sm3 md3>
         <v-select
           :items="landItems"
           v-model="selectLand"
@@ -83,12 +75,13 @@
           item-text="name"
           item-value="_id"
           v-on:change="onChangeLand"
+          :error-messages="errors.collect('selectLand')" 
+          v-validate="'required'"
+          data-vv-name="selectLand"
         ></v-select>
       </v-flex>
 
-      <v-flex md1/>
-
-      <v-flex xs4 sm4 md1>
+      <v-flex xs3 sm3 md3>
         <v-select
           :items="WorkTypeitems"
           v-model="e2"
@@ -97,12 +90,21 @@
           item-text="text"
           item-value="value"
           v-on:change="onChangeWorkType"
+          :error-messages="errors.collect('e2')" 
+          v-validate="'required'"
+          data-vv-name="e2"
         ></v-select>
-      </v-flex>     
+      </v-flex>           
 
-      <v-flex md1/> 
-
-      <v-flex xs8 sm8 md1 class="text-xs-left">
+      <v-flex xs12 sm12 md12 class="text-xs-right">
+        <v-btn
+          outline
+          color="indigo"
+          class="white--text"
+          @click.native="searchReset"
+        >
+          초기화
+        </v-btn>
         <v-btn
           :loading="loading"
           :disabled="loading"
@@ -114,22 +116,11 @@
         </v-btn>        
       </v-flex>
 
-      <v-flex xs8 sm8 md1 class="text-xs-left">
-        <v-btn
-          outline
-          color="indigo"
-          class="white--text"
-          @click.native="searchReset"
-        >
-          초기화
-        </v-btn>
-      </v-flex>
-
       <journalModalForEdit></journalModalForEdit>
       <addWorkTypeModal></addWorkTypeModal>      
     
     </v-layout>
- 
+    
     <v-layout row wrap pl-4>
     
     <v-flex xs12 sm12 md12>      
@@ -157,11 +148,11 @@
             <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="text-xs-left"><h4>{{ getDateWithKorean(props.item.date) }}</h4></td>
             <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="text-xs-left"><h4>{{ props.item.landName }}</h4></td>
             <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="text-xs-left"><h4>{{ props.item.item }}</h4></td>
-            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="text-xs-left"><h4>{{ props.item.purpose }}</h4></td>            
-            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="text-xs-left"><h4>{{ props.item.amount }}</h4></td>
-            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="text-xs-left"><h4>{{ props.item.usage }}</h4></td>
-            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="text-xs-left"><h4>{{ props.item.stock }}</h4></td>
-            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="justify-center layout px-0">
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="text-xs-left"><h4>{{ props.item.itemName }}</h4></td>            
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="text-xs-left"><h4>{{ props.item.itemAmount }}</h4></td>
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="text-xs-left"><h4>{{ props.item.itemUsage }}</h4></td>
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="text-xs-left"><h4>{{ props.item.itemStock }}</h4></td>
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="text-xs-left">
               <v-btn icon class="mx-0" @click="editItem(props.item)">
                 <v-icon color="teal">edit</v-icon>
               </v-btn>
@@ -177,7 +168,7 @@
       </div>      
     </v-flex>    
     </v-layout>
-  
+    </v-container>
         
                   </div>
                 </b-col>              
@@ -190,6 +181,7 @@
 
 <script>
 import {bus} from '../main'
+import moment from 'moment'
 import LandService from '@/services/LandService'
 import ScService from '@/services/ScService'
 import WcService from '@/services/WcService'
@@ -238,8 +230,8 @@ export default {
       userId: '',
       menu: false,
       menu2: false,
-      startDate: null,
-      endDate: null,
+      startDate: '',
+      endDate: '',
       loader: null,
       loading: false,
       search: '',
@@ -257,35 +249,46 @@ export default {
           align: 'left',
           sortable: false,
           value: 'date',
-          width: '22%'
+          width: '20%'
         },
         { text: '농장명', value: 'landName', align: 'left', sortable: false, width: '15%' },
-        { text: '구입품목', value: 'item', align: 'left', sortable: false, width: '15%' },
-        { text: '사용목적', value: 'purpose', align: 'left', sortable: false, width: '20%' },
-        { text: '구입수량', value: 'amount', align: 'left', sortable: false, width: '10%' },
-        { text: '사용수량', value: 'usage', align: 'left', sortable: false, width: '10%' },
-        { text: '재고수량', value: 'stock', align: 'left', sortable: false, width: '10%' },
-        { text: '관리', value: 'name', align: 'left', sortable: false, width: '15%' }
+        { text: '구입품목', value: 'item', align: 'left', sortable: false, width: '10%' },
+        { text: '품목명', value: 'itemName', align: 'left', sortable: false, width: '19%' },
+        { text: '구입량', value: 'itemAmount', align: 'left', sortable: false, width: '2%' },
+        { text: '사용량', value: 'itemUsage', align: 'left', sortable: false, width: '2%' },
+        { text: '재고량', value: 'itemStock', align: 'left', sortable: false, width: '2%' },
+        { text: '관리', value: 'name', align: 'left', sortable: false, width: '12%' }
       ],
       editedIndex: -1,
       items: [],
       // journals: [],
       dictionary: {
         custom: {
-          /*
           startDate: {
             required: '검색 시작날짜를 입력해주세요'
           },
           endDate: {
             required: '검색 종료날짜를 입력해주세요'
+          },
+          selectLand: {
+            required: '농장명을 선택해주세요'
+          },
+          e2: {
+            required: '작업분류를 선택해주세요'
           }
-          */
         }
       }
     }
   },
   mounted () {
     this.$validator.localize('ko', this.dictionary)
+    var vm = this
+    bus.$on('toJournalForUpdate', function (value) {
+      vm.getItemsBy5()
+    })
+    bus.$on('toJournalForDel', function (value) {
+      vm.getItemsBy5()
+    })
   },
   beforeCreate: function () {
     if (!this.$session.exists()) {
@@ -295,6 +298,7 @@ export default {
   },
   created () {
     this.userId = this.$session.get('userId')
+    this.init()
     this.getItems()
     this.getLands()
     this.getWorkTypeItems()
@@ -323,6 +327,14 @@ export default {
       // var tmpVal = this.editedIndex
       // return this.journals[tmpVal].date
     // },
+    computedDateFormatted () {
+      console.log(this.startDate)
+      return this.startDate
+    },
+    computedDateFormatted2 () {
+      console.log(this.endDate)
+      return this.endDate
+    },
     pages () {
       if (this.pagination.rowsPerPage == null ||
         this.pagination.totalItems == null
@@ -340,7 +352,8 @@ export default {
         })
         if (response2.data.asItem === '1') {
           var tmpItem = {}
-          tmpItem.text = '작물>' + response2.data.text
+          // tmpItem.text = '작물>' + response2.data.text
+          tmpItem.text = response2.data.text
           tmpItem.value = response2.data.wCode
           this.WorkTypeitems.push(tmpItem)
         }
@@ -353,17 +366,23 @@ export default {
         })
         if (response4.data.asItem === '1') {
           var tmpItem2 = {}
-          tmpItem2.text = '가축>' + response4.data.text
+          // tmpItem2.text = '가축>' + response4.data.text
+          tmpItem2.text = response4.data.text
           tmpItem2.value = response4.data.wCode
           this.WorkTypeitems.push(tmpItem2)
         }
       }
     },
     async getItems () {
-      const response = await ItemService.fetchItems({
-        userId: this.userId
+      const response = await ItemService.fetchItemAggByDate({
+        userId: this.userId,
+        startDate: this.startDate,
+        endDate: this.endDate
       })
-      this.items = response.data
+      for (var k = 0; k < response.data.length; k++) {
+        this.items.push(response.data[k]._id)
+      }
+
       for (var i = 0; i < this.items.length; i++) {
         // 농장명
         const response3 = await LandService.fetchNameByLandId({
@@ -377,7 +396,11 @@ export default {
         })
         this.items[i].item = response2.data[0].text
 
+        // 재고수량
+        this.items[i].itemStock = this.items[i].itemAmount - this.items[i].itemUsage
+
         // 구입수량, 사용수량, 재고수량
+        /*
         var amountVal = Number(0)
         var usageVal = Number(0)
         var stockVal = Number(0)
@@ -389,9 +412,12 @@ export default {
         this.items[i].amount = amountVal
         this.items[i].usage = usageVal
         this.items[i].stock = stockVal
+        */
       }
     },
-    async getItemsBy4 () {
+    async getItemsBy5 () {
+      this.items = []
+
       var tmpStartDate = this.startDate
       if (!tmpStartDate) {
         tmpStartDate = 0
@@ -411,13 +437,17 @@ export default {
         this.selectLand = 0
       }
 
-      const response = await ItemService.fetchItemsBy4({
+      const response = await ItemService.fetchItemsAggBy5({
+        userId: this.userId,
         startDate: tmpStartDate,
         endDate: tmpEndDate,
         item: tmpWorkType,
         landId: this.selectLand
       })
-      this.items = response.data
+      for (var k = 0; k < response.data.length; k++) {
+        this.items.push(response.data[k]._id)
+      }
+
       for (var i = 0; i < this.items.length; i++) {
         // 농장명
         const response3 = await LandService.fetchNameByLandId({
@@ -431,6 +461,9 @@ export default {
         })
         this.items[i].item = response2.data[0].text
 
+        // 재고수량
+        this.items[i].itemStock = this.items[i].itemAmount - this.items[i].itemUsage
+        /*
         // 구입수량, 사용수량, 재고수량
         var amountVal = Number(0)
         var usageVal = Number(0)
@@ -443,6 +476,7 @@ export default {
         this.items[i].amount = amountVal
         this.items[i].usage = usageVal
         this.items[i].stock = stockVal
+        */
       }
     },
     async deleteItemData (id) {
@@ -561,7 +595,7 @@ export default {
         if (!result) {
           return
         }
-        this.getItemsBy4()
+        this.getItemsBy5()
       }).catch(() => {})
     },
     searchReset () {
@@ -570,6 +604,8 @@ export default {
       this.e2 = null
       this.selectLand = ''
       this.workContent = null
+      this.items = []
+      this.init()
       this.getItems()
       this.$validator.reset()
     },
@@ -581,6 +617,10 @@ export default {
       tmpStr = this.replaceAt(tmpStr, 7, '월')
       tmpStr += '일'
       return tmpStr
+    },
+    init: function () {
+      this.startDate = moment().year() + '-01-01'
+      this.endDate = moment().format('YYYY-MM-DD')
     }
   }
 }

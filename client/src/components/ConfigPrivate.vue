@@ -39,6 +39,7 @@
             disabled
           ></v-text-field>
           -->
+          <!--
           <h4>
           <b-form-group
             label="이름"
@@ -48,6 +49,7 @@
             <b-form-input v-model="name" id="basicInputName" type="text" :disabled="true" placeholder="Disabled"></b-form-input>
           </b-form-group>
           </h4>
+          -->
           <!--
           <v-text-field
             v-model="birthDate"
@@ -202,6 +204,7 @@ export default {
   methods: {
     async getUser () {
       const response = await UserService.fetchUser(this.userId)
+      // console.log(response.data)
       this.id = response.data[0].id
       this.name = response.data[0].name
       this.birthDate = response.data[0].birth_date

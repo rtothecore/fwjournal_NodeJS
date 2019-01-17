@@ -1,8 +1,8 @@
 <template>
-  <v-layout align-center justify-center fill-height>
+  <v-layout align-center justify-center fill-height mb-5>
     <div
       id="e3"
-      style="width: 800px; margin: auto;"
+      style="width: 95%; height: 480px; margin: auto;"
       class="grey lighten-3"
     >
       <v-toolbar
@@ -14,68 +14,96 @@
         <v-spacer></v-spacer>
       </v-toolbar>
 
-      <v-card>
+      <v-card style="height:88%">
         <v-container fluid grid-list-lg>
           <v-layout row wrap justify-center>
-            <v-text-field
-              prepend-icon="fas fa-id-badge"
-              v-validate="'required'"
-              v-model="id"
-              :error-messages="errors.collect('id')"
-              label="아이디"
-              data-vv-name="id"
-              @input="onIdChange"              
-            ></v-text-field>
-            <v-btn block color="success" @click="chkDuplicatedId()">중복체크</v-btn>        
+            <v-flex xs6>
+              <v-text-field
+                prepend-icon="fas fa-id-badge"
+                v-validate="'required'"
+                v-model="id"
+                :error-messages="errors.collect('id')"
+                label="아이디"
+                data-vv-name="id"
+                @input="onIdChange"
+              ></v-text-field>
+            </v-flex>   
+            <v-flex xs6>
+              <v-btn block outline color="indigo" @click="chkDuplicatedId()">중복체크</v-btn>  
+            </v-flex>               
           </v-layout>
+
           <v-layout row wrap justify-center>
-            <v-text-field
-              prepend-icon="fas fa-key"
-              v-validate="'required|min:8|verify_password'"
-              v-model="pw"
-              :error-messages="errors.collect('pw')"
-              label="비밀번호(소문자, 대문자, 숫자, 특수기호로 이루어진 8글자)"
-              data-vv-name="pw"
-              type="password"             
-            ></v-text-field>            
+            <v-flex xs12>
+              <v-text-field               
+                prepend-icon="fas fa-key"
+                v-validate="'required|min:8|verify_password'"
+                v-model="pw"
+                :error-messages="errors.collect('pw')"
+                v-bind:label=pwLabel
+                data-vv-name="pw"
+                type="password"
+                @focus="onFocusPw()"
+                @blur="onBlurPw()"
+              ></v-text-field>  
+
+              <v-text-field
+                prepend-icon="fas fa-key"
+                v-validate="'required|min:8|verify_password'"
+                v-model="pwRe"
+                :error-messages="errors.collect('pwRe')"
+                label="비밀번호 확인"
+                data-vv-name="pwRe"
+                type="password"             
+              ></v-text-field>  
+<!--
+              <v-text-field
+                prepend-icon="fas fa-id-badge"
+                v-validate="'required'"
+                v-model="name"
+                :error-messages="errors.collect('name')"
+                label="이름"
+                data-vv-name="name"             
+              ></v-text-field>
+-->                      
+            </v-flex>          
           </v-layout>
+
           <v-layout row wrap justify-center>
-            <v-text-field
-              prepend-icon="fas fa-key"
-              v-validate="'required|min:8|verify_password'"
-              v-model="pwRe"
-              :error-messages="errors.collect('pwRe')"
-              label="비밀번호 확인"
-              data-vv-name="pwRe"
-              type="password"             
-            ></v-text-field>            
+            <v-flex xs6>
+              <v-text-field
+                prepend-icon="fab fa-pagelines"
+                v-validate="'required'"
+                v-model="birthDate"
+                :error-messages="errors.collect('birthDate')"
+                :label=birthDateLabel
+                data-vv-name="birthDate"
+                type="number" 
+                @focus="onFocusBirthDate()"
+                @blur="onBlurBirthDate()"
+              ></v-text-field>            
+            </v-flex>
+
+            <v-flex xs6>
+              <v-select
+                v-validate="'required'"
+                prepend-icon="fas fa-male"
+                v-model="sex"
+                :error-messages="errors.collect('sex')"
+                :items="sexItems"
+                label="성별"
+                data-vv-name="sex"
+                v-on:change="onChangeSex"                         
+              ></v-select> 
+            </v-flex>
           </v-layout>
-          <v-layout row wrap justify-center>
-            <v-text-field
-              prepend-icon="fab fa-pagelines"
-              v-validate="'required'"
-              v-model="birthDate"
-              :error-messages="errors.collect('birthDate')"
-              label="생년월일(ex:19750101)"
-              data-vv-name="birthDate"
-              type="number"           
-            ></v-text-field>            
-            <v-select
-              v-validate="'required'"
-              prepend-icon="fas fa-male"
-              v-model="sex"
-              :error-messages="errors.collect('sex')"
-              :items="sexItems"
-              label="성별"
-              data-vv-name="sex"
-              v-on:change="onChangeSex"                         
-            ></v-select>
-          </v-layout>
-        </v-container>       
+                    
+        </v-container>          
+
+        <v-flex xs12 ma-3>
+          <v-btn block color="primary" @click="goToStep4()">회원가입</v-btn>          
+        </v-flex>
         
-        <v-card-actions>
-          <v-btn block color="warning" @click="goToStep4()">회원가입</v-btn>          
-        </v-card-actions>
       </v-card>
     </div>  
   </v-layout>
@@ -90,6 +118,9 @@ export default {
   },
   data () {
     return {
+      birthDateLabel: '생년월일',
+      pwLabel: '비밀번호',
+      name: '',
       phoneNo: '',
       id: '',
       isIdDuplicateCheck: false,
@@ -100,6 +131,11 @@ export default {
       sexItems: ['남', '여'],
       dictionary: {
         custom: {
+          /*
+          name: {
+            required: '이름을 입력해주세요'
+          },
+          */
           id: {
             required: '아이디를 입력해주세요'
           },
@@ -156,6 +192,7 @@ export default {
       const response = await UserService.createNewUser({
         id: this.id,
         password: this.pw,
+        name: this.name,
         birth_date: this.birthDate,
         sex: this.sex,
         phone_no: this.phoneNo,
@@ -169,7 +206,7 @@ export default {
           timer: 777
         }).then((result) => {
           this.$session.start()
-          this.$session.set('userId', response.data.result._id)
+          this.$session.set('userId', response.data.result.id)
           this.$router.push('/configLand')  // 농장 추가 페이지로 이동
         })
       } else {
@@ -186,8 +223,29 @@ export default {
       this.isIdDuplicateCheck = false
     },
     goToStep4 () {
+      /*
+      var strongRegex = new RegExp('^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\\$%\\^&\\*])(?=.{8,})')
+      if (strongRegex.test(this.pw)) {
+        alert('비밀번호는 소문자, 대문자, 특수기호로 이루어져야 합니다')
+        return
+      }
+      */
       this.$validator.validateAll().then((result) => {
         if (!result) {
+          return
+        }
+
+        // var pattern = /[^a-zA-Z]/gi
+        var pattern = /[^a-zA-Z0-9]/gi
+        if (pattern.test(this.id)) {
+          this.$swal({
+            type: 'warning',
+            title: '아이디는 영문,숫자만 가능합니다',
+            showConfirmButton: false,
+            timer: 777
+          }).then((result) => {
+          })
+          this.id = ''
           return
         }
 
@@ -223,6 +281,18 @@ export default {
     },
     onChangeSex: function (event) {
       this.sex = event
+    },
+    onFocusPw () {
+      this.pwLabel = '비밀번호(소문자, 대문자, 숫자, 특수기호로 이루어진 8글자)'
+    },
+    onBlurPw () {
+      this.pwLabel = '비밀번호'
+    },
+    onFocusBirthDate () {
+      this.birthDateLabel = '생년월일(ex)19750102)'
+    },
+    onBlurBirthDate () {
+      this.birthDateLabel = '생년월일'
     }
   },
   computed: {

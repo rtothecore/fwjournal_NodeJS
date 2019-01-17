@@ -1,8 +1,8 @@
 <template>
-  <v-layout align-center justify-center fill-height>
+  <v-layout align-center justify-center fill-height mb-5>
     <div
       id="e3"
-      style="width: 400px; margin: auto;"
+      style="width: 95%; height: 480px; margin: auto;"
       class="grey lighten-3"
     >
       <v-toolbar
@@ -14,7 +14,7 @@
         <v-spacer></v-spacer>
       </v-toolbar>
 
-      <v-card>
+      <v-card style="height:88%">
         <v-container
           fluid
           grid-list-lg
@@ -39,27 +39,28 @@
                   :error-messages="errors.collect('password')"
                   :type="'password'"
                   label="비밀번호"
-                  data-vv-name="password"
-                  counter
+                  data-vv-name="password"                  
                   v-on:keyup.enter="login"
                 ></v-text-field>                                
               </form>
             </v-flex>
 
             <v-flex xs12>
-              <v-btn block color="success" @click="login()">로그인</v-btn>              
+              <v-btn block color="primary" @click="login()">로그인</v-btn>              
               <p style="cursor:pointer" class="text-lg-right" @click="findPw()">비밀번호 찾기</p>              
             </v-flex>
+
+            <v-flex xs12 style="height:97px"/>
           
             <v-flex xs12>
-              <v-btn block color="warning" @click="goToRegister()">회원가입</v-btn>
+              <v-btn block outline color="indigo" @click="goToRegister()">회원가입</v-btn>
             </v-flex>
 
           </v-layout>
         </v-container>
       </v-card>
 
-      <registerModal></registerModal>
+      <registerModal></registerModal>      
 
     </div>
   </v-layout>
@@ -67,6 +68,7 @@
 
 <script>
 // import {bus} from '../main'
+// import moment from 'moment'
 import UserService from '@/services/UserService'
 export default {
   $_veeValidate: {
@@ -106,7 +108,7 @@ export default {
             timer: 777
           }).then((result) => {
             this.$session.start()
-            this.$session.set('userId', response.data[0]._id)
+            this.$session.set('userId', response.data[0].id)
             this.runLoginProcess()
             this.$router.push('/')
           })
@@ -155,11 +157,15 @@ export default {
         // 비번 수정 창으로 이동
         this.$swal({
           type: 'warning',
-          title: '임시 비밀번호를 변경해주세요',
+          title: '비밀번호를 변경해주세요',
           showConfirmButton: false,
           timer: 1444
         }).then((result) => {
-          this.$router.push('/changePw')
+          // this.$router.push('/changePw')
+          // https://router.vuejs.org/guide/essentials/navigation.html
+          // https://www.thepolyglotdeveloper.com/2017/11/pass-data-between-routes-vuejs-web-application/
+          // 임시비밀번호 발급받아 로그인하는 경우 비밀번호 변경 창을 띄운다
+          this.$router.push({ name: 'nameConfigPrivate', params: { callFrom: 'login' } })
         })
       } else if (response.status === 202) {
         // 임시비번 재발급 창으로 이동

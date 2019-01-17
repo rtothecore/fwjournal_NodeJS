@@ -45,7 +45,7 @@
             -->
               <span class="headline" style="color:black; padding-left:40px; float:left">{{getDateWithKorean(User_Profile)}}</span>               
               <span style="float:right">
-                <v-btn outline color="black" flat @click.native="dialog = false">닫기</v-btn>
+                <v-btn outline color="indigo" flat @click.native="dialog = false">닫기</v-btn>
               </span>
 
             <v-card-text>
@@ -188,8 +188,8 @@
                   <v-flex xs12>
                     <div slot="label">
                       <h4>발생비용 <small>(optional)</small>
-                      <v-btn outline color="black" flat @click.native="addCooRow">추가</v-btn>
-                      <v-btn outline color="black" flat @click.native="deleteCooRow">삭제</v-btn>
+                      <v-btn outline color="indigo" flat @click.native="addCooRow">추가</v-btn>
+                      <v-btn outline color="indigo" flat @click.native="deleteCooRow">삭제</v-btn>
                       </h4>
                     </div>
                   </v-flex>
@@ -258,14 +258,14 @@
                     <v-flex xs12>
                       <div slot="label">
                         <h4>사용량 <small>(optional)</small>
-                        <v-btn outline color="black" flat @click.native="addUsageRow">추가</v-btn>
-                        <v-btn outline color="black" flat @click.native="deleteUsageRow">삭제</v-btn>
+                        <v-btn outline color="indigo" flat @click.native="addUsageRow">추가</v-btn>
+                        <v-btn outline color="indigo" flat @click.native="deleteUsageRow">삭제</v-btn>
                         </h4>
                       </div>
                     </v-flex>
 
                     <template v-for="(item, index) in usageItems">
-                      <v-flex xs6 sm6 md6 :key="'C' + index">
+                      <v-flex xs4 sm4 md4 :key="'C' + index">
                         <v-select                          
                           :items="itemNames"
                           v-model="item.itemName"
@@ -278,7 +278,15 @@
                           v-on:change="onChangeItemName(item.itemName, index)"                                                               
                         ></v-select>
                       </v-flex>
-                      <v-flex xs6 sm6 md6 :key="'D' + index">
+                      <v-flex xs4 sm4 md4 :key="'D' + index">
+                        <v-text-field
+                          label="재고량"
+                          v-model="item.stock"
+                          type="number"
+                          readonly
+                        ></v-text-field>
+                      </v-flex>
+                      <v-flex xs4 sm4 md4 :key="'E' + index">
                         <v-text-field
                           label="사용량"
                           v-model="item.usage"
@@ -374,9 +382,9 @@
             </v-card-text>
             <v-card-actions>
               <v-spacer></v-spacer>
-              <v-btn outline color="black" flat @click.native="dialog = false">취소</v-btn>
+              <v-btn outline color="indigo" flat @click.native="dialog = false">취소</v-btn>
               <!-- <v-btn color="blue darken-1" flat @click.native="dialog = false" :disabled="!valid">작성</v-btn> -->
-              <v-btn outline color="black" flat @click.native="save">작성</v-btn>
+              <v-btn color="primary" @click.native="save">작성</v-btn>
             </v-card-actions>
 
             
@@ -415,7 +423,7 @@
             -->
             <span class="headline" style="color:black; padding-left:40px; float:left">{{getDateWithKorean(Item_User_Profile)}}</span>               
             <span style="float:right">
-              <v-btn outline color="black" flat @click.native="dialog = false">닫기</v-btn>
+              <v-btn outline color="indigo" flat @click.native="dialog = false">닫기</v-btn>
             </span>
 
             <v-card-text>
@@ -461,8 +469,8 @@
                   <v-flex xs12>
                     <div slot="label">
                       <h4>품목상세 <small>(optional)</small>
-                      <v-btn outline color="black" flat @click.native="addItemRow">추가</v-btn>
-                      <v-btn outline color="black" flat @click.native="deleteItemRow">삭제</v-btn>
+                      <v-btn outline color="indigo" flat @click.native="addItemRow">추가</v-btn>
+                      <v-btn outline color="indigo" flat @click.native="deleteItemRow">삭제</v-btn>
                       </h4>
                     </div>
                   </v-flex>
@@ -561,9 +569,9 @@
             </v-card-text>
             <v-card-actions>
               <v-spacer></v-spacer>
-              <v-btn outline color="black" flat @click.native="dialog = false">취소</v-btn>
+              <v-btn outline color="indigo" flat @click.native="dialog = false">취소</v-btn>
               <!-- <v-btn color="blue darken-1" flat @click.native="dialog = false" :disabled="!valid">작성</v-btn> -->
-              <v-btn outline color="black" flat @click.native="itemSave">작성</v-btn>
+              <v-btn color="primary" @click.native="itemSave">작성</v-btn>
             </v-card-actions>
 
                   </div>
@@ -657,6 +665,7 @@ export default {
       usageItems: [
         {
           itemName: '',
+          stock: '',
           usage: ''
         }
       ],
@@ -733,7 +742,7 @@ export default {
     var vm = this
     bus.$on('dialog', function (value) {
       Object.assign(vm.$data, vm.$options.data.call(vm))  // initialize this data
-      console.log(value)
+      // console.log(value)
       vm.User_Profile = value
       vm.Item_User_Profile = value
       // vm.eventIndex = value.eventIndex
@@ -905,6 +914,7 @@ export default {
         this.showUsage = false
         this.usageItems = [{
           itemName: '',
+          stock: '',
           usage: ''
         }]
         this.showOutput = false
@@ -919,6 +929,7 @@ export default {
         this.showUsage = false
         this.usageItems = [{
           itemName: '',
+          stock: '',
           usage: ''
         }]
         this.showOutput = true
@@ -1115,13 +1126,24 @@ export default {
 
       this.newEvent.journalId = response.data.result._id
       this.fetchNameByLandId(this.selectedLandId)
-      this.fetchCropNameByCropCode(this.selectedCropCode)
+      // this.fetchCropNameByCropCode(this.selectedCropCode)
       this.fetchTextByCode(this.selectedWorkTypeCode)
       // this.newEvent.start = this.User_Profile.substring(10, 20)
       // this.newEvent.end = this.User_Profile.substring(10, 20)
       this.newEvent.start = this.User_Profile
       this.newEvent.end = this.User_Profile
       // this.newEvent.eventIndex = this.eventIndex
+    },
+    async fetchItemByUserLandIdItemName (idxVal, itemNameVal) {
+      // FIXME - 재고량을 구입량 - 사용량으로 계산하도록 수정
+      const response = await ItemService.fetchItemByUserLandItemName({
+        userId: this.userId,
+        landId: this.selectedLandId,
+        item: this.selectedWorkTypeCode,
+        itemName: itemNameVal
+      })
+
+      this.usageItems[idxVal].stock = response.data[0].itemDetail[0].itemStock
     },
     /*
     task1: function (callback) {
@@ -1308,6 +1330,8 @@ export default {
       // console.log(event)
       if (event === '직접입력') {
         this.addCustomItem(idx)
+      } else {
+        this.fetchItemByUserLandIdItemName(idx, event)
       }
     },
     onChangeWSTime: function (event) {
@@ -1387,6 +1411,7 @@ export default {
     addUsageRow () {
       this.usageItems.push({
         itemName: '',
+        stock: '',
         usage: ''
       })
     },

@@ -53,6 +53,7 @@
         </v-container>       
         
         <v-card-actions>
+          <v-btn block outline color="indigo" @click="close()">창 닫기</v-btn>
           <v-btn block color="primary" @click="savePassword()">수정완료</v-btn>          
         </v-card-actions>
       </v-card>
@@ -153,6 +154,9 @@ export default {
         }
         this.savePassword()
       }).catch(() => {})
+    },
+    close () {
+      this.dialog = false
     }
   },
   computed: {

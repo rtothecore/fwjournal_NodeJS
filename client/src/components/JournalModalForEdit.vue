@@ -47,7 +47,7 @@
             -->
             <span class="headline" style="color:black; padding-left:40px; float:left">{{getDateWithKorean(User_Profile)}}</span>               
             <span style="float:right">
-              <v-btn outline color="black" flat @click.native="dialog = false">닫기</v-btn>
+              <v-btn outline color="indigo" flat @click.native="dialog = false">닫기</v-btn>
             </span>
 
             <v-card-text>
@@ -189,8 +189,8 @@
                   <v-flex xs12>
                     <div slot="label">
                       <h4>발생비용 <small>(optional)</small>
-                      <v-btn outline color="black" flat @click.native="addCooRow">추가</v-btn>
-                      <v-btn outline color="black" flat @click.native="deleteCooRow">삭제</v-btn>
+                      <v-btn outline color="indigo" flat @click.native="addCooRow">추가</v-btn>
+                      <v-btn outline color="indigo" flat @click.native="deleteCooRow">삭제</v-btn>
                       </h4>
                     </div>
                   </v-flex>
@@ -263,14 +263,14 @@
                     <v-flex xs12>
                       <div slot="label">
                         <h4>사용량 <small>(optional)</small>
-                        <v-btn outline color="black" flat @click.native="addUsageRow">추가</v-btn>
-                        <v-btn outline color="black" flat @click.native="deleteUsageRow">삭제</v-btn>
+                        <v-btn outline color="indigo" flat @click.native="addUsageRow">추가</v-btn>
+                        <v-btn outline color="indigo" flat @click.native="deleteUsageRow">삭제</v-btn>
                         </h4>
                       </div>
                     </v-flex>
 
                     <template v-for="(item, index) in usageItems">
-                      <v-flex xs6 sm6 md6 :key="'C' + index">
+                      <v-flex xs4 sm4 md4 :key="'C' + index">
                         <v-select                          
                           :items="itemNames"
                           v-model="item.itemName"
@@ -283,7 +283,15 @@
                           v-on:change="onChangeItemName(item.itemName, index)"                                        
                         ></v-select>
                       </v-flex>
-                      <v-flex xs6 sm6 md6 :key="'D' + index">
+                      <v-flex xs4 sm4 md4 :key="'D' + index">
+                        <v-text-field
+                          label="재고량"
+                          v-model="item.stock"
+                          type="number"
+                          readonly
+                        ></v-text-field>
+                      </v-flex>
+                      <v-flex xs4 sm4 md4 :key="'E' + index">
                         <v-text-field
                           label="사용량"
                           v-model="item.usage"
@@ -345,7 +353,7 @@
                         </v-avatar>
                       </div>
                     </image-input> 
-                    <v-btn outline color="black" flat @click.native="showPic(avatar.imageURL)">크게보기</v-btn>                                     
+                    <v-btn outline color="indigo" flat @click.native="showPic(avatar.imageURL)">크게보기</v-btn>                                     
                   </v-flex>
 
                   <v-flex xs4 sm4 md4>                    
@@ -360,7 +368,7 @@
                         </v-avatar>
                       </div>
                     </image-input>                    
-                    <v-btn outline color="black" flat @click.native="showPic(avatar2.imageURL)">크게보기</v-btn>                                     
+                    <v-btn outline color="indigo" flat @click.native="showPic(avatar2.imageURL)">크게보기</v-btn>                                     
                   </v-flex>
 
                   <v-flex xs4 sm4 md4>                    
@@ -375,7 +383,7 @@
                         </v-avatar>
                       </div>
                     </image-input> 
-                    <v-btn outline color="black" flat @click.native="showPic(avatar3.imageURL)">크게보기</v-btn>                                                        
+                    <v-btn outline color="indigo" flat @click.native="showPic(avatar3.imageURL)">크게보기</v-btn>                                                        
                   </v-flex>
                   
                 </v-layout>
@@ -384,9 +392,9 @@
             </v-card-text>
             <v-card-actions>
               <v-spacer></v-spacer>
-              <v-btn outline color="black" flat @click.native="deleteJ">삭제</v-btn>
-              <v-btn outline color="black" flat @click.native="dialog = false">취소</v-btn>              
-              <v-btn outline color="black" flat @click.native="save">수정</v-btn>
+              <v-btn outline color="indigo" flat @click.native="deleteJ">삭제</v-btn>
+              <v-btn outline color="indigo" flat @click.native="dialog = false">취소</v-btn>              
+              <v-btn color="primary" @click.native="save">수정</v-btn>
             </v-card-actions>
             
                   </div>
@@ -424,7 +432,7 @@
             -->
             <span class="headline" style="color:black; padding-left:40px; float:left">{{getDateWithKorean(Item_User_Profile)}}</span>               
             <span style="float:right">
-              <v-btn outline color="black" flat @click.native="dialog = false">닫기</v-btn>
+              <v-btn outline color="indigo" flat @click.native="dialog = false">닫기</v-btn>
             </span>
 
             <v-card-text>
@@ -470,8 +478,8 @@
                   <v-flex xs12>
                     <div slot="label">
                       <h4>품목상세 <small>(optional)</small>
-                      <v-btn outline color="black" flat @click.native="addItemRow">추가</v-btn>
-                      <v-btn outline color="black" flat @click.native="deleteItemRow">삭제</v-btn>
+                      <v-btn outline color="indigo" flat @click.native="addItemRow">추가</v-btn>
+                      <v-btn outline color="indigo" flat @click.native="deleteItemRow">삭제</v-btn>
                       </h4>
                     </div>
                   </v-flex>
@@ -548,7 +556,7 @@
                         </v-avatar>
                       </div>
                     </image-input>     
-                    <v-btn outline color="black" flat @click.native="showPic(iavatar.imageURL)">크게보기</v-btn>                 
+                    <v-btn outline color="indigo" flat @click.native="showPic(iavatar.imageURL)">크게보기</v-btn>                 
                   </v-flex>
 
                   <v-flex xs4 sm4 md4>                    
@@ -563,7 +571,7 @@
                         </v-avatar>
                       </div>
                     </image-input>   
-                    <v-btn outline color="black" flat @click.native="showPic(iavatar2.imageURL)">크게보기</v-btn>                 
+                    <v-btn outline color="indigo" flat @click.native="showPic(iavatar2.imageURL)">크게보기</v-btn>                 
                   </v-flex>
 
                   <v-flex xs4 sm4 md4>                    
@@ -578,7 +586,7 @@
                         </v-avatar>
                       </div>
                     </image-input> 
-                    <v-btn outline color="black" flat @click.native="showPic(iavatar3.imageURL)">크게보기</v-btn>                   
+                    <v-btn outline color="indigo" flat @click.native="showPic(iavatar3.imageURL)">크게보기</v-btn>                   
                   </v-flex>
                   
                 </v-layout>
@@ -587,10 +595,10 @@
             </v-card-text>
             <v-card-actions>
               <v-spacer></v-spacer>
-              <v-btn outline color="black" flat @click.native="deleteI">삭제</v-btn>
-              <v-btn outline color="black" flat @click.native="dialog = false">취소</v-btn>
+              <v-btn outline color="indigo" flat @click.native="deleteI">삭제</v-btn>
+              <v-btn outline color="indigo" flat @click.native="dialog = false">취소</v-btn>
               <!-- <v-btn color="blue darken-1" flat @click.native="dialog = false" :disabled="!valid">작성</v-btn> -->
-              <v-btn outline color="black" flat @click.native="itemSave">작성</v-btn>
+              <v-btn color="primary" @click.native="itemSave">작성</v-btn>
             </v-card-actions>
             
                   </div>
@@ -681,6 +689,7 @@ export default {
       usageItems: [
         {
           itemName: '',
+          stock: '',
           usage: ''
         }
       ],
@@ -911,6 +920,26 @@ export default {
 
         this.usageItems = response.data[0].usage
 
+        // Item 콜렉션의 품목 수량, 사용량을 로드하고 재고량을 계산(재고량 = 구입수량 - 자재수량 - 자재사용량 - 작업일지정보의 사용량)
+        for (var j = 0; j < this.usageItems.length; j++) {
+          console.log(this.usageItems[j].itemName)
+          const response2 = await ItemService.fetchItemByUserLandItemName({
+            userId: this.userId,
+            landId: this.selectedLandId,
+            item: this.selectedWorkTypeCode,
+            itemName: this.usageItems[j].itemName
+          })
+          console.log(response2.data)
+          this.usageItems[j].stock = response2.data[0].itemDetail[0].itemAmount - response2.data[0].itemDetail[0].itemUsage
+
+          // 작업일지 정보의 사용량 빼기
+          for (var k = 0; k < response.data[0].usage.length; k++) {
+            if (response.data[0].usage[k].itemName === response2.data[0].itemDetail[0].itemName) {
+              this.usageItems[j].stock -= response.data[0].usage[k].usage
+            }
+          }
+        }
+
         this.fetchItemsByWcodeForEdit(this.selectedWorkTypeCode) //
 
         this.showOutput = false
@@ -950,6 +979,17 @@ export default {
       } else {
         this.avatar3 = null
       }
+    },
+    async fetchItemByUserLandIdItemName (idxVal, itemNameVal) {
+      // FIXME - 재고량을 구입량 - 사용량으로 계산하도록 수정
+      const response = await ItemService.fetchItemByUserLandItemName({
+        userId: this.userId,
+        landId: this.selectedLandId,
+        item: this.selectedWorkTypeCode,
+        itemName: itemNameVal
+      })
+
+      this.usageItems[idxVal].stock = response.data[0].itemDetail[0].itemStock
     },
     async fetchItemsByWcode (workCode) {
       const response = await ItemService.fetchItemsByWcode({
@@ -1099,8 +1139,18 @@ export default {
         pictureC: pictureCData
       })
 
+      // items 컬렉션의 특정 품목 사용량 Update
+      /*
+      const response2 = await ItemService.fetchItemByUserLandItemName({
+        userId: this.userId,
+        landId: this.selectedLandId,
+        item: this.selectedWorkTypeCode,
+        itemName: this.usageItems[j].itemName
+      })
+      */
+
       this.fetchNameByLandId(this.selectLand)
-      this.fetchCropNameByCropCode(this.selectedCropCode)
+      // this.fetchCropNameByCropCode(this.selectedCropCode)
       this.fetchTextByCode(this.selectedWorkTypeCode)
       // this.updatedEvent.start = this.User_Profile.substring(10, 20)
       // this.updatedEvent.end = this.User_Profile.substring(10, 20)
@@ -1159,6 +1209,7 @@ export default {
         this.showUsage = false
         this.usageItems = [{
           itemName: '',
+          stock: '',
           usage: ''
         }]
         this.showOutput = false
@@ -1173,6 +1224,7 @@ export default {
         this.showUsage = false
         this.usageItems = [{
           itemName: '',
+          stock: '',
           usage: ''
         }]
         this.showOutput = true
@@ -1229,6 +1281,13 @@ export default {
     onChangeItemName: function (event, idx) {
       if (event === '직접입력') {
         this.addCustomItem(idx)
+      } else {
+        /*
+        console.log(this.selectedLandId)
+        console.log(this.selectedWorkTypeCode)
+        console.log(event)
+        */
+        this.fetchItemByUserLandIdItemName(idx, event)
       }
     },
     onChangeWSTime: function (event) {
@@ -1355,12 +1414,26 @@ export default {
     addUsageRow () {
       this.usageItems.push({
         itemName: '',
+        stock: '',
         usage: ''
       })
     },
     deleteUsageRow () {
       if (this.usageItems.length > 1) {
         this.usageItems.splice(this.usageItems.length - 1, 1)
+      }
+    },
+    addItemRow () {
+      this.itemItems.push({
+        itemName: '',
+        itemAmount: '',
+        itemPrice: ''
+      })
+    },
+    deleteItemRow () {
+      if (this.itemItems.length > 1) {
+        this.itemItems.splice(this.itemItems.length - 1, 1)
+        this.onChangeItemPrice()
       }
     },
     showPic (url) {

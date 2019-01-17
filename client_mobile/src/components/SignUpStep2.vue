@@ -1,8 +1,8 @@
 <template>
-  <v-layout align-center justify-center fill-height>
+  <v-layout align-center justify-center fill-height mb-5>
     <div
       id="e3"
-      style="width: 800px; margin: auto;"
+      style="width: 95%; height: 480px; margin: auto;"
       class="grey lighten-3"
     >
       <v-toolbar
@@ -14,46 +14,61 @@
         <v-spacer></v-spacer>
       </v-toolbar>
 
-      <v-card>
+      <v-card style="height:88%">
         <v-container fluid grid-list-lg>
           <v-layout row wrap justify-center>
-            <v-text-field
-              prepend-icon="fas fa-phone"
-              v-validate="'required'"
-              v-model="phoneNo"
-              :error-messages="errors.collect('phoneNo')"
-              label="휴대폰번호"
-              data-vv-name="phoneNo"
-              type="number"
-              @input="onPhoneNoChange"
-            ></v-text-field>
-            <v-btn block color="success" :disabled="sendAuthButtonDisabled" @click="sendAuthCode()">인증번호 발송</v-btn>        
+
+            <v-flex xs12>
+              <v-text-field
+                prepend-icon="fas fa-phone"
+                v-validate="'required'"
+                v-model="phoneNo"
+                :error-messages="errors.collect('phoneNo')"
+                label="휴대폰번호"
+                data-vv-name="phoneNo"
+                type="number"
+                @input="onPhoneNoChange"
+              ></v-text-field>
+            </v-flex>
+
+            <v-flex xs12>
+              <v-btn block outline color="indigo" :disabled="sendAuthButtonDisabled" @click="sendAuthCode()">인증번호 발송</v-btn>        
+            </v-flex>
           </v-layout>
           <v-layout row wrap justify-center>
-            <v-text-field
-              prepend-icon="fas fa-clock"
-              v-validate="'required'"
-              v-model="authTime"
-              :error-messages="errors.collect('authTime')"
-              label="인증시간"
-              data-vv-name="authTime"              
-            ></v-text-field>
-            <v-text-field
-              prepend-icon="fab fa-codepen"
-              v-validate="'required'"
-              v-model="authCode"
-              :error-messages="errors.collect('authCode')"
-              label="인증번호"
-              data-vv-name="authCode"
-              type="number"
-              @input="onAuthCodeChange"
-            ></v-text-field>                      
+            <v-flex xs12>
+              <v-text-field
+                prepend-icon="fas fa-clock"
+                v-validate="'required'"
+                v-model="authTime"
+                :error-messages="errors.collect('authTime')"
+                label="인증시간"
+                data-vv-name="authTime"
+                disabled             
+              ></v-text-field>
+            </v-flex>
+
+            <v-flex xs12>
+              <v-text-field
+                prepend-icon="fab fa-codepen"
+                v-validate="'required'"
+                v-model="authCode"
+                :error-messages="errors.collect('authCode')"
+                label="인증번호"
+                data-vv-name="authCode"
+                type="number"
+                @input="onAuthCodeChange"
+              ></v-text-field>                      
+            </v-flex>
           </v-layout>
         </v-container>       
         
-        <v-card-actions>
-          <v-btn block color="warning" :disabled="nextButtonDisabled" @click="goToStep3()">다음</v-btn>          
-        </v-card-actions>
+        <v-flex xs12 style="height:5px"/>
+
+        <v-flex xs12 ma-3>
+          <v-btn block color="primary" :disabled="nextButtonDisabled" @click="goToStep3()">다음</v-btn>          
+        </v-flex>
+
       </v-card>
     </div>  
   </v-layout>

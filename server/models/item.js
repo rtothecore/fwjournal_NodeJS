@@ -3,15 +3,16 @@ var Schema = mongoose.Schema
 
 var ItemDetailSchema = new Schema({
 	itemName: String,
-	itemAmount: String,
-	itemPrice: String,
-	itemUsage: String,
-	itemStock: String
+	itemAmount: Number,
+	itemPrice: Number,
+	itemUsage: Number,
+	itemStock: Number
 })
 
 var ItemSchema = new Schema({
 	userId: String,
 	date: String,
+	landId: String,
 	item: String,
 	itemDetail: [ItemDetailSchema],
 	purpose: String,

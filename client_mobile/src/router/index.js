@@ -7,10 +7,12 @@ const routerOptions = [
   { path: '/register', component: 'Register' },
   { path: '/login', component: 'Login' },
   { path: '/search', component: 'Search' },
+  { path: '/searchItem', component: 'SearchItem' },
   { path: '/predict', component: 'Predict' },
+  { path: '/predictItem', component: 'PredictItem' },
   { path: '/stats', component: 'Stats' },
   // { path: '/config', component: 'Config' },
-  { path: '/configPrivate', component: 'ConfigPrivate' },
+  { path: '/configPrivate', name: 'nameConfigPrivate', component: 'ConfigPrivate' },
   { path: '/configLand', component: 'ConfigLand' },
   { path: '/workTime', component: 'WorkTime' },
   { path: '/environment', component: 'Environment' },
@@ -18,8 +20,9 @@ const routerOptions = [
   { path: '/suStep1', component: 'SignUpStep1' },
   { path: '/suStep2', component: 'SignUpStep2' },
   { path: '/suStep3', name: 'nameSuStep3', component: 'SignUpStep3' },
-  { path: '/suStep4', component: 'SignUpStep4' },
-  { path: '/changePw', component: 'ChangePassword' }
+  // { path: '/changePw', component: 'ChangePassword' },
+  // { path: '/changePhoneNo', component: 'ChangePhoneNo' },
+  { path: '/account', component: 'Account' }
 ]
 
 const routes = routerOptions.map(route => {

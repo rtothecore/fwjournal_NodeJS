@@ -210,7 +210,8 @@
               <b-row>
                 <b-col sm="12" lg="6">
                   <div style="width:1150px; margin:0 auto;">
-                    <full-calendar :config="config" :events="events" @event-selected="eventSelected"/>
+                    <!-- https://stackoverflow.com/questions/35988815/fullcalendar-dayclick-not-working-does-nothing -->
+                    <full-calendar :config="config" :events="events" @event-selected="eventSelected" style="overflow: auto;"/>
                   </div>
                 </b-col>              
               </b-row>              
@@ -227,6 +228,7 @@
         <journalModalForEdit></journalModalForEdit>
         <addWorkTypeModal></addWorkTypeModal>
         <addCustomItemModal></addCustomItemModal>
+        <predictModalForShow></predictModalForShow>
       </div>            
       <!-- </div> -->
 
@@ -329,7 +331,12 @@
                         <td :style="{backgroundColor: (props.index % 2 ? '#E0E4FF' : 'transparent')}"><h4>{{ getDateWithKorean(props.item.date) }}</h4></td>
                         <td :style="{backgroundColor: (props.index % 2 ? '#E0E4FF' : 'transparent')}"><h4>{{ props.item.workName }}</h4></td>
                         <td :style="{backgroundColor: (props.index % 2 ? '#E0E4FF' : 'transparent')}"><h4>{{ props.item.sky }}</h4></td>
-                        <td :style="{backgroundColor: (props.index % 2 ? '#E0E4FF' : 'transparent')}"><h4>{{ props.item.t1h }}</h4></td>            
+                        <td :style="{backgroundColor: (props.index % 2 ? '#E0E4FF' : 'transparent')}"><h4>{{ props.item.t1h }}</h4></td>  
+                        <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="justify-center layout px-0">
+                          <v-btn icon class="mx-0" @click="showItem(props.item)">
+                            <v-icon color="teal">remove_red_eye</v-icon>
+                          </v-btn>
+                        </td>          
                       </template>
                     </v-data-table>
                   </div>
@@ -380,17 +387,8 @@
             { text: '작업일', sortable: false, value: 'date' },
             { text: '작업명', sortable: false, value: 'workName' },
             { text: '날씨', sortable: false, value: 'sky' },
-            { text: '온도', sortable: false, value: 't1h' }
-          ],
-          headersForPredictMobile: [
-            {
-              text: '작물명',
-              align: 'left',
-              sortable: false,
-              value: 'cropName'
-            },
-            { text: '작년날짜', value: 'date' },
-            { text: '작업분류', value: 'workCode' }
+            { text: '온도', sortable: false, value: 't1h' },
+            { text: '관리', value: 'name', sortable: false, align: 'left', width: '5%' }
           ],
           headers: [
             {
@@ -405,16 +403,6 @@
             { text: '최소가', value: 'MUMM_AMT' },
             { text: '평균가', value: 'AVRG_AMT' },
             { text: '최대가', value: 'MXMM_AMT' }
-          ],
-          headersForMobile: [
-            {
-              text: '품목명',
-              align: 'left',
-              sortable: false,
-              value: 'PRDLST_NM'
-            },
-            { text: '도매시장명', value: 'PBLMNG_WHSAL_MRKT_NM' },
-            { text: '평균가', value: 'AVRG_AMT' }
           ],
           crops: [],
           myCrops: [],
@@ -503,9 +491,12 @@
           vm.getLands()
         })
         bus.$on('toJournalForUpdate', function (value) {
-          // console.log(value)
-          vm.events.splice(value.eventIndex, 1)
-          vm.events.push(value)
+          // vm.events.splice(value.eventIndex, 1)
+          // vm.events.push(value)
+          vm.events = []
+          vm.getJournal()
+          vm.getItem()
+          vm.getLands()
         })
         bus.$on('toJournalForDel', function (value) {
           for (var i = 0; i < vm.events.length; i++) {
@@ -577,11 +568,13 @@
             workTypeVal = response2.data[0].text
 
             // 작물명
+            /*
             var cropNameVal = ''
             const response3 = await LandService.fetchCropNameByLandId({
               landId: response.data[i].landId
             })
             cropNameVal = response3.data[0].text
+            */
 
             // 농장명
             var landNameVal = ''
@@ -591,7 +584,7 @@
             landNameVal = response4.data[0].name
 
             // tmpEvent.title = response4.data[0].name + ' - ' + response3.data[0].text + '\n' + response2.data[0].text + ' - ' + response.data[i].workContent
-            tmpEvent.title = landNameVal + ' - ' + cropNameVal + ' - ' + workTypeVal
+            tmpEvent.title = landNameVal + ' - ' + workTypeVal
             /*
             var tmpSTime = response.data[i].date + ' ' + response.data[i].workSTime.substring(0, 2) + ':' + response.data[i].workSTime.substring(2, 4)
             var tmpETime = response.data[i].date + ' ' + response.data[i].workETime.substring(0, 2) + ':' + response.data[i].workETime.substring(2, 4)
@@ -1057,6 +1050,11 @@
           tmpStr = this.replaceAt(tmpStr, 7, '월')
           tmpStr += '일'
           return tmpStr
+        },
+        showItem (item) {
+          // console.log(item)
+          var emitParams = {'journalId': item._id, 'origin': 'fromPredict'}
+          bus.$emit('dialogForShow', emitParams)
         }
   }
 }

@@ -5,8 +5,16 @@ export default {
     return Api().get('user/' + id)
   },
 
-  updateUserAgeSex (params) {
-    return Api().put('userAgeSex/' + params.id, params)
+  updateUserBirthDateSex (params) {
+    return Api().put('userBirthDateSex/' + params.id, params)
+  },
+
+  updateUserPhoneNo (params) {
+    return Api().put('userPhoneNo/' + params.id, params)
+  },
+
+  updateUserShareFlag (params) {
+    return Api().put('userShareFlag/' + params.id, params)
   },
 
   fetchUserByEmail (params) {

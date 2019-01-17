@@ -14,11 +14,11 @@ var WeatherSchema = new Schema({
 
 var CooSchema = Schema({
 	category: String,
-	cost: String
+	cost: Number
 })
 
 var DetailSchema = Schema({
-	amount: String,
+	amount: Number,
 	detail: String
 })
 

@@ -1,91 +1,158 @@
 <template>
-  <v-container fluid>
-    <v-layout row wrap justify-center>
-      <v-flex xs12 class="text-xs-center" mt-5>
-        <!-- <h1>{{Predict_page}}</h1> -->
-        <h1>작업예측</h1>
-        <!-- <v-date-picker v-model="date" locale="kr" show-current="2013-07-13" v-on:change="onChangeDate"></v-date-picker> -->
-      </v-flex>
-      
-      <v-flex xs12 class="text-xs-center" mt-1>
-        <v-layout row ma-2 justify-center>
-          <v-flex xs6 md2>
-            <v-menu
-              :close-on-content-click="false"
-              v-model="menu1"
-              :nudge-right="40"
-              lazy
-              transition="scale-transition"
-              offset-y
-              full-width
-              max-width="290px"
-              min-width="290px"
-            >
-              <v-text-field
-                slot="activator"
-                v-model="computedDateFormatted"
-                label="기준날짜"
-                persistent-hint
-                prepend-icon="event"
-                readonly
-              ></v-text-field>
-              <v-date-picker v-model="sDate" no-title @input="menu1 = false" v-on:change="onChangeDate" locale='euc-kr'></v-date-picker>
-            </v-menu>
-          </v-flex>       
-        </v-layout>
+    <div style="width:100%; margin:0 auto;">
+      <!-- dummy --> <div style="height:20px"/>
+        <b-row>
+          <b-col md="12">
+            <b-card>              
+              <b-row>
+                <b-col sm="12" lg="6">
+                  <div style="width:100%; margin:0 auto;">
+            
+    <v-layout row wrap pl-4>
+
+    <!-- R O W 1 -->  
+      <v-flex xs5>
+        <v-menu
+          :close-on-content-click="false"
+          v-model="menu1"
+          :nudge-right="40"
+          lazy
+          transition="scale-transition"
+          offset-y
+          full-width
+          max-width="290px"
+          min-width="290px"
+        >
+          <v-text-field
+            slot="activator"
+            v-model="computedDateFormatted"
+            :error-messages="errors.collect('sDate')" 
+            label="기준날짜"
+            persistent-hint
+            prepend-icon="event"
+            readonly
+            required=""
+            v-validate="'required'"
+            data-vv-name="sDate"
+          ></v-text-field>
+          <v-date-picker v-model="sDate" no-title @input="menu1 = false" v-on:change="onChangeDate" locale='euc-kr'></v-date-picker>
+        </v-menu>
       </v-flex>
 
-      <div>
-        <br/>
-        <v-card>
-          <v-flex xs12 sm12 md8>
-          <v-card-title>
-            작년 작업내역
-            <v-spacer></v-spacer>
-          </v-card-title>
-          <v-data-table
-            :headers="headersForMobile"
-            :items="journals"
-            :search="search"
-            :pagination.sync="pagination"
-            hide-actions
-            class="elevation-1"
-          >
-            <template slot="headerCell" slot-scope="props">
-              <v-tooltip bottom>
-                <span slot="activator">
-                  {{ props.header.text }}
-                </span>
-                <span>
-                  {{ props.header.text }}
-                </span>
-              </v-tooltip>
-            </template>
-            <template slot="items" slot-scope="props">
-              <td>{{ props.item.cropName }}</td>
-              <td class="text-xs-right">{{ props.item.date }}</td>
-              <td class="text-xs-right">{{ props.item.workContent }}</td>
-            </template>
-          </v-data-table>
-          <div class="text-xs-center pt-2">
-            <v-pagination v-model="pagination.page" :length="pages"></v-pagination>
-          </div>
-          </v-flex>
-        </v-card>
+      <v-flex xs1/>
+
+      <v-flex xs5>
+        <v-select
+          :items="landItems"
+          v-model="selectLand"
+          :error-messages="errors.collect('selectLand')" 
+          label="농장명"
+          class="input-group--focused"
+          item-text="name"
+          item-value="_id"
+          v-on:change="onChangeLand"
+          required=""
+          v-validate="'required'"
+          data-vv-name="selectLand"
+        ></v-select>
+      </v-flex>
+
+      <v-flex xs1/>
+    <!-- R O W 1 -->  
+
+    <!-- R O W 2 -->  
+      <v-flex xs12 class="text-xs-right" pr-3>
+        <v-btn
+          outline
+          color="indigo"
+          class="white--text"
+          @click.native="searchReset"
+        >
+          초기화
+        </v-btn>
+        <v-btn          
+          color="primary"
+          class="white--text"
+          @click.native="searchJournals"
+        >
+          검색
+        </v-btn>        
+      </v-flex>  
+    <!-- R O W 2 -->
+      </v-layout>
+      
+      <v-layout row wrap pl-4 pr-4>        
+
+        <v-flex xs12 sm12 md12>      
+        <div>
+        <v-data-table
+          :headers="headers"
+          :items="journals"
+          :search="search"
+          :pagination.sync="pagination"
+          hide-actions
+          class="elevation-1"
+        >
+          <template slot="headerCell" slot-scope="props">
+            <v-tooltip bottom>
+              <span slot="activator">
+                <h4><strong>{{ props.header.text }}</strong></h4>
+              </span>
+              <span>
+                {{ props.header.text }}
+              </span>
+            </v-tooltip>
+          </template>
+          <template slot="items" slot-scope="props">
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" @click="showItem(props.item)"><h5>{{ getDateWithSimple(props.item.date) }}</h5></td>
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" @click="showItem(props.item)"><h5>{{ props.item.landName }}</h5></td>
+            <!-- <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.cropName }}</h4></td> -->
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" @click="showItem(props.item)"><h5>{{ props.item.workType }}</h5></td>
+            <!-- <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.workContent }}</h4></td>
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.sky }}</h4></td>
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.t1h }}</h4></td>
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="justify-center layout px-0">
+              <v-btn icon class="mx-0" @click="showItem(props.item)">
+                <v-icon color="teal">remove_red_eye</v-icon>
+              </v-btn>
+            </td>
+            -->
+          </template>
+        </v-data-table>
+        <div class="text-xs-center pt-2">
+          <v-pagination v-model="pagination.page" :length="pages"></v-pagination>
+        </div>
+        </div>
+        </v-flex>
+        <predictModalForShow></predictModalForShow>
+      </v-layout>           
+      
+            
+                  </div>
+                </b-col>              
+              </b-row>              
+            </b-card>
+          </b-col>
+        </b-row>
       </div>
-      <br/><br/><br/>
-    </v-layout>
-  </v-container>
 </template>
 
 <script>
+import {bus} from '../main'
 import moment from 'moment'
 import JournalService from '@/services/JournalService'
-import ScService from '@/services/ScService'
+// import ScService from '@/services/ScService'
 import WcService from '@/services/WcService'
+import LandService from '@/services/LandService'
+import DcService from '@/services/DcService'
 export default {
+  $_veeValidate: {
+    validator: 'new'
+  },
   data () {
     return {
+      selectLand: '',
+      landItems: [],
       // Predict_page: moment().format('YYYY년 MM월 DD일'),
       startDate2: null,
       sDate: null,
@@ -96,36 +163,47 @@ export default {
       startDate: '',
       endDate: '',
       search: '',
-      pagination: {},
+      pagination: {
+        // https://github.com/vuetifyjs/vuetify/issues/442
+        sortBy: 'date',
+        descending: true
+      },
       selected: [],
       headers: [
         {
-          text: '작물명',
+          text: '날짜',
           align: 'left',
           sortable: false,
-          value: 'cropName'
+          value: 'date',
+          width: '40%'
         },
-        { text: '작년작업분류', value: 'workCode' },
-        { text: '작년작업내용', value: 'workContent' },
-        { text: '작년날짜', value: 'date' },
-        { text: '작년특기사항', value: 'remarks' },
-        { text: '작년날씨', value: 'sky' },
-        { text: '작년온도', value: 't1h' },
-        { text: '작년습도', value: 'reh' },
-        { text: '작년강수량', value: 'rn1' }
+        { text: '농장명', sortable: false, value: 'landName', width: '40%' },
+        /*
+        { text: '작물명', sortable: false, value: 'cropName' },
+        */
+        { text: '작업', sortable: false, value: 'workType', width: '20%' }
+        /*
+        { text: '작업내용', sortable: false, value: 'workContent' },
+        { text: '날씨', sortable: false, value: 'sky' },
+        { text: '온도', sortable: false, value: 't1h' },
+        { text: '관리', value: 'name', sortable: false, align: 'left', width: '5%' }
+        */
       ],
-      headersForMobile: [
-        {
-          text: '작물명',
-          align: 'left',
-          sortable: false,
-          value: 'cropName'
-        },
-        { text: '날짜', value: 'date' },
-        { text: '작업내용', value: 'workContent' }
-      ],
-      journals: []
+      journals: [],
+      dictionary: {
+        custom: {
+          sDate: {
+            required: '검색 기준날짜를 입력해주세요'
+          },
+          selectLand: {
+            required: '농장명을 선택해주세요'
+          }
+        }
+      }
     }
+  },
+  mounted () {
+    this.$validator.localize('ko', this.dictionary)
   },
   beforeCreate: function () {
     if (!this.$session.exists()) {
@@ -135,45 +213,109 @@ export default {
   },
   created: function () {
     this.userId = this.$session.get('userId')
+    var today = moment().format('YYYY-MM-DD')
+    this.sDate = today
+    this.onChangeDate(today)
+    this.getLands()
+    this.getJournalsByDate()
+    this.selectLand = ''
   },
   methods: {
+    async getLands () {
+      const response = await LandService.fetchLands({
+        userId: this.userId
+      })
+      this.landItems = response.data.lands
+    },
     async getJournalsByDate () {
-      const response = await JournalService.fetchJournalsByDateNUserId({
+      if (!this.startDate) {
+        this.startDate = 0
+      }
+      if (!this.endDate) {
+        this.endDate = 0
+      }
+      if (!this.selectLand) {
+        this.selectLand = 0
+      }
+      const response = await JournalService.fetchJournalsByDateNUserIdNLandId({
         startDate: this.startDate,
         endDate: this.endDate,
-        userId: this.userId
+        userId: this.userId,
+        landId: this.selectLand
       })
       if (response.data.length > 0) {
         var tmpJournals = response.data
         for (var i = 0; i < response.data.length; i++) {
-          const response2 = await ScService.fetchCropNameByCropCode({
-            cropCode: response.data[i].workCode.substring(0, 11)
+          const response2 = await LandService.fetchNameByLandId({
+            landId: response.data[i].landId
           })
-          tmpJournals[i].cropName = response2.data[0].text
-          const response3 = await WcService.fetchTextByCode({
+
+          tmpJournals[i].landName = response2.data[0].name
+
+          tmpJournals[i].cropCode = response2.data[0].cropCode
+
+          const response4 = await DcService.fetchCropNameByCropCode({
+            cropCode: tmpJournals[i].cropCode
+          })
+          tmpJournals[i].cropName = response4.data[0].text
+
+          const response3 = await WcService.fetchOneTextByCcode({
             code: response.data[i].workCode
           })
-          tmpJournals[i].workCode = response3.data[0].text
+          tmpJournals[i].workType = response3.data[0].text
+
+          tmpJournals[i].sky = tmpJournals[i].weather.sky
+          switch (tmpJournals[i].sky) {
+            case '0' :
+              tmpJournals[i].sky = '맑음'
+              break
+            case '1' :
+              tmpJournals[i].sky = '비'
+              break
+            case '2' :
+              tmpJournals[i].sky = '비/눈'
+              break
+            case '3' :
+              tmpJournals[i].sky = '눈'
+              break
+          }
+          tmpJournals[i].t1h = tmpJournals[i].weather.avgT1H
         }
         this.journals = tmpJournals
       } else {  // 작년 10일이내의 데이터가 없는 경우 작년 해당월의 데이터를 보여줌
-        const response4 = await JournalService.fetchJournalsByYMUserId({
+        const response4 = await JournalService.fetchJournalsByYMUserIdLandId({
           ym: this.lastYearYM,
-          userId: this.userId
+          userId: this.userId,
+          landId: this.selectLand
         })
         var tmpJournals2 = response4.data
         for (var j = 0; j < response4.data.length; j++) {
-          const response5 = await ScService.fetchCropNameByCropCode({
-            cropCode: response4.data[j].workCode.substring(0, 11)
+          const response5 = await LandService.fetchNameByLandId({
+            landId: response4.data[j].landId
           })
-          tmpJournals2[j].cropName = response5.data[0].text
-          const response6 = await WcService.fetchTextByCode({
+
+          tmpJournals2[j].landName = response5.data[0].name
+
+          tmpJournals2[j].cropCode = response5.data[0].cropCode
+
+          const response7 = await DcService.fetchCropNameByCropCode({
+            cropCode: tmpJournals2[j].cropCode
+          })
+          tmpJournals2[j].cropName = response7.data[0].text
+
+          const response6 = await WcService.fetchOneTextByCcode({
             code: response4.data[j].workCode
           })
-          tmpJournals2[j].workCode = response6.data[0].text
+          tmpJournals2[j].workType = response6.data[0].text
+
+          tmpJournals2[j].sky = tmpJournals2[j].weather.sky
+          tmpJournals2[j].t1h = tmpJournals2[j].weather.avgT1H
         }
         this.journals = tmpJournals2
       }
+    },
+    onChangeLand: function (event) {
+      // console.log(event)
     },
     onChangeDate: function (event) {
       var today = moment(event, 'YYYY-MM-DD')
@@ -187,7 +329,51 @@ export default {
       this.lastYearYM = moment(event, 'YYYY-MM').subtract(1, 'year').format('YYYY-MM')
       console.log(this.lastYearYM)
 
+      // this.getJournalsByDate()
+    },
+    showItem (item) {
+      // console.log(item)
+      var emitParams = {'journalId': item._id, 'origin': 'fromPredict'}
+      bus.$emit('dialogForShow', emitParams)
+    },
+    searchJournals () {
+      this.$validator.validateAll().then((result) => {
+        if (!result) {
+          return
+        }
+        this.getJournalsByDate()
+      }).catch(() => {})
+    },
+    searchReset () {
+      this.startDate = ''
+      this.endDate = ''
+      this.sDate = ''
+      this.selectLand = ''
+      this.journals = []
+
+      var today = moment().format('YYYY-MM-DD')
+      this.sDate = today
+      this.onChangeDate(today)
+      this.getLands()
       this.getJournalsByDate()
+      this.selectLand = ''
+    },
+    replaceAt: function (data, index, replacement) {
+      return data.substr(0, index) + replacement + data.substr(index + replacement.length)
+    },
+    getDateWithSimple: function (dataVal) {
+      var tmpStr = this.replaceAt(dataVal, 4, '.')
+      tmpStr = this.replaceAt(tmpStr, 7, '.')
+      tmpStr = tmpStr.substring(2, tmpStr.length)
+      return tmpStr
+    }
+  },
+  watch: {
+    // https://github.com/vuetifyjs/vuetify/issues/4455
+    journals () {
+      this.$nextTick(() => {
+        this.pagination.totalItems = this.journals.length
+      })
     }
   },
   computed: {

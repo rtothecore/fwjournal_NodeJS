@@ -26,7 +26,7 @@
                 
                 <form>
                   <v-text-field
-                    prepend-icon="fas fa-envelope"
+                    prepend-icon="fas fa-perm_identity"
                     v-validate="'required'"
                     v-model="email"
                     :error-messages="errors.collect('email')"

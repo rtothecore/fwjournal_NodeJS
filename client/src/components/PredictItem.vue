@@ -31,10 +31,14 @@
           <v-text-field
             slot="activator"
             v-model="computedDateFormatted"
+            :error-messages="errors.collect('sDate')"
             label="기준날짜"
             persistent-hint
             prepend-icon="event"
             readonly
+            required=""
+            v-validate="'required'"
+            data-vv-name="sDate"
           ></v-text-field>
           <v-date-picker v-model="sDate" no-title @input="menu1 = false" v-on:change="onChangeDate" locale='euc-kr'></v-date-picker>
         </v-menu>
@@ -46,25 +50,19 @@
         <v-select
           :items="landItems"
           v-model="selectLand"
+          :error-messages="errors.collect('selectLand')"
           label="농장명"
           class="input-group--focused"
           item-text="name"
           item-value="_id"
           v-on:change="onChangeLand"
+          required=""
+          v-validate="'required'"
+          data-vv-name="selectLand"
         ></v-select>
       </v-flex>
 
        <v-flex md5/>
-
-      <v-flex xs8 sm8 md1 class="text-xs-left">
-        <v-btn          
-          color="primary"
-          class="white--text"
-          @click.native="searchItems"
-        >
-          검색
-        </v-btn>        
-      </v-flex>
 
       <v-flex xs8 sm8 md1 class="text-xs-left">
         <v-btn
@@ -75,6 +73,16 @@
         >
           초기화
         </v-btn>
+      </v-flex>
+
+      <v-flex xs8 sm8 md1 class="text-xs-left">
+        <v-btn          
+          color="primary"
+          class="white--text"
+          @click.native="searchItems"
+        >
+          검색
+        </v-btn>        
       </v-flex>
 
       </v-layout>
@@ -142,6 +150,9 @@ import ItemService from '@/services/ItemService'
 import WcService from '@/services/WcService'
 import LandService from '@/services/LandService'
 export default {
+  $_veeValidate: {
+    validator: 'new'
+  },
   data () {
     return {
       selectLand: '',
@@ -156,7 +167,11 @@ export default {
       startDate: '',
       endDate: '',
       search: '',
-      pagination: {},
+      pagination: {
+        // https://github.com/vuetifyjs/vuetify/issues/442
+        sortBy: 'date',
+        descending: true
+      },
       selected: [],
       headers: [
         {
@@ -174,9 +189,21 @@ export default {
         { text: '총 구입가격', sortable: false, value: 'itemTotalPrice' },
         { text: '관리', value: 'name', sortable: false, align: 'left', width: '5%' }
       ],
-      items: []
-      // journals: []
+      items: [],
+      dictionary: {
+        custom: {
+          sDate: {
+            required: '검색 기준날짜를 입력해주세요'
+          },
+          selectLand: {
+            required: '농장명을 선택해주세요'
+          }
+        }
+      }
     }
+  },
+  mounted () {
+    this.$validator.localize('ko', this.dictionary)
   },
   beforeCreate: function () {
     if (!this.$session.exists()) {
@@ -190,6 +217,8 @@ export default {
     this.sDate = today
     this.onChangeDate(today)
     this.getLands()
+    this.getItemsByDate()
+    this.selectLand = ''
   },
   methods: {
     async getLands () {
@@ -286,7 +315,7 @@ export default {
       this.lastYearYM = moment(event, 'YYYY-MM').subtract(1, 'year').format('YYYY-MM')
       console.log(this.lastYearYM)
 
-      this.getItemsByDate()
+      // this.getItemsByDate()
     },
     showItem (item) {
       // console.log(item)
@@ -294,12 +323,25 @@ export default {
       bus.$emit('dialogForShowItem', emitParams)
     },
     searchItems () {
-      this.getItemsByDate()
+      this.$validator.validateAll().then((result) => {
+        if (!result) {
+          return
+        }
+        this.getItemsByDate()
+      }).catch(() => {})
     },
     searchReset () {
       this.startDate = ''
       this.endDate = ''
       this.sDate = ''
+      this.selectLand = ''
+      this.items = []
+
+      var today = moment().format('YYYY-MM-DD')
+      this.sDate = today
+      this.onChangeDate(today)
+      this.getLands()
+      this.getItemsByDate()
       this.selectLand = ''
     },
     replaceAt: function (data, index, replacement) {
@@ -310,6 +352,14 @@ export default {
       tmpStr = this.replaceAt(tmpStr, 7, '월')
       tmpStr += '일'
       return tmpStr
+    }
+  },
+  watch: {
+    // https://github.com/vuetifyjs/vuetify/issues/4455
+    items () {
+      this.$nextTick(() => {
+        this.pagination.totalItems = this.items.length
+      })
     }
   },
   computed: {

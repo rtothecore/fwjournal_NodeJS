@@ -24,7 +24,7 @@
           <b-row>
             <b-col md="12">
               <b-card header="영농일지 캘린더" header-tag="header">
-                <h3 slot="header" class="mb-0"><strong>새 농장</strong></h3>
+                <h3 slot="header" class="mb-0"><strong>{{ formTitle }}</strong></h3>
                 <b-row>
                   <b-col sm="12" lg="6">
                     <div style="width:450px; margin:0 auto;">
@@ -42,6 +42,7 @@
                     ></v-text-field>
                   </v-flex>
                   <v-flex xs8 sm6 md8>
+                    <!--
                     <v-text-field 
                         v-model="editedItem.address"
                         :counter="30"
@@ -51,6 +52,16 @@
                         v-validate="'required|max:30'"
                         data-vv-name="address"
                         :disabled="this.editedIndex !== -1"
+                    ></v-text-field>
+                    -->
+                    <v-text-field 
+                        v-model="editedItem.address"
+                        :counter="30"
+                        :error-messages="errors.collect('address')"
+                        label="주소"
+                        required
+                        v-validate="'required|max:30'"
+                        data-vv-name="address"                        
                     ></v-text-field>
                   </v-flex>
                   <v-flex xs4 sm6 md4>
@@ -146,7 +157,7 @@
                   <v-flex xs12 sm6 md6/>
 
                   <v-flex xs12 sm6 md6>
-                    <v-btn color="primary" @click.native="close">취소</v-btn>
+                    <v-btn outline color="indigo" @click.native="close">취소</v-btn>
                     <v-btn color="primary" @click.native="save">저장</v-btn>
                   </v-flex>
                 </v-layout>

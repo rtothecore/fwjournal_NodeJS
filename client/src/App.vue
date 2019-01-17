@@ -253,8 +253,8 @@ export default {
       ],
       menuStats: [
         ['수입/지출 분석', 'assessment', '/account'],
-        ['작업시간', 'alarm', '/workTime'],
-        ['환경모니터링', 'settings_input_antenna', '/environment']
+        ['작업시간', 'alarm', '/workTime']
+        /* ['환경모니터링', 'settings_input_antenna', '/environment'] */
       ],
       menuConfig: [
         ['개인정보', 'face', '/configPrivate'],
@@ -287,15 +287,15 @@ export default {
       ],
       statsSubMenuItems: [
         { title: '수입/지출분석', path: '/account' },
-        { title: '작업시간', path: '/workTime' },
-        { title: '환경모니터링', path: '/environment' }
+        { title: '작업시간', path: '/workTime' }
+        /* { title: '환경모니터링', path: '/environment' } */
       ]
     }
   },
   created () {
     // https://www.npmjs.com/package/vue-mq
     if (this.$mq === 'mobile') {  // 모바일 기기로 접속할 경우 아래 주소로 리다이렉트
-      window.location.href = 'http://192.168.0.73:8084'
+      window.location.href = 'http://59.8.37.86:8084'
     }
   },
   updated () {
@@ -316,7 +316,9 @@ export default {
       this.isBackImgActive = false
       // console.log('i am in move')
       this.userId = this.$session.get('userId')
-      this.fetchMyLandData()
+      if (this.$router.currentRoute.path !== '/configLand') {
+        this.fetchMyLandData()
+      }
       // alert('농장정보가 없습니다')
     }
   },

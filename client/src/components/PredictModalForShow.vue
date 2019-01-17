@@ -21,7 +21,7 @@
             -->
             <span class="headline" style="color:black; padding-left:40px; float:left">{{getDateWithKorean(User_Profile)}}</span>               
             <span style="float:right">
-              <v-btn outline color="black" flat @click.native="dialog = false">닫기</v-btn>
+              <v-btn outline color="indigo" flat @click.native="dialog = false">닫기</v-btn>
             </span>
 
             <v-card-text>
@@ -122,8 +122,6 @@
                     <v-text-field
                       v-model="cropName"
                       label="작물명" 
-                      hint="농장명을 선택하면 자동입력됩니다"
-                      persistent-hint
                       required       
                       readonly                                    
                       ></v-text-field>
@@ -139,9 +137,7 @@
                       required
                       v-on:change="onChangeWorkType"
                       item-text="text"
-                      item-value="wCode"   
-                      hint="작물명에 따른 작업분류 선택"
-                      persistent-hint
+                      item-value="wCode"                         
                       readonly                                        
                     ></v-select>
                   </v-flex>
@@ -267,9 +263,7 @@
                           :error-messages="errors.collect('item.itemName')"
                           label="품목명"
                           data-vv-name="item.itemName"
-                          required                           
-                          hint="품목명 선택"
-                          persistent-hint
+                          required                                                     
                           readonly                                        
                         ></v-select>
                       </v-flex>
@@ -331,13 +325,14 @@
                     <image-input v-model="avatar">
                       <div slot="activator">
                         <v-avatar size="150px" v-ripple v-if="!avatar" class="grey lighten-3 mb-3">
-                          <span>사진 추가</span>
+                          <span>사진 없음</span>
                         </v-avatar>
                         <v-avatar size="150px" v-ripple v-else class="mb-3">
                           <img :src="avatar.imageURL" alt="avatar">
                         </v-avatar>
                       </div>
-                    </image-input>                    
+                    </image-input>
+                    <v-btn outline color="indigo" flat @click.native="showPic(avatar.imageURL)">크게보기</v-btn>                     
                   </v-flex>
 
                   <v-flex xs4 sm4 md4>                    
@@ -345,13 +340,14 @@
                     <image-input v-model="avatar2">
                       <div slot="activator">
                         <v-avatar size="150px" v-ripple v-if="!avatar2" class="grey lighten-3 mb-3">
-                          <span>사진 추가</span>
+                          <span>사진 없음</span>
                         </v-avatar>
                         <v-avatar size="150px" v-ripple v-else class="mb-3">
                           <img :src="avatar2.imageURL" alt="avatar2">
                         </v-avatar>
                       </div>
-                    </image-input>                    
+                    </image-input>   
+                    <v-btn outline color="indigo" flat @click.native="showPic(avatar2.imageURL)">크게보기</v-btn>                    
                   </v-flex>
 
                   <v-flex xs4 sm4 md4>                    
@@ -359,13 +355,14 @@
                     <image-input v-model="avatar3">
                       <div slot="activator">
                         <v-avatar size="150px" v-ripple v-if="!avatar3" class="grey lighten-3 mb-3">
-                          <span>사진 추가</span>
+                          <span>사진 없음</span>
                         </v-avatar>
                         <v-avatar size="150px" v-ripple v-else class="mb-3">
                           <img :src="avatar3.imageURL" alt="avatar3">
                         </v-avatar>
                       </div>
-                    </image-input>                    
+                    </image-input>
+                    <v-btn outline color="indigo" flat @click.native="showPic(avatar3.imageURL)">크게보기</v-btn>                       
                   </v-flex>
                   
                 </v-layout>
@@ -375,7 +372,7 @@
             <v-card-actions>
               <v-spacer></v-spacer>
               <!-- <v-btn outline color="black" flat @click.native="deleteJ">삭제</v-btn> -->
-              <v-btn outline color="black" flat @click.native="dialog = false">닫기</v-btn>              
+              <v-btn outline color="indigo" flat @click.native="dialog = false">닫기</v-btn>              
               <!-- <v-btn outline color="black" flat @click.native="save">수정</v-btn> -->
             </v-card-actions>
 
@@ -407,6 +404,7 @@ export default {
   },
   data () {
     return {
+      imgCommonPreview: {},
       selectedItem: '',
       iavatar3: {},
       iavatar2: {},
@@ -1008,6 +1006,63 @@ export default {
       tmpStr = this.replaceAt(tmpStr, 7, '월')
       tmpStr += '일'
       return tmpStr
+    },
+    showPic (url) {
+      // console.log(url)
+      if (url === '') {
+        alert('등록된 이미지가 없습니다.')
+        return
+      }
+      this.imgCommonPreview.src = url
+      setTimeout(this.createPreviewWin(this.imgCommonPreview), 100)
+    },
+    // http://holybell87.tistory.com/17#.XB2tgFwzaUk
+    createPreviewWin (imgCommonPreview) {
+      /*
+      if (!this.imgCommonPreview.complete) {
+        setTimeout(this.createPreviewWin(this.imgCommonPreview), 100)
+        return
+      }
+      */
+      var scrollsize = 17
+      var swidth = screen.width - 10
+      var sheight = screen.height - 90
+      var wsize = imgCommonPreview.width
+      var hsize = imgCommonPreview.height
+
+      if (wsize < 50) {
+        wsize = 50
+      }
+      if (hsize < 50) {
+        hsize = 50
+      }
+      if (wsize > swidth) {
+        wsize = swidth
+      }
+      if (hsize > sheight) {
+        hsize = sheight
+      }
+      if ((wsize < swidth - scrollsize) && hsize >= sheight) {
+        wsize += scrollsize
+      }
+      if ((hsize < sheight - scrollsize) && wsize >= swidth) {
+        hsize += scrollsize
+      }
+      if ((wsize < swidth - scrollsize) && hsize < sheight && (navigator.userAgent.indexOf('MSIE 6.0') > -1 || navigator.userAgent.indexOf('MSIE 7.0') > -1)) {
+        wsize += scrollsize
+      }
+
+      var mtWidth = document.body.clientWidth
+      var mtHeight = document.body.clientHeight
+      var scX = window.screenLeft
+      var scY = window.screenTop
+      var popX = scX + (mtWidth - wsize) / 2 - 50
+      var popY = scY + (mtHeight - hsize) / 2 - 50
+
+      var imageWin = window.open('', '', 'top=' + popY + ',left=' + popX + ',width=' + wsize + ',height=' + hsize + ',scrollbars=yes,resizable=yes,status=no')
+      imageWin.document.write('<html><title>Preview</title><body style="margin:0;cursor:pointer;" title="Close" onclick="window.close()">')
+      imageWin.document.write('<img src="' + imgCommonPreview.src + '">')
+      imageWin.document.write('</body></html>')
     }
   }
 }
