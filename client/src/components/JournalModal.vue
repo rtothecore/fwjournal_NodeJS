@@ -1080,6 +1080,9 @@ export default {
         tempUsageData.itemName = this.usageItems[j].itemName
         tempUsageData.usage = this.usageItems[j].usage
         usageDatas.push(tempUsageData)
+
+        // Items 컬렉션의 해당 아이템 사용량을 업데이트
+        this.updateItemUsage(this.userId, this.selectedLandId, this.selectedWorkTypeCode, tempUsageData.itemName, tempUsageData.usage)
       }
 
       // 생산량 데이터
@@ -1134,16 +1137,25 @@ export default {
       this.newEvent.end = this.User_Profile
       // this.newEvent.eventIndex = this.eventIndex
     },
+    async updateItemUsage (userId, landId, item, itemName, usage) {
+      const response = await ItemService.updateItemUsageByJournalUsage({
+        userId: userId,
+        landId: landId,
+        item: item,
+        itemName: itemName,
+        usage: usage
+      })
+      console.log(response.data)
+    },
     async fetchItemByUserLandIdItemName (idxVal, itemNameVal) {
-      // FIXME - 재고량을 구입량 - 사용량으로 계산하도록 수정
+      // 재고량 = 구입량 - 사용량으로 계산
       const response = await ItemService.fetchItemByUserLandItemName({
         userId: this.userId,
         landId: this.selectedLandId,
         item: this.selectedWorkTypeCode,
         itemName: itemNameVal
       })
-
-      this.usageItems[idxVal].stock = response.data[0].itemDetail[0].itemStock
+      this.usageItems[idxVal].stock = response.data.itemAmount - ((response.data.itemUsage) ? response.data.itemUsage : 0)
     },
     /*
     task1: function (callback) {

@@ -39,5 +39,9 @@ export default {
 
   updateUserPassword (params) {
     return Api().put('updateUserPassword', params)
+  },
+
+  leaveUser (params) {
+    return Api().put('leaveUser/' + params.userId, params)
   }
 }

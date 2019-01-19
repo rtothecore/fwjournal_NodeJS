@@ -19,6 +19,7 @@ import PredictModalForShow from './components/PredictModalForShow.vue'
 import PredictItemModalForShow from './components/PredictItemModalForShow.vue'
 import ChangePhoneNoModal from './components/ChangePhoneNoModal.vue'
 import ChangePasswordModal from './components/ChangePasswordModal.vue'
+import LeaveUserModal from './components/LeaveUserModal.vue'
 import VeeValidate from 'vee-validate'
 import VueSweetalert2 from 'vue-sweetalert2'
 // https://alligator.io/vuejs/vue-media-queries/
@@ -38,6 +39,7 @@ Vue.component('predictModalForShow', PredictModalForShow)
 Vue.component('predictItemModalForShow', PredictItemModalForShow)
 Vue.component('changePhoneNoModal', ChangePhoneNoModal)
 Vue.component('changePasswordModal', ChangePasswordModal)
+Vue.component('leaveUserModal', LeaveUserModal)
 
 Vue.use(Vuetify)
 Vue.use(FullCalendar)

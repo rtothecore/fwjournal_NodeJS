@@ -509,7 +509,8 @@
                     <v-flex xs2 sm2 md2 :key="'F' + index">
                       <v-text-field
                         label="사용량"
-                        v-model="item.itemUsage"                        
+                        v-model="item.itemUsage"
+                        v-on:change="onChangeItemUsage(item.itemUsage, index)"                        
                         type="number"
                       ></v-text-field>
                     </v-flex>  
@@ -634,6 +635,8 @@ export default {
   },
   data () {
     return {
+      originalItemUsages: [],
+      //
       iSelectLand: '',
       iLandItems: [],
       //
@@ -920,7 +923,7 @@ export default {
 
         this.usageItems = response.data[0].usage
 
-        // Item 콜렉션의 품목 수량, 사용량을 로드하고 재고량을 계산(재고량 = 구입수량 - 자재수량 - 자재사용량 - 작업일지정보의 사용량)
+        // Item 콜렉션의 품목 수량, 사용량을 로드하고 재고량을 계산(재고량 = 구입수량 - 자재사용량)
         for (var j = 0; j < this.usageItems.length; j++) {
           console.log(this.usageItems[j].itemName)
           const response2 = await ItemService.fetchItemByUserLandItemName({
@@ -929,17 +932,12 @@ export default {
             item: this.selectedWorkTypeCode,
             itemName: this.usageItems[j].itemName
           })
-          console.log(response2.data)
+          // console.log(response2.data)
           this.usageItems[j].stock = response2.data[0].itemDetail[0].itemAmount - response2.data[0].itemDetail[0].itemUsage
 
-          // 작업일지 정보의 사용량 빼기
-          for (var k = 0; k < response.data[0].usage.length; k++) {
-            if (response.data[0].usage[k].itemName === response2.data[0].itemDetail[0].itemName) {
-              this.usageItems[j].stock -= response.data[0].usage[k].usage
-            }
-          }
+          // 현재 사용량 저장
+          this.originalItemUsages[j] = this.usageItems[j].usage
         }
-
         this.fetchItemsByWcodeForEdit(this.selectedWorkTypeCode) //
 
         this.showOutput = false
@@ -981,15 +979,14 @@ export default {
       }
     },
     async fetchItemByUserLandIdItemName (idxVal, itemNameVal) {
-      // FIXME - 재고량을 구입량 - 사용량으로 계산하도록 수정
+      // 재고량 = 구입량 - 사용량
       const response = await ItemService.fetchItemByUserLandItemName({
         userId: this.userId,
         landId: this.selectedLandId,
         item: this.selectedWorkTypeCode,
         itemName: itemNameVal
       })
-
-      this.usageItems[idxVal].stock = response.data[0].itemDetail[0].itemStock
+      this.usageItems[idxVal].stock = response.data.itemAmount - ((response.data.itemUsage) ? response.data.itemUsage : 0)
     },
     async fetchItemsByWcode (workCode) {
       const response = await ItemService.fetchItemsByWcode({
@@ -1053,6 +1050,14 @@ export default {
       this.workType.push({text: '새 작업추가'})
     },
     async updateItem () {
+      // 품목 사용량이 입력되지 않았을 경우 0으로 초기화
+      for (var i = 0; i < this.itemItems.length; i++) {
+        if (this.itemItems[i].itemUsage) {
+        } else {
+          this.itemItems[i].itemUsage = 0
+        }
+      }
+
       var pictureAData = ''
       var pictureBData = ''
       var pictureCData = ''
@@ -1140,14 +1145,14 @@ export default {
       })
 
       // items 컬렉션의 특정 품목 사용량 Update
-      /*
-      const response2 = await ItemService.fetchItemByUserLandItemName({
-        userId: this.userId,
-        landId: this.selectedLandId,
-        item: this.selectedWorkTypeCode,
-        itemName: this.usageItems[j].itemName
-      })
-      */
+      var absoluteValForUsage = 0
+      for (var i = 0; i < this.usageItems.length; i++) {
+        if (this.usageItems[i].usage !== this.originalItemUsages[i]) {
+          absoluteValForUsage = this.usageItems[i].usage - this.originalItemUsages[i]
+          // console.log('absoluteValForUsage:' + absoluteValForUsage)
+          this.updateItemUsage(this.userId, this.selectedLandId, this.selectedWorkTypeCode, this.usageItems[i].itemName, absoluteValForUsage)
+        }
+      }
 
       this.fetchNameByLandId(this.selectLand)
       // this.fetchCropNameByCropCode(this.selectedCropCode)
@@ -1159,6 +1164,16 @@ export default {
       this.updatedEvent.journalId = this.journalId
       this.updatedEvent.eventIndex = this.eventIndex
       this.updatedEvent.textColor = 'white'
+    },
+    async updateItemUsage (userId, landId, item, itemName, usage) {
+      const response = await ItemService.updateItemUsageByJournalUsage({
+        userId: userId,
+        landId: landId,
+        item: item,
+        itemName: itemName,
+        usage: usage
+      })
+      console.log(response.data)
     },
     async deleteItem (id) {
       await ItemService.deleteItem(id)
@@ -1282,11 +1297,6 @@ export default {
       if (event === '직접입력') {
         this.addCustomItem(idx)
       } else {
-        /*
-        console.log(this.selectedLandId)
-        console.log(this.selectedWorkTypeCode)
-        console.log(event)
-        */
         this.fetchItemByUserLandIdItemName(idx, event)
       }
     },
@@ -1299,6 +1309,9 @@ export default {
       var tmpStr = event
       this.selectedWETime = tmpStr.replace(':', '')
       console.log(this.selectedWETime)
+    },
+    onChangeItemUsage: function (event, index) {
+      this.itemItems[index].itemStock = this.itemItems[index].itemAmount - event
     },
     itemSave () {
       this.updateItem()

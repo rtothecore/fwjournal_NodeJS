@@ -131,6 +131,7 @@ var SsData = require("../models/sensorData")
 var WcData = require("../models/wcData")
 var SmsAuth = require("../models/smsAuth")
 var JoinUser = require("../models/joinUser")
+var LeaveUser = require("../models/leaveUser")
 var Item = require("../models/item")
 
 const serviceKey = '73Jjl5lZRvBRKkGsPnGmZ7EL9JtwsWNi3hhCIN8cpVJzMdRRgyzntwz2lHmTKeR1tp7NWzoihNGGazcDEFgh8w%3D%3D'
@@ -2246,6 +2247,55 @@ app.put('/item/:id', (req, res) => {
   })  
 })
 
+/*
+// Fetch items by userId, landId, item, itemName
+app.get('/items/getByUserLandItemName/:userId/:landId/:item/:itemName', (req, res) => {
+  console.log(req.params)
+  Item.find({}, '', function (error, items) {
+    if (error) { console.error(error); }
+    res.send(items)
+  })
+  .where('userId').equals(req.params.userId)
+  .where('landId').equals(req.params.landId)
+  .where('item').equals(req.params.item)
+  .where('itemDetail.itemName').equals(req.params.itemName)
+})
+*/
+
+// Update item usage
+app.put('/itemUpdateUsage', (req, res) => { 
+  // console.log(req.body)  
+  Item.find({}, '', function (error, item) {
+    if (error) { console.error(error); }
+
+    // console.log(item[0].itemDetail)
+
+    for(var i = 0; i < item[0].itemDetail.length; i++) {
+    	if(item[0].itemDetail[i].itemName === req.body.itemName) {
+    		var itemUsage = item[0].itemDetail[i].itemUsage * 1
+    		var journalUsage = req.body.usage * 1    		
+    		var totalUsage = itemUsage + journalUsage
+    		console.log('totalUsage=' + totalUsage)
+
+    		item[0].itemDetail[i].itemUsage = totalUsage
+
+    		item[0].save(function (error) {
+    			if (error) {
+			       console.log(error)
+			    }
+			    res.send({
+			        success: true
+			    })			
+    		})
+    	}
+    }
+  })
+  .where('userId').equals(req.body.userId)
+  .where('landId').equals(req.body.landId)
+  .where('item').equals(req.body.item)
+  .where('itemDetail.itemName').equals(req.body.itemName)
+})
+
 // Add new item
 app.post('/item', (req, res) => {
   // console.log(req.body);
@@ -2509,12 +2559,55 @@ app.get('/itemsByYMNUserIdAndDetail/:startDate/:endDate/:userId', (req, res) => 
   .sort({'date' : 1})
 })
 
+/*
+// Update item usage
+app.put('/itemUpdateUsage', (req, res) => { 
+  // console.log(req.body)  
+  Item.find({}, '', function (error, item) {
+    if (error) { console.error(error); }
+
+    // console.log(item[0].itemDetail)
+
+    for(var i = 0; i < item[0].itemDetail.length; i++) {
+    	if(item[0].itemDetail[i].itemName === req.body.itemName) {
+    		var itemUsage = item[0].itemDetail[i].itemUsage * 1
+    		var journalUsage = req.body.usage * 1    		
+    		var totalUsage = itemUsage + journalUsage
+    		console.log('totalUsage=' + totalUsage)
+
+    		item[0].itemDetail[i].itemUsage = totalUsage
+
+    		item[0].save(function (error) {
+    			if (error) {
+			       console.log(error)
+			    }
+			    res.send({
+			        success: true
+			    })			
+    		})
+    	}
+    }
+  })
+  .where('userId').equals(req.body.userId)
+  .where('landId').equals(req.body.landId)
+  .where('item').equals(req.body.item)
+  .where('itemDetail.itemName').equals(req.body.itemName)
+})
+*/
+
 // Fetch items by userId, landId, item, itemName
 app.get('/items/getByUserLandItemName/:userId/:landId/:item/:itemName', (req, res) => {
   console.log(req.params)
   Item.find({}, '', function (error, items) {
     if (error) { console.error(error); }
-    res.send(items)
+
+    for(var i = 0; i < items[0].itemDetail.length; i++) {
+    	if(items[0].itemDetail[i].itemName === req.params.itemName) {
+    		res.send(items[0].itemDetail[i])
+    	}
+    }
+    // console.log(items)
+    // res.send(items)
   })
   .where('userId').equals(req.params.userId)
   .where('landId').equals(req.params.landId)
@@ -2620,4 +2713,53 @@ app.get('/getJournalImg/:userId/:imgName', (req, res) => {
 	var img = fs.readFileSync('journalImgs/' + req.params.userId + '/' + req.params.imgName);
     res.writeHead(200, {'Content-Type': 'image/jpg' });
     res.end(img, 'binary');
+})
+
+// Leave user
+app.put('/leaveUser/:userId', (req, res) => {
+	// 1. Insert user to LeaveUser
+	var leave_user = new LeaveUser({
+    	id: req.params.userId,
+    	leave_date: getNowDate(),
+    	leave_reason: req.body.reason,
+    	leave_reason_detail: req.body.reasonDetail
+    })
+
+    leave_user.save(function (error, result) {
+    	if (error) {
+    		console.error(error);
+    	}
+    	// 2. Delete Journals
+    	Journal.remove({
+    		userId: req.params.userId
+    	}, function(err, removedJournals) {
+    		if (err) { res.send(err) }
+
+    		// 3. Delete Items
+    		Item.remove({
+    			userId: req.params.userId
+    		}, function(err, removedItems) {
+    			if (err) { res.send(err) }	    			
+
+    			// 4. Delete Lands
+    			Land.remove({
+    				userId: req.params.userId
+    			}, function(err, removedLands) {
+    				if (err) { res.send(err) }
+
+    				// 5. Delete Users
+			    	User.remove({
+						id: req.params.userId
+					}, function(err, removedUsers) {
+						if (err) {
+							res.send(err)
+						}
+						res.send({
+							success: true
+						})
+					})
+    			})
+    		})			
+    	})
+    })
 })

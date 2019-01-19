@@ -2,10 +2,10 @@
     <div style="width:100%; margin:0 auto;">
       <!-- dummy --> <div style="height:20px"/>
         <b-row>
-          <b-col md="12">
+          <b-col cols="12">
             <b-card>              
               <b-row>
-                <b-col sm="12" lg="6">
+                <b-col cols="12">
                   <div style="width:100%; margin:0 auto;">
             
     <v-layout row wrap pl-4>

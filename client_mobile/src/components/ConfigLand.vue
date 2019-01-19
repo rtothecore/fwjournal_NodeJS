@@ -2,10 +2,10 @@
   <div style="width:100%; margin:0 auto;">
     <!-- dummy --> <div style="height:20px"/>
         <b-row>
-          <b-col md="12">
+          <b-col cols="12">
             <b-card>              
               <b-row>
-                <b-col sm="12" lg="6">
+                <b-col cols="12">
                   <div style="width:100%; margin:0 auto;">
             
     <v-layout row wrap pl-2 pr-2>      
@@ -21,11 +21,11 @@
           <div style="width:100%; margin:0 auto;">
             <!-- dummy --> <div style="height:20px"/>
           <b-row>
-            <b-col md="12">
+            <b-col cols="12">
               <b-card header="영농일지 캘린더" header-tag="header">
                 <h3 slot="header" class="mb-0"><strong>{{ formTitle }}</strong></h3>
                 <b-row>
-                  <b-col sm="12" lg="6">
+                  <b-col cols="12">
                     <div style="width:100%; margin:0 auto;">
 <v-container grid-list-xs ma-0 pa-0>
                 <v-layout wrap>

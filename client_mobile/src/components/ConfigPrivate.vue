@@ -3,10 +3,10 @@
   <div style="width:100%; margin:0 auto;">
     <!-- dummy --> <div style="height:20px"/>
         <b-row>
-          <b-col md="12">
+          <b-col cols="12">
             <b-card>              
               <b-row>
-                <b-col sm="12" lg="6">
+                <b-col cols="12">
                   <div style="width:100%; margin:0 auto;">
 
     <v-layout row wrap pl-4 pr-4 justify-center>      
@@ -129,6 +129,7 @@
       <v-flex md4>
         <v-btn block outline color="indigo" @click="goToChangePhonePage">휴대폰번호 변경</v-btn>
         <v-btn block outline color="indigo" @click="goToChangePwPage">비밀번호 변경</v-btn>
+        <v-btn block outline color="indigo" @click="goToChangeLeavePage">회원 탈퇴</v-btn>
       </v-flex>
     </v-layout>
 
@@ -146,6 +147,7 @@
     </v-layout>
             <changePhoneNoModal></changePhoneNoModal>
             <changePasswordModal></changePasswordModal>
+            <leaveUserModal></leaveUserModal>
                   </div>
                 </b-col>              
               </b-row>              
@@ -256,6 +258,9 @@ export default {
     goToChangePwPage () {
       // this.$router.push('/changePw')
       bus.$emit('dialogForChangePassword', 'test')
+    },
+    goToChangeLeavePage () {
+      bus.$emit('dialogForLeaveUser', 'test')
     },
     onChangeShareFlag () {
       this.updateUserShareFlag()

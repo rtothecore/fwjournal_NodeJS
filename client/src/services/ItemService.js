@@ -67,5 +67,9 @@ export default {
 
   fetchItemByUserLandItemName (params) {
     return Api().get('items/getByUserLandItemName/' + params.userId + '/' + params.landId + '/' + params.item + '/' + params.itemName, params)
+  },
+
+  updateItemUsageByJournalUsage (parmas) {
+    return Api().put('itemUpdateUsage', parmas)
   }
 }

@@ -6,7 +6,7 @@
       <div style="width:100%; margin:0 auto;">
         
         <b-row>
-          <b-col sm="12">
+          <b-col cols="12">
             <b-card header="날씨 정보" header-tag="header">
               <h3 slot="header" class="mb-0"><strong>날씨 정보</strong></h3>
               <b-row>
@@ -170,11 +170,11 @@
       <!-- 영농일지 캘린더 -->
       <div style="width:100%; margin:0 auto;">
         <b-row>
-          <b-col xs="12">
+          <b-col cols="12">
             <b-card header="영농일지 캘린더" header-tag="header">
               <h3 slot="header" class="mb-0"><strong>영농일지 캘린더</strong></h3>
               <b-row>
-                <b-col xs="12">
+                <b-col cols="12">
                   <div style="width:100%; margin:0 auto;">
                     <full-calendar :config="config" :events="events" @event-selected="eventSelected" style="overflow: auto;"/>
                   </div>
@@ -211,11 +211,11 @@
         </v-toolbar>
         -->
         <b-row>
-          <b-col xs="12">
+          <b-col cols="12">
             <b-card header="판매가격 정보" header-tag="header">
               <h3 slot="header" class="mb-0"><strong>판매가격 정보</strong></h3>
               <b-row>
-                <b-col xs="12">
+                <b-col cols="12">
                   <div style="width:100%; margin:0 auto;">
                     <v-data-table
                       :headers="headers"
@@ -268,11 +268,11 @@
         -->
 
         <b-row>
-          <b-col xs="12">
+          <b-col cols="12">
             <b-card header="농작업일정 예측" header-tag="header">
               <h3 slot="header" class="mb-0"><strong>농작업일정 예측</strong></h3>
               <b-row>
-                <b-col xs="12">
+                <b-col cols="12">
                   <div style="width:100%; margin:0 auto;">
                     <v-data-table
                       :headers="headersForPredict"
