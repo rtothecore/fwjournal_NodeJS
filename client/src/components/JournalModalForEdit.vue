@@ -175,6 +175,7 @@
                       label="작업시간"
                       placeholder="작업시간"
                       type="number"
+                      min="0"
                     ></v-text-field>
                   </v-flex>
                   <v-flex xs6 sm6 md2>
@@ -183,6 +184,7 @@
                       label="작업인원"
                       placeholder="작업인원"
                       type="number"
+                      min="0"
                     ></v-text-field>
                   </v-flex>                  
 
@@ -208,6 +210,7 @@
                         v-model="item.cost"
                         v-on:change="onChangeItemCost"
                         type="number"
+                        min="0"
                       ></v-text-field>
                     </v-flex> 
                   </template>                                                     
@@ -230,6 +233,7 @@
                         label="출하량"
                         placeholder="출하량"
                         type="number"
+                        min="0"
                       ></v-text-field>
                     </v-flex>
                     <v-flex xs6 sm6 md6>
@@ -248,6 +252,7 @@
                         label="수입량"
                         placeholder="수입량"
                         type="number"
+                        min="0"
                       ></v-text-field>
                     </v-flex>
                     <v-flex xs6 sm6 md6>
@@ -288,6 +293,7 @@
                           label="재고량"
                           v-model="item.stock"
                           type="number"
+                          min="0"
                           readonly
                         ></v-text-field>
                       </v-flex>
@@ -296,6 +302,7 @@
                           label="사용량"
                           v-model="item.usage"
                           type="number"
+                          min="0"
                         ></v-text-field>
                       </v-flex>
                     </template>
@@ -308,6 +315,7 @@
                         label="생산량"
                         placeholder="생산량"
                         type="number"
+                        min="0"
                       ></v-text-field>
                     </v-flex>
                     <v-flex xs6 sm6 md6>
@@ -495,7 +503,8 @@
                       <v-text-field
                         label="수량"
                         v-model="item.itemAmount"   
-                        type="number"                     
+                        type="number"   
+                        min="0"                  
                       ></v-text-field>
                     </v-flex>
                     <v-flex xs3 sm3 md3 :key="'E' + index">
@@ -504,6 +513,7 @@
                         v-model="item.itemPrice"
                         v-on:change="onChangeItemPrice"
                         type="number"
+                        min="0"
                       ></v-text-field>
                     </v-flex>
                     <v-flex xs2 sm2 md2 :key="'F' + index">
@@ -512,6 +522,7 @@
                         v-model="item.itemUsage"
                         v-on:change="onChangeItemUsage(item.itemUsage, index)"                        
                         type="number"
+                        min="0"
                       ></v-text-field>
                     </v-flex>  
                     <v-flex xs2 sm2 md2 :key="'G' + index">
@@ -519,6 +530,7 @@
                         label="재고량"
                         v-model="item.itemStock"                        
                         type="number"
+                        min="0"
                       ></v-text-field>
                     </v-flex>  
                   </template>                                                     
@@ -689,13 +701,7 @@ export default {
       showIncome: false,
       showShipment: false,
       sCode: '',
-      usageItems: [
-        {
-          itemName: '',
-          stock: '',
-          usage: ''
-        }
-      ],
+      usageItems: [],
       cooItems: [
         {
           category: '',
@@ -925,7 +931,7 @@ export default {
 
         // Item 콜렉션의 품목 수량, 사용량을 로드하고 재고량을 계산(재고량 = 구입수량 - 자재사용량)
         for (var j = 0; j < this.usageItems.length; j++) {
-          console.log(this.usageItems[j].itemName)
+          // console.log(this.usageItems[j].itemName)
           const response2 = await ItemService.fetchItemByUserLandItemName({
             userId: this.userId,
             landId: this.selectedLandId,
@@ -933,7 +939,8 @@ export default {
             itemName: this.usageItems[j].itemName
           })
           // console.log(response2.data)
-          this.usageItems[j].stock = response2.data[0].itemDetail[0].itemAmount - response2.data[0].itemDetail[0].itemUsage
+          // this.usageItems[j].stock = response2.data[0].itemDetail[0].itemAmount - response2.data[0].itemDetail[0].itemUsage
+          this.usageItems[j].stock = response2.data.itemAmount - response2.data.itemUsage
 
           // 현재 사용량 저장
           this.originalItemUsages[j] = this.usageItems[j].usage
@@ -1179,6 +1186,13 @@ export default {
       await ItemService.deleteItem(id)
     },
     async deleteJournal (id) {
+      // items 컬렉션의 특정 품목 사용량 Update
+      var absoluteValForUsage = 0
+      for (var i = 0; i < this.usageItems.length; i++) {
+        absoluteValForUsage = 0 - this.usageItems[i].usage
+        this.updateItemUsage(this.userId, this.selectedLandId, this.selectedWorkTypeCode, this.usageItems[i].itemName, absoluteValForUsage)
+      }
+
       await JournalService.deleteJournal(id)
     },
     async fetchNameByLandId (landId) {
@@ -1222,11 +1236,7 @@ export default {
         this.showShipment = true
         this.showIncome = true
         this.showUsage = false
-        this.usageItems = [{
-          itemName: '',
-          stock: '',
-          usage: ''
-        }]
+        this.usageItems = []
         this.showOutput = false
       } else if (this.selectedWorkTypeText === '비료' || this.selectedWorkTypeText === '농약' || this.selectedWorkTypeText === '사료') {
         this.showShipment = false
@@ -1237,11 +1247,7 @@ export default {
         this.showShipment = false
         this.showIncome = false
         this.showUsage = false
-        this.usageItems = [{
-          itemName: '',
-          stock: '',
-          usage: ''
-        }]
+        this.usageItems = []
         this.showOutput = true
       } else {
         this.showShipment = false
@@ -1433,6 +1439,10 @@ export default {
     },
     deleteUsageRow () {
       if (this.usageItems.length > 1) {
+        // items 컬렉션의 특정 품목 사용량 Update
+        var absoluteValForUsage = 0 - this.usageItems[this.usageItems.length - 1].usage
+        this.updateItemUsage(this.userId, this.selectedLandId, this.selectedWorkTypeCode, this.usageItems[this.usageItems.length - 1].itemName, absoluteValForUsage)
+
         this.usageItems.splice(this.usageItems.length - 1, 1)
       }
     },

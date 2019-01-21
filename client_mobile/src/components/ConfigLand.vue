@@ -398,9 +398,12 @@ export default {
       this.getBCS()
     },
     async updateLand () {
+      /*
       if (this.cropCode === '') {
         this.cropCode = this.editedItem.dcsCode
       }
+      */
+      this.cropCode = this.editedItem.cropCode
       await LandService.updateLand({
         id: this.editedItem._id,
         name: this.editedItem.name,

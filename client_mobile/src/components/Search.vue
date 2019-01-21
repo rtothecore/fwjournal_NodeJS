@@ -71,15 +71,6 @@
     <!-- R O W 1 -->
 
     <!-- R O W 2 -->
-      <v-flex xs5>        
-        <v-text-field
-          v-model="searchWord"
-          label="검색어"                  
-        ></v-text-field>
-      </v-flex>   
-
-      <v-flex xs1/>     
-
       <v-flex xs5>
         <v-select
           :items="landItems"
@@ -93,7 +84,16 @@
           v-validate="'required'"
           data-vv-name="selectLand"
         ></v-select>
-      </v-flex>  
+      </v-flex> 
+
+      <v-flex xs1/>     
+
+      <v-flex xs5>        
+        <v-text-field
+          v-model="searchWord"
+          label="검색어"                  
+        ></v-text-field>
+      </v-flex>   
 
       <v-flex xs1/>
     <!-- R O W 2 -->
@@ -300,6 +300,7 @@ export default {
     this.getJournals()
     this.getLands()
     this.getWorkTypeItems()
+    this.selectLand = '0'
   },
   components: {
     ImageInput: ImageInput
@@ -366,6 +367,11 @@ export default {
         userId: this.userId
       })
       this.landItems = response.data.lands
+
+      var landItemForAll = {}
+      landItemForAll._id = '0'
+      landItemForAll.name = '전체'
+      this.landItems.push(landItemForAll)
     },
     async getJournals () {
       const response = await JournalService.fetchJournalsByDateNUserId({
@@ -505,6 +511,9 @@ export default {
       this.getWorkCodeById(event)
     },
     onChangeLand: function (event) {
+      if (event === '0') {
+        this.searchWord = ''
+      }
       /*
       this.selectedLandId = event
       this.getCropCodeByLandId(this.selectedLandId)
@@ -565,14 +574,21 @@ export default {
         if (!result) {
           return
         }
-        this.getJournalsBy4()
+        // 선택한 농장명이 전체일 경우 검색어를 지우고 검색
+        if (this.selectLand === '0') {
+          this.searchWord = ''
+          this.getJournals()
+        } else {
+          // 선택한 농장명이 전체가 아닐 경우
+          this.getJournalsBy4()
+        }
       }).catch(() => {})
     },
     searchReset () {
       this.startDate = ''
       this.endDate = ''
       this.searchWord = ''
-      this.selectLand = ''
+      this.selectLand = '0'
       this.e2 = null
       this.workContent = null
       this.init()

@@ -374,6 +374,30 @@ export default {
       const response = await LandService.fetchLands({
         userId: this.userId
       })
+      console.log(response.data.lands[0].cropCode)
+      for (var i = 0; i < response.data.lands.length; i++) {
+        response.data.lands[i].dcsCode = response.data.lands[i].cropCode
+        const response2 = await DcService.fetchCropNameByCropCode({
+          cropCode: response.data.lands[i].cropCode
+        })
+        response.data.lands[i].cropCode = response2.data[0].text
+
+        response.data.lands[i].scsCode = response2.data[0].sCode
+        const response3 = await ScService.fetchTextBySCode({
+          sCode: response2.data[0].sCode
+        })
+        response.data.lands[i].scs = response3.data.scs[0].text
+
+        response.data.lands[i].mcsCode = response3.data.scs[0].mCode
+        const response4 = await McService.fetchTextByMCode({
+          mCode: response3.data.scs[0].mCode
+        })
+        response.data.lands[i].mcs = response4.data.mcs[0].text
+        response.data.lands[i].bcsCode = response4.data.mcs[0].bCode
+      }
+      console.log(response.data.lands[0].cropCode)
+      this.lands = response.data.lands
+      /*
       this.lands = response.data.lands
       for (var i = 0; i < this.lands.length; i++) {
         this.lands[i].dcsCode = this.lands[i].cropCode
@@ -395,6 +419,7 @@ export default {
         this.lands[i].mcs = response4.data.mcs[0].text
         this.lands[i].bcsCode = response4.data.mcs[0].bCode
       }
+      */
     },
     async createNewLand () {
       await LandService.createNewLand({
@@ -409,9 +434,13 @@ export default {
       this.getBCS()
     },
     async updateLand () {
+      /*
       if (this.cropCode === '') {
         this.cropCode = this.editedItem.dcsCode
       }
+      */
+      this.cropCode = this.editedItem.cropCode
+      // console.log(this.cropCode)
       await LandService.updateLand({
         id: this.editedItem._id,
         name: this.editedItem.name,

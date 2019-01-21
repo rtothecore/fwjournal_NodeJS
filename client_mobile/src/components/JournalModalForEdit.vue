@@ -182,6 +182,7 @@
                       label="작업시간"
                       placeholder="작업시간"
                       type="number"
+                      min="0"
                     ></v-text-field>
                   </v-flex>
                   <v-flex xs6 sm6 md2>
@@ -190,6 +191,7 @@
                       label="작업인원"
                       placeholder="작업인원"
                       type="number"
+                      min="0"
                     ></v-text-field>
                   </v-flex>                  
                   <!-- R O W 5 -->
@@ -216,6 +218,7 @@
                         v-model="item.cost"
                         v-on:change="onChangeItemCost"
                         type="number"
+                        min="0"
                       ></v-text-field>
                     </v-flex> 
                   </template>                                                     
@@ -238,6 +241,7 @@
                         label="출하량"
                         placeholder="출하량"
                         type="number"
+                        min="0"
                       ></v-text-field>
                     </v-flex>
                     <v-flex xs6>
@@ -256,6 +260,7 @@
                         label="수입량"
                         placeholder="수입량"
                         type="number"
+                        min="0"
                       ></v-text-field>
                     </v-flex>
                     <v-flex xs6>
@@ -296,6 +301,7 @@
                           label="사용량"
                           v-model="item.usage"
                           type="number"
+                          min="0"
                         ></v-text-field>
                       </v-flex>
                     </template>
@@ -308,6 +314,7 @@
                         label="생산량"
                         placeholder="생산량"
                         type="number"
+                        min="0"
                       ></v-text-field>
                     </v-flex>
                     <v-flex xs6>
@@ -490,7 +497,8 @@
                       <v-text-field
                         label="수량"
                         v-model="item.itemAmount"   
-                        type="number"                     
+                        type="number"
+                        min="0"                     
                       ></v-text-field>
                     </v-flex>
                     <v-flex xs3 :key="'E' + index">
@@ -499,6 +507,7 @@
                         v-model="item.itemPrice"
                         v-on:change="onChangeItemPrice"
                         type="number"
+                        min="0"
                       ></v-text-field>
                     </v-flex>
                     <v-flex xs2 :key="'F' + index">
@@ -506,6 +515,7 @@
                         label="사용량"
                         v-model="item.itemUsage"                        
                         type="number"
+                        min="0"
                       ></v-text-field>
                     </v-flex>  
                     <v-flex xs2 :key="'G' + index">
@@ -513,6 +523,7 @@
                         label="재고량"
                         v-model="item.itemStock"                        
                         type="number"
+                        min="0"
                       ></v-text-field>
                     </v-flex>  
                   </template>

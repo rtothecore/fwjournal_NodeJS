@@ -173,6 +173,7 @@
                       v-model="workTime"
                       label="작업시간"
                       type="number"
+                      min="0"
                       hint="1시간 단위"
                       persistent-hint 
                     ></v-text-field>
@@ -182,6 +183,7 @@
                       v-model="workerNumber"
                       label="작업인원"
                       type="number"
+                      min="0"
                     ></v-text-field>
                   </v-flex>                  
 
@@ -207,6 +209,7 @@
                         v-model="item.cost"
                         v-on:change="onChangeItemCost"
                         type="number"
+                        min="0"
                       ></v-text-field>
                     </v-flex> 
                   </template>                                                     
@@ -228,6 +231,7 @@
                         v-model="shipmentAmount"
                         label="출하량"                        
                         type="number"
+                        min="0"
                       ></v-text-field>
                     </v-flex>
                     <v-flex xs6 sm6 md6>
@@ -244,6 +248,7 @@
                         v-model="incomeAmount"
                         label="수입량"
                         type="number"
+                        min="0"
                       ></v-text-field>
                     </v-flex>
                     <v-flex xs6 sm6 md6>
@@ -283,6 +288,7 @@
                           label="재고량"
                           v-model="item.stock"
                           type="number"
+                          min="0"
                           readonly
                         ></v-text-field>
                       </v-flex>
@@ -291,6 +297,7 @@
                           label="사용량"
                           v-model="item.usage"
                           type="number"
+                          min="0"
                         ></v-text-field>
                       </v-flex>
                     </template>
@@ -302,6 +309,7 @@
                         v-model="outputAmount"
                         label="생산량"                        
                         type="number"
+                        min="0"
                       ></v-text-field>
                     </v-flex>
                     <v-flex xs6 sm6 md6>
@@ -486,7 +494,8 @@
                       <v-text-field
                         label="수량"
                         v-model="item.itemAmount"  
-                        type="number"                      
+                        type="number"
+                        min="0"                      
                       ></v-text-field>
                     </v-flex>
                     <v-flex xs4 sm4 md4 :key="'E' + index">
@@ -495,6 +504,7 @@
                         v-model="item.itemPrice"
                         v-on:change="onChangeItemPrice"
                         type="number"
+                        min="0"
                       ></v-text-field>
                     </v-flex>  
                   </template>                                                     
@@ -662,13 +672,7 @@ export default {
       showIncome: false,
       showShipment: false,
       sCode: '',
-      usageItems: [
-        {
-          itemName: '',
-          stock: '',
-          usage: ''
-        }
-      ],
+      usageItems: [],
       cooItems: [
         {
           category: '',
@@ -912,11 +916,7 @@ export default {
         this.showShipment = true
         this.showIncome = true
         this.showUsage = false
-        this.usageItems = [{
-          itemName: '',
-          stock: '',
-          usage: ''
-        }]
+        this.usageItems = []
         this.showOutput = false
       } else if (this.selectedWorkTypeText === '비료' || this.selectedWorkTypeText === '농약' || this.selectedWorkTypeText === '사료') {
         this.showShipment = false
@@ -927,11 +927,7 @@ export default {
         this.showShipment = false
         this.showIncome = false
         this.showUsage = false
-        this.usageItems = [{
-          itemName: '',
-          stock: '',
-          usage: ''
-        }]
+        this.usageItems = []
         this.showOutput = true
       } else {
         this.showShipment = false
@@ -1075,6 +1071,7 @@ export default {
 
       // 사용량 데이터
       var usageDatas = []
+      // console.log(this.usageItems)
       for (var j = 0; j < this.usageItems.length; j++) {
         var tempUsageData = {}
         tempUsageData.itemName = this.usageItems[j].itemName

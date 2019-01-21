@@ -21,6 +21,14 @@ export default {
     return Api().get('item/agg/' + params.userId + '/' + params.startDate + '/' + params.endDate, params)
   },
 
+  fetchItemAggByDateNLandId (params) {
+    return Api().get('item/aggByDateNLandId/' + params.userId + '/' + params.startDate + '/' + params.endDate + '/' + params.landId, params)
+  },
+
+  fetchItemAggByYMNLandId (params) {
+    return Api().get('item/aggByYMNLandId/' + params.userId + '/' + params.ym + '/' + params.landId, params)
+  },
+
   updateItem (params) {
     return Api().put('item/' + params.id, params)
   },
@@ -38,7 +46,7 @@ export default {
   },
 
   fetchItemsAggBy5 (params) {
-    return Api().get('item/agg/searchBy5/' + params.userId + '/' + params.startDate + '/' + params.endDate + '/' + params.item + '/' + params.landId, params)
+    return Api().get('item/agg/searchBy5/' + params.userId + '/' + params.startDate + '/' + params.endDate + '/' + params.itemName + '/' + params.landId, params)
   },
 
   fetchItemsByDateNUserId (params) {

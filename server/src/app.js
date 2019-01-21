@@ -1074,14 +1074,15 @@ app.get('/journals/searchByYMUserId/:ym/:userId', (req, res) => {
 
 // Fetch journals by year, month, userId, landId
 app.get('/journals/searchByYMUserIdLandId/:ym/:userId/:landId', (req, res) => {
-  console.log(req.params)
-  Journal.find({}, '', function (error, journals) {
-    if (error) { console.error(error); }
-    res.send(journals)
+  var query = Journal.find({})
+  query.where('date').regex(req.params.ym)
+  query.where('userId').equals(req.params.userId)
+  if(0 != req.params.landId) {
+  	query.where('landId').equals(req.params.landId)
+  }
+  query.exec().then(result => {
+  	res.send(result)
   })
-  .where('date').regex(req.params.ym)
-  .where('userId').equals(req.params.userId)
-  .where('landId').equals(req.params.landId)
 })
 
 // Fetch journals by date
@@ -2378,8 +2379,92 @@ app.get('/item/agg/:userId/:startDate/:endDate', (req, res) => {
     });
 })
 
+// Fetch items with aggregate by date & landId
+app.get('/item/aggByDateNLandId/:userId/:startDate/:endDate/:landId', (req, res) => {
+	if(req.params.landId === "0") {		
+		req.params.landId = ''
+	}	
+	Item.aggregate([
+		{
+			"$unwind" : "$itemDetail"
+		},
+        {
+            "$group" : {
+                "_id" : { "_id" : "$_id",
+                	      "date" : "$date",
+                		  "userId" : "$userId",
+                		  "landId" : "$landId", 
+		             	  "item" : "$item",
+		             	  "itemName" : "$itemDetail.itemName", 
+		             	  "itemAmount" : "$itemDetail.itemAmount", 
+		             	  "itemPrice" : "$itemDetail.itemPrice", 
+		             	  "itemUsage" : "$itemDetail.itemUsage" 
+                		}
+            }
+        },
+        {
+            "$match" : { "$and" : [ { "_id.userId" : req.params.userId },
+            					    { "_id.date" : { "$gte": req.params.startDate, "$lte": req.params.endDate } },
+            					    { "_id.landId" : { "$regex": req.params.landId, "$options": 'g' } }            					    
+       						  	  ] 
+       				   }            	
+        },
+        { "$sort" : { "_id.date": 1 } }
+    ], function (err, result) {
+        if (err) {
+            next(err);
+        } else {
+            res.send(result);
+        }
+    });
+})
+
+// Fetch items with aggregate by date & landId
+app.get('/item/aggByYMNLandId/:userId/:ym/:landId', (req, res) => {
+	if(req.params.landId === "0") {		
+		req.params.landId = ''
+	}	
+	Item.aggregate([
+		{
+			"$unwind" : "$itemDetail"
+		},
+        {
+            "$group" : {
+                "_id" : { "_id" : "$_id",
+                	      "date" : "$date",
+                		  "userId" : "$userId",
+                		  "landId" : "$landId", 
+		             	  "item" : "$item",
+		             	  "itemName" : "$itemDetail.itemName", 
+		             	  "itemAmount" : "$itemDetail.itemAmount", 
+		             	  "itemPrice" : "$itemDetail.itemPrice", 
+		             	  "itemUsage" : "$itemDetail.itemUsage" 
+                		}
+            }
+        },
+        {
+            "$match" : { "$and" : [ { "_id.userId" : req.params.userId },
+            					    // { "_id.date" : { "$gte": req.params.startDate, "$lte": req.params.endDate } },
+            					    { "_id.date" : { "$regex": req.params.ym } },
+            					    { "_id.landId" : { "$regex": req.params.landId, "$options": 'g' } }            					    
+       						  	  ] 
+       				   }            	
+        },
+        { "$sort" : { "_id.date": 1 } }
+    ], function (err, result) {
+        if (err) {
+            next(err);
+        } else {
+            res.send(result);
+        }
+    });
+})
+
 // Fetch items with aggregate by 4
-app.get('/item/agg/searchBy5/:userId/:startDate/:endDate/:item/:landId', (req, res) => {	
+app.get('/item/agg/searchBy5/:userId/:startDate/:endDate/:itemName/:landId', (req, res) => {	
+	if(req.params.itemName === "0") {		
+		req.params.itemName = ''
+	}
 	Item.aggregate([
 		{
 			"$unwind" : "$itemDetail"
@@ -2403,7 +2488,7 @@ app.get('/item/agg/searchBy5/:userId/:startDate/:endDate/:item/:landId', (req, r
             "$match" : { "$and" : [ { "_id.userId" : req.params.userId },
             					    { "_id.date" : { "$gte": req.params.startDate, "$lte": req.params.endDate } },
             					    { "_id.landId" : req.params.landId },
-       						  		{ "_id.item" : req.params.item }
+       						  		{ "_id.itemName" : { "$regex": req.params.itemName, "$options": 'g' } }
        						  	  ] 
        				   } 	
         },

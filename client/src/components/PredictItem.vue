@@ -113,11 +113,11 @@
             <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ getDateWithKorean(props.item.date) }}</h4></td>
             <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.landName }}</h4></td>
             <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.item }}</h4></td>
-            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.purpose }}</h4></td>
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.itemName }}</h4></td>
             <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.itemAmount }}</h4></td>
             <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.itemUsage }}</h4></td>
             <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.itemStock }}</h4></td>
-            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.itemTotalPrice }}</h4></td>
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.itemPrice }}</h4></td>
             <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="justify-center layout px-0">
               <v-btn icon class="mx-0" @click="showItem(props.item)">
                 <v-icon color="teal">remove_red_eye</v-icon>
@@ -182,11 +182,11 @@ export default {
         },
         { text: '농장명', sortable: false, value: 'landName' },
         { text: '구입품목', sortable: false, value: 'item' },
-        { text: '사용목적', sortable: false, value: 'purpose' },
-        { text: '구입수량', sortable: false, value: 'itemAmount' },
-        { text: '사용수량', sortable: false, value: 'itemUsage' },
-        { text: '재고수량', sortable: false, value: 'itemStock' },
-        { text: '총 구입가격', sortable: false, value: 'itemTotalPrice' },
+        { text: '품목명', sortable: false, value: 'itemName' },
+        { text: '구입량', sortable: false, value: 'itemAmount' },
+        { text: '사용량', sortable: false, value: 'itemUsage' },
+        { text: '재고량', sortable: false, value: 'itemStock' },
+        { text: '구입가격', sortable: false, value: 'itemPrice' },
         { text: '관리', value: 'name', sortable: false, align: 'left', width: '5%' }
       ],
       items: [],
@@ -218,7 +218,7 @@ export default {
     this.onChangeDate(today)
     this.getLands()
     this.getItemsByDate()
-    this.selectLand = ''
+    this.selectLand = '0'
   },
   methods: {
     async getLands () {
@@ -226,6 +226,11 @@ export default {
         userId: this.userId
       })
       this.landItems = response.data.lands
+
+      var landItemForAll = {}
+      landItemForAll._id = '0'
+      landItemForAll.name = '전체'
+      this.landItems.push(landItemForAll)
     },
     async getItemsByDate () {
       if (!this.startDate) {
@@ -237,65 +242,53 @@ export default {
       if (!this.selectLand) {
         this.selectLand = 0
       }
-      const response = await ItemService.fetchItemsByDateNUserIdNLandId({
+      const response = await ItemService.fetchItemAggByDateNLandId({
+        userId: this.userId,
         startDate: this.startDate,
         endDate: this.endDate,
-        userId: this.userId,
         landId: this.selectLand
       })
       if (response.data.length > 0) {
-        var tmpItems = response.data
+        var tmpItems = []
+        for (var k = 0; k < response.data.length; k++) {
+          tmpItems.push(response.data[k]._id)
+        }
         for (var i = 0; i < response.data.length; i++) {
-          //
           const response7 = await LandService.fetchNameByLandId({
-            landId: response.data[i].landId
+            landId: response.data[i]._id.landId
           })
-
           tmpItems[i].landName = response7.data[0].name
-          //
+
           const response2 = await WcService.fetchOneTextByCcode({
-            code: response.data[i].item
+            code: response.data[i]._id.item
           })
           tmpItems[i].item = response2.data[0].text
 
-          tmpItems[i].itemAmount = Number(0)
-          tmpItems[i].itemUsage = Number(0)
-          tmpItems[i].itemStock = Number(0)
-          tmpItems[i].itemTotalPrice = Number(0)
-          for (var k = 0; k < tmpItems[i].itemDetail.length; k++) {
-            tmpItems[i].itemAmount += Number(tmpItems[i].itemDetail[k].itemAmount)
-            tmpItems[i].itemUsage += Number(tmpItems[i].itemDetail[k].itemUsage)
-            tmpItems[i].itemStock += Number(tmpItems[i].itemDetail[k].itemStock)
-            tmpItems[i].itemTotalPrice += Number(tmpItems[i].itemDetail[k].itemPrice)
-          }
+          tmpItems[i].itemStock = tmpItems[i].itemAmount - tmpItems[i].itemUsage
         }
         this.items = tmpItems
       } else {  // 작년 10일이내의 데이터가 없는 경우 작년 해당월의 데이터를 보여줌
-        const response4 = await ItemService.fetchItemsByYMUserIdLandId({
+        const response4 = await ItemService.fetchItemAggByYMNLandId({
           ym: this.lastYearYM,
           userId: this.userId,
           landId: this.selectLand
         })
-        var tmpItems2 = response4.data
+        var tmpItems2 = []
+        for (var l = 0; l < response4.data.length; l++) {
+          tmpItems2.push(response4.data[l]._id)
+        }
         for (var j = 0; j < response4.data.length; j++) {
-          //
           const response8 = await LandService.fetchNameByLandId({
-            landId: response4.data[j].landId
+            landId: response4.data[j]._id.landId
           })
-
           tmpItems2[j].landName = response8.data[0].name
-          //
+
           const response5 = await WcService.fetchOneTextByCcode({
-            code: response4.data[j].item
+            code: response4.data[j]._id.item
           })
           tmpItems2[j].item = response5.data[0].text
 
-          tmpItems2[j].itemAmount = Number(0)
-          tmpItems2[j].itemTotalPrice = Number(0)
-          for (var l = 0; l < tmpItems2[j].itemDetail.length; l++) {
-            tmpItems2[j].itemAmount += Number(tmpItems2[j].itemDetail[l].itemAmount)
-            tmpItems2[j].itemTotalPrice += Number(tmpItems2[j].itemDetail[l].itemPrice)
-          }
+          tmpItems2[j].itemStock = tmpItems2[j].itemAmount - tmpItems2[j].itemUsage
         }
         this.items = tmpItems2
       }
@@ -334,7 +327,7 @@ export default {
       this.startDate = ''
       this.endDate = ''
       this.sDate = ''
-      this.selectLand = ''
+      this.selectLand = '0'
       this.items = []
 
       var today = moment().format('YYYY-MM-DD')
@@ -342,7 +335,7 @@ export default {
       this.onChangeDate(today)
       this.getLands()
       this.getItemsByDate()
-      this.selectLand = ''
+      this.selectLand = '0'
     },
     replaceAt: function (data, index, replacement) {
       return data.substr(0, index) + replacement + data.substr(index + replacement.length)

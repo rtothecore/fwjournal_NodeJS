@@ -81,6 +81,7 @@
         ></v-select>
       </v-flex>
 
+<!--
       <v-flex xs3 sm3 md3>
         <v-select
           :items="WorkTypeitems"
@@ -95,6 +96,13 @@
           data-vv-name="e2"
         ></v-select>
       </v-flex>           
+-->
+      <v-flex xs3 sm3 md3>        
+        <v-text-field
+          v-model="searchWord"
+          label="검색어(품목명)"                  
+        ></v-text-field>
+      </v-flex>
 
       <v-flex xs12 sm12 md12 class="text-xs-right">
         <v-btn
@@ -193,6 +201,7 @@ export default {
   },
   data () {
     return {
+      searchWord: '',
       editWorkCode: '',
       editDate: '',
       e7: null,
@@ -302,6 +311,7 @@ export default {
     this.getItems()
     this.getLands()
     this.getWorkTypeItems()
+    this.selectLand = '0'
   },
   components: {
     ImageInput: ImageInput
@@ -428,9 +438,15 @@ export default {
         tmpEndDate = 0
       }
 
+/*
       var tmpWorkType = this.selectedWorkType
       if (!tmpWorkType) {
         tmpWorkType = 0
+      }
+*/
+      var tmpSearchWord = this.searchWord
+      if (!tmpSearchWord) {
+        tmpSearchWord = 0
       }
 
       if (!this.selectLand) {
@@ -441,7 +457,7 @@ export default {
         userId: this.userId,
         startDate: tmpStartDate,
         endDate: tmpEndDate,
-        item: tmpWorkType,
+        itemName: tmpSearchWord,
         landId: this.selectLand
       })
       for (var k = 0; k < response.data.length; k++) {
@@ -519,6 +535,11 @@ export default {
         userId: this.userId
       })
       this.landItems = response.data.lands
+
+      var landItemForAll = {}
+      landItemForAll._id = '0'
+      landItemForAll.name = '전체'
+      this.landItems.push(landItemForAll)
     },
     onChangeWSTime: function (event) {
       var tmpStr = event
@@ -534,6 +555,9 @@ export default {
       this.getWorkCodeById(event)
     },
     onChangeLand: function (event) {
+      if (event === '0') {
+        this.searchWord = ''
+      }
       /*
       this.selectedLandId = event
       this.getCropCodeByLandId(this.selectedLandId)
@@ -595,15 +619,25 @@ export default {
         if (!result) {
           return
         }
-        this.getItemsBy5()
+        // 선택한 농장명이 전체일 경우 검색어를 지우고 검색
+        if (this.selectLand === '0') {
+          this.searchWord = ''
+          this.items = []
+          this.init()
+          this.getItems()
+        } else {
+          // 선택한 농장명이 전체가 아닐 경우
+          this.getItemsBy5()
+        }
       }).catch(() => {})
     },
     searchReset () {
       this.startDate = ''
       this.endDate = ''
       this.e2 = null
-      this.selectLand = ''
-      this.workContent = null
+      this.selectLand = '0'
+      // this.workContent = null
+      this.searchWord = ''
       this.items = []
       this.init()
       this.getItems()

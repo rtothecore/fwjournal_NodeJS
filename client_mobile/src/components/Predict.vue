@@ -218,7 +218,7 @@ export default {
     this.onChangeDate(today)
     this.getLands()
     this.getJournalsByDate()
-    this.selectLand = ''
+    this.selectLand = '0'
   },
   methods: {
     async getLands () {
@@ -226,6 +226,11 @@ export default {
         userId: this.userId
       })
       this.landItems = response.data.lands
+
+      var landItemForAll = {}
+      landItemForAll._id = '0'
+      landItemForAll.name = '전체'
+      this.landItems.push(landItemForAll)
     },
     async getJournalsByDate () {
       if (!this.startDate) {
@@ -348,7 +353,7 @@ export default {
       this.startDate = ''
       this.endDate = ''
       this.sDate = ''
-      this.selectLand = ''
+      this.selectLand = '0'
       this.journals = []
 
       var today = moment().format('YYYY-MM-DD')
@@ -356,7 +361,7 @@ export default {
       this.onChangeDate(today)
       this.getLands()
       this.getJournalsByDate()
-      this.selectLand = ''
+      this.selectLand = '0'
     },
     replaceAt: function (data, index, replacement) {
       return data.substr(0, index) + replacement + data.substr(index + replacement.length)
