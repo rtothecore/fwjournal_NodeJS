@@ -202,6 +202,7 @@ import LandService from '@/services/LandService'
 import ScService from '@/services/ScService'
 import WcService from '@/services/WcService'
 import ItemService from '@/services/ItemService'
+import ItemDetailService from '@/services/ItemDetailService'
 import ImageInput from './ImageInput.vue'
 export default {
   $_veeValidate: {
@@ -313,10 +314,10 @@ export default {
   created () {
     this.userId = this.$session.get('userId')
     this.init()
-    this.getItems()
     this.getLands()
     this.getWorkTypeItems()
     this.selectLand = '0'
+    this.getItemsBy5()
   },
   components: {
     ImageInput: ImageInput
@@ -389,13 +390,75 @@ export default {
       }
     },
     async getItems () {
-      const response = await ItemService.fetchItemAggByDate({
+      const response = await ItemService.fetchItemsByDateNUserId({
         userId: this.userId,
         startDate: this.startDate,
         endDate: this.endDate
       })
+      // console.log(response.data)
+
+      for (var i = 0; i < response.data.length; i++) {
+        for (var j = 0; j < response.data[i].itemDetail.length; j++) {
+          var tmpItemData = {}
+          tmpItemData._id = response.data[i]._id
+          tmpItemData.date = response.data[i].date
+          // 농장명
+          const response3 = await LandService.fetchNameByLandId({
+            landId: response.data[i].landId
+          })
+          tmpItemData.landName = response3.data[0].name
+
+          // 구입품목
+          const response4 = await WcService.fetchOneTextByCcode({
+            code: response.data[i].item
+          })
+          tmpItemData.item = response4.data[0].text
+
+          // 품목명, 구입량, 사용량, 재고량
+          const response2 = await ItemDetailService.fetchItemDetailByItemId({
+            userId: this.userId,
+            itemId: response.data[i].itemDetail[j]
+          })
+          tmpItemData.itemName = response2.data[0].itemName
+          tmpItemData.itemAmount = response2.data[0].itemAmount
+          tmpItemData.itemUsage = response2.data[0].itemUsage + response2.data[0].journalUsage
+          tmpItemData.itemStock = tmpItemData.itemAmount - tmpItemData.itemUsage
+          this.items.push(tmpItemData)
+        }
+      }
+    },
+    async getItemsBy5 () {
+      this.items = []
+
+      var tmpStartDate = this.startDate
+      if (!tmpStartDate) {
+        tmpStartDate = 0
+      }
+
+      var tmpEndDate = this.endDate
+      if (!tmpEndDate) {
+        tmpEndDate = 0
+      }
+
+      var tmpSearchWord = this.searchWord
+      if (!tmpSearchWord) {
+        tmpSearchWord = ''
+      }
+
+      if (!this.selectLand) {
+        this.selectLand = 0
+      }
+
+      const response = await ItemService.fetchItemSearchBy5({
+        userId: this.userId,
+        startDate: tmpStartDate,
+        endDate: tmpEndDate,
+        itemName: tmpSearchWord,
+        landId: this.selectLand
+      })
+
       for (var k = 0; k < response.data.length; k++) {
-        this.items.push(response.data[k]._id)
+        this.items.push(response.data[k])
       }
 
       for (var i = 0; i < this.items.length; i++) {
@@ -411,52 +474,13 @@ export default {
         })
         this.items[i].item = response2.data[0].text
 
+        // 총 사용량
+        this.items[i].itemUsage = this.items[i].itemUsage + this.items[i].journalUsage
+
         // 재고수량
         this.items[i].itemStock = this.items[i].itemAmount - this.items[i].itemUsage
-
-        // 구입수량, 사용수량, 재고수량
-        /*
-        var amountVal = Number(0)
-        var usageVal = Number(0)
-        var stockVal = Number(0)
-        for (var j = 0; j < this.items[i].itemDetail.length; j++) {
-          amountVal += Number(this.items[i].itemDetail[j].itemAmount)
-          usageVal += Number(this.items[i].itemDetail[j].itemUsage)
-          stockVal += Number(this.items[i].itemDetail[j].itemStock)
-        }
-        this.items[i].amount = amountVal
-        this.items[i].usage = usageVal
-        this.items[i].stock = stockVal
-        */
-      }
-    },
-    async getItemsBy5 () {
-      this.items = []
-
-      var tmpStartDate = this.startDate
-      if (!tmpStartDate) {
-        tmpStartDate = 0
-      }
-
-      var tmpEndDate = this.endDate
-      if (!tmpEndDate) {
-        tmpEndDate = 0
       }
 /*
-      var tmpWorkType = this.selectedWorkType
-      if (!tmpWorkType) {
-        tmpWorkType = 0
-      }
-*/
-      var tmpSearchWord = this.searchWord
-      if (!tmpSearchWord) {
-        tmpSearchWord = 0
-      }
-
-      if (!this.selectLand) {
-        this.selectLand = 0
-      }
-
       const response = await ItemService.fetchItemsAggBy5({
         userId: this.userId,
         startDate: tmpStartDate,
@@ -483,21 +507,8 @@ export default {
 
         // 재고수량
         this.items[i].itemStock = this.items[i].itemAmount - this.items[i].itemUsage
-        /*
-        // 구입수량, 사용수량, 재고수량
-        var amountVal = Number(0)
-        var usageVal = Number(0)
-        var stockVal = Number(0)
-        for (var j = 0; j < this.items[i].itemDetail.length; j++) {
-          amountVal += Number(this.items[i].itemDetail[j].itemAmount)
-          usageVal += Number(this.items[i].itemDetail[j].itemUsage)
-          stockVal += Number(this.items[i].itemDetail[j].itemStock)
-        }
-        this.items[i].amount = amountVal
-        this.items[i].usage = usageVal
-        this.items[i].stock = stockVal
-        */
       }
+*/
     },
     async deleteItemData (id) {
       await ItemService.deleteItem(id)
@@ -624,8 +635,9 @@ export default {
           return
         }
         // 선택한 농장명이 전체일 경우 검색어를 지우고 검색
+        /*
         if (this.selectLand === '0') {
-          this.searchWord = ''
+          // this.searchWord = ''
           this.items = []
           this.init()
           this.getItems()
@@ -633,6 +645,8 @@ export default {
           // 선택한 농장명이 전체가 아닐 경우
           this.getItemsBy5()
         }
+        */
+        this.getItemsBy5()
       }).catch(() => {})
     },
     searchReset () {
@@ -659,6 +673,7 @@ export default {
     init: function () {
       this.startDate = moment().year() + '-01-01'
       this.endDate = moment().format('YYYY-MM-DD')
+      this.searchWord = ''
     }
   }
 }

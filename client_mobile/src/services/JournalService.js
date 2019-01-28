@@ -12,7 +12,7 @@ export default {
   deleteJournalByItemId (itemId) {
     return Api().delete('journalsByItemId/' + itemId)
   },
-  
+
   fetchJournalsWorktime (params) {
     return Api().get('journals/searchWorktime/' + params.userId + '/' + params.startDate + '/' + params.endDate + '/' + params.landId, params)
   },
