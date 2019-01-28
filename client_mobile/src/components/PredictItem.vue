@@ -243,65 +243,53 @@ export default {
       if (!this.selectLand) {
         this.selectLand = 0
       }
-      const response = await ItemService.fetchItemsByDateNUserIdNLandId({
+      const response = await ItemService.fetchItemAggByDateNLandId({
+        userId: this.userId,
         startDate: this.startDate,
         endDate: this.endDate,
-        userId: this.userId,
         landId: this.selectLand
       })
       if (response.data.length > 0) {
-        var tmpItems = response.data
+        var tmpItems = []
+        for (var k = 0; k < response.data.length; k++) {
+          tmpItems.push(response.data[k]._id)
+        }
         for (var i = 0; i < response.data.length; i++) {
-          //
           const response7 = await LandService.fetchNameByLandId({
-            landId: response.data[i].landId
+            landId: response.data[i]._id.landId
           })
-
           tmpItems[i].landName = response7.data[0].name
-          //
+
           const response2 = await WcService.fetchOneTextByCcode({
-            code: response.data[i].item
+            code: response.data[i]._id.item
           })
           tmpItems[i].item = response2.data[0].text
 
-          tmpItems[i].itemAmount = Number(0)
-          tmpItems[i].itemUsage = Number(0)
-          tmpItems[i].itemStock = Number(0)
-          tmpItems[i].itemTotalPrice = Number(0)
-          for (var k = 0; k < tmpItems[i].itemDetail.length; k++) {
-            tmpItems[i].itemAmount += Number(tmpItems[i].itemDetail[k].itemAmount)
-            tmpItems[i].itemUsage += Number(tmpItems[i].itemDetail[k].itemUsage)
-            tmpItems[i].itemStock += Number(tmpItems[i].itemDetail[k].itemStock)
-            tmpItems[i].itemTotalPrice += Number(tmpItems[i].itemDetail[k].itemPrice)
-          }
+          tmpItems[i].itemStock = tmpItems[i].itemAmount - tmpItems[i].itemUsage
         }
         this.items = tmpItems
       } else {  // 작년 10일이내의 데이터가 없는 경우 작년 해당월의 데이터를 보여줌
-        const response4 = await ItemService.fetchItemsByYMUserIdLandId({
+        const response4 = await ItemService.fetchItemAggByYMNLandId({
           ym: this.lastYearYM,
           userId: this.userId,
           landId: this.selectLand
         })
-        var tmpItems2 = response4.data
+        var tmpItems2 = []
+        for (var l = 0; l < response4.data.length; l++) {
+          tmpItems2.push(response4.data[l]._id)
+        }
         for (var j = 0; j < response4.data.length; j++) {
-          //
           const response8 = await LandService.fetchNameByLandId({
-            landId: response4.data[j].landId
+            landId: response4.data[j]._id.landId
           })
-
           tmpItems2[j].landName = response8.data[0].name
-          //
+
           const response5 = await WcService.fetchOneTextByCcode({
-            code: response4.data[j].item
+            code: response4.data[j]._id.item
           })
           tmpItems2[j].item = response5.data[0].text
 
-          tmpItems2[j].itemAmount = Number(0)
-          tmpItems2[j].itemTotalPrice = Number(0)
-          for (var l = 0; l < tmpItems2[j].itemDetail.length; l++) {
-            tmpItems2[j].itemAmount += Number(tmpItems2[j].itemDetail[l].itemAmount)
-            tmpItems2[j].itemTotalPrice += Number(tmpItems2[j].itemDetail[l].itemPrice)
-          }
+          tmpItems2[j].itemStock = tmpItems2[j].itemAmount - tmpItems2[j].itemUsage
         }
         this.items = tmpItems2
       }

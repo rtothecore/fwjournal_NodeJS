@@ -1117,6 +1117,41 @@ export default {
       var tmpItemTotal = 0
 
       for (var i = 0; i < response.data.length; i++) {
+        for (var j = 0; j < response.data[i].item_details.length; j++) {
+          var tmpItemItem = {}
+          // _id
+          tmpItemItem._id = response.data[i]._id
+
+          // 날짜
+          tmpItemItem.date = response.data[i].date
+
+          // 품목명
+          tmpItemItem.itemName = response.data[i].item_details[j].itemName
+
+          // 수량
+          tmpItemItem.amount = response.data[i].item_details[j].itemAmount
+
+          // 금액
+          tmpItemItem.cost = response.data[i].item_details[j].itemPrice
+
+          // 자재구입 소계
+          tmpItemTotal += tmpItemItem.cost
+          tmpItemItems.push(tmpItemItem)
+        }
+      }
+      this.itemItems = tmpItemItems
+      this.itemTotal = tmpItemTotal
+      /*
+      const response = await ItemService.fetchJournalsByYMNUserIdAndDetail({
+        userId: this.userId,
+        startDate: this.sDate,
+        endDate: this.eDate
+      })
+      console.log(response.data)
+      var tmpItemItems = []
+      var tmpItemTotal = 0
+
+      for (var i = 0; i < response.data.length; i++) {
         for (var j = 0; j < response.data[i].itemDetail.length; j++) {
           var tmpItemItem = {}
           // _id
@@ -1141,6 +1176,7 @@ export default {
       }
       this.itemItems = tmpItemItems
       this.itemTotal = tmpItemTotal
+      */
     },
     async getCooData () {
       const response = await JournalService.fetchJournalsByYMNUserIdAndCoo({

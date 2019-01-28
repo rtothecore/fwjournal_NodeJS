@@ -193,6 +193,7 @@ import WcService from '@/services/WcService'
 import DcService from '@/services/DcService'
 import JournalService from '@/services/JournalService'
 import ItemService from '@/services/ItemService'
+import ItemDetailService from '@/services/ItemDetailService'
 import ImageInput from './ImageInputForShow.vue'
 export default {
   $_veeValidate: {
@@ -200,6 +201,7 @@ export default {
   },
   data () {
     return {
+      imgCommonPreview: {},
       selectedItem: '',
       iavatar3: {},
       iavatar2: {},
@@ -362,7 +364,32 @@ export default {
       this.selectItem = response.data[0].item
 
       // 품목상세
+      /*
       this.itemItems = response.data[0].itemDetail
+      this.onChangeItemPrice()
+      */
+      var itemDetails = response.data[0].itemDetail
+      this.itemItems = []
+      for (var i = 0; i < itemDetails.length; i++) {
+        const response2 = await ItemDetailService.fetchItemDetailByItemId({
+          userId: this.userId,
+          itemId: itemDetails[i]
+        })
+        this.itemItems.push(response2.data[0])
+        // 재고량 계산
+        this.itemItems[i].itemStock = response2.data[0].itemAmount - response2.data[0].journalUsage - this.itemItems[i].itemUsage
+        // 총 사용량 계산
+        this.itemItems[i].itemUsage = response2.data[0].journalUsage + response2.data[0].itemUsage
+
+        // 아이템 사용량
+        this.itemItems[i].itemRealUsage = response2.data[0].itemUsage
+
+        // parentId
+        this.itemItems[i].parentId = this.itemId
+
+        // itemId
+        this.itemItems[i].itemId = response2.data[0].itemId
+      }
       this.onChangeItemPrice()
 
       // 사용목적

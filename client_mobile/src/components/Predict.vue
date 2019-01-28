@@ -284,7 +284,7 @@ export default {
               tmpJournals[i].sky = '눈'
               break
           }
-          tmpJournals[i].t1h = tmpJournals[i].weather.avgT1H
+          tmpJournals[i].t1h = Math.round(tmpJournals[i].weather.avgT1H) + '℃'
         }
         this.journals = tmpJournals
       } else {  // 작년 10일이내의 데이터가 없는 경우 작년 해당월의 데이터를 보여줌
@@ -314,7 +314,21 @@ export default {
           tmpJournals2[j].workType = response6.data[0].text
 
           tmpJournals2[j].sky = tmpJournals2[j].weather.sky
-          tmpJournals2[j].t1h = tmpJournals2[j].weather.avgT1H
+          switch (tmpJournals2[j].sky) {
+            case '0' :
+              tmpJournals2[j].sky = '맑음'
+              break
+            case '1' :
+              tmpJournals2[j].sky = '비'
+              break
+            case '2' :
+              tmpJournals2[j].sky = '비/눈'
+              break
+            case '3' :
+              tmpJournals2[j].sky = '눈'
+              break
+          }
+          tmpJournals2[j].t1h = Math.round(tmpJournals2[j].weather.avgT1H) + '℃'
         }
         this.journals = tmpJournals2
       }
