@@ -1,20 +1,12 @@
 var mongoose = require("mongoose")
 var Schema = mongoose.Schema
 
-var ItemDetailSchema = new Schema({
-	itemName: String,
-	itemAmount: Number,
-	itemPrice: Number,
-	itemUsage: Number,
-	itemStock: Number
-})
-
 var ItemSchema = new Schema({
 	userId: String,
 	date: String,
 	landId: String,
 	item: String,
-	itemDetail: [ItemDetailSchema],
+	itemDetail: [String],
 	purpose: String,
 	pictureA: String,
 	pictureB: String,

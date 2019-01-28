@@ -22,9 +22,9 @@ var DetailSchema = Schema({
 	detail: String
 })
 
-var UsageSchema = Schema({
-	itemName: String,
-	usage: String
+var ItemDetailSchema = Schema({
+	itemId: String,
+	usage: Number
 })
 
 var JournalSchema = new Schema({
@@ -40,7 +40,7 @@ var JournalSchema = new Schema({
 	COO: [CooSchema],
 	shipment: DetailSchema,
 	income: DetailSchema,
-	usage: [UsageSchema],
+	itemDetail: [ItemDetailSchema],
 	output: DetailSchema,
 	pictureA: String,
 	pictureB: String,

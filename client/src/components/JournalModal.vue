@@ -197,13 +197,16 @@
                   </v-flex>
                   
                   <template v-for="(item, index) in cooItems">
+                    <v-flex xs1 sm1 md1 :key="'F' + index">
+                      <v-checkbox v-model="item.checkBox"></v-checkbox>
+                    </v-flex>
                     <v-flex xs6 sm6 md6 :key="'A' + index">
                       <v-text-field
                         label="발생분류"                      
                         v-model="item.category"
                       ></v-text-field>
                     </v-flex>
-                    <v-flex xs6 sm6 md6 :key="'B' + index">
+                    <v-flex xs5 sm5 md5 :key="'B' + index">
                       <v-text-field
                         label="발생비용"
                         v-model="item.cost"
@@ -270,8 +273,12 @@
                     </v-flex>
 
                     <template v-for="(item, index) in usageItems">
+                      <v-flex xs1 sm1 md1 :key="'G' + index">
+                        <v-checkbox v-model="item.checkBox"></v-checkbox>
+                      </v-flex>
                       <v-flex xs4 sm4 md4 :key="'C' + index">
-                        <v-select                          
+                        <!--
+                        <v-select                      
                           :items="itemNames"
                           v-model="item.itemName"
                           :error-messages="errors.collect('item.itemName')"
@@ -280,10 +287,27 @@
                           required                           
                           hint="품목명 선택"
                           persistent-hint
-                          v-on:change="onChangeItemName(item.itemName, index)"                                                               
+                          @change="onChangeItemName(item.itemName, index)"
+                          @blur="onBlurItemSelect(item.itemName, index)"                         
+                          item-text="itemName"
+                          item-value="itemId"                                                
+                        ></v-select>
+                        -->
+                        <v-select                      
+                          :items="itemNames"
+                          v-model="item.itemName"
+                          :error-messages="errors.collect('item.itemName')"
+                          label="품목명"
+                          data-vv-name="item.itemName"
+                          required                           
+                          hint="품목명 선택"
+                          persistent-hint
+                          @change="onChangeItemName(item.itemName, index)"                                                  
+                          item-text="itemName"
+                          item-value="itemId"                                                
                         ></v-select>
                       </v-flex>
-                      <v-flex xs4 sm4 md4 :key="'D' + index">
+                      <v-flex xs3 sm3 md3 :key="'D' + index">
                         <v-text-field
                           label="재고량"
                           v-model="item.stock"
@@ -296,6 +320,7 @@
                         <v-text-field
                           label="사용량"
                           v-model="item.usage"
+                          v-on:change="onChangeJournalUsage(item.usage, index)"
                           type="number"
                           min="0"
                         ></v-text-field>
@@ -484,13 +509,16 @@
                   </v-flex>
                   
                   <template v-for="(item, index) in itemItems">
+                    <v-flex xs1 sm1 md1 :key="'F' + index">
+                      <v-checkbox v-model="item.checkBox"></v-checkbox>
+                    </v-flex>
                     <v-flex xs4 sm4 md4 :key="'C' + index">
                       <v-text-field
                         label="품목명"                      
                         v-model="item.itemName"
                       ></v-text-field>
                     </v-flex>
-                    <v-flex xs4 sm4 md4 :key="'D' + index">
+                    <v-flex xs3 sm3 md3 :key="'D' + index">
                       <v-text-field
                         label="수량"
                         v-model="item.itemAmount"  
@@ -612,6 +640,7 @@ import JournalService from '@/services/JournalService'
 import WeatherService from '@/services/WeatherService'
 import ItemService from '@/services/ItemService'
 import WcDataService from '@/services/WcDataService'
+import ItemDetailService from '@/services/ItemDetailService'
 import ImageInput from './ImageInput.vue'
 // var async = require('async')  // https://caolan.github.io/async/
 export default {
@@ -620,6 +649,7 @@ export default {
   },
   data () {
     return {
+      usedItemNames: [],
       iSelectLand: '',
       iLandItems: [],
       //
@@ -629,13 +659,7 @@ export default {
       iavatar: null,
       purpose: '',
       itemPriceTotal: 0,
-      itemItems: [
-        {
-          itemName: '',
-          itemAmount: '',
-          itemPrice: ''
-        }
-      ],
+      itemItems: [],
       selectItem: '',
       items: [],
       //
@@ -673,12 +697,7 @@ export default {
       showShipment: false,
       sCode: '',
       usageItems: [],
-      cooItems: [
-        {
-          category: '',
-          cost: ''
-        }
-      ],
+      cooItems: [],
       avatar3: null,
       avatar2: null,
       avatar: null,
@@ -942,12 +961,29 @@ export default {
         wCode: workCode
       })
       this.itemNames = []
+      //
+      var tmpItemName = {}
+      tmpItemName.itemId = '0'
+      tmpItemName.itemName = '품목명을 선택하세요'
+      this.itemNames.push(tmpItemName)
+      // this.itemNames.push('품목명을 선택하세요')
+      //
       for (var i = 0; i < response.data.length; i++) {
         for (var j = 0; j < response.data[i].itemDetail.length; j++) {
-          this.itemNames.push(response.data[i].itemDetail[j].itemName)
+          const response2 = await ItemDetailService.fetchItemDetailByItemId({
+            userId: this.userId,
+            itemId: response.data[i].itemDetail[j]
+          })
+          this.itemNames.push(response2.data[0])
         }
       }
-      this.itemNames.push('직접입력')
+      //
+      var tmpItemName2 = {}
+      tmpItemName2.itemId = '777'
+      tmpItemName2.itemName = '직접입력'
+      this.itemNames.push(tmpItemName2)
+      // this.itemNames.push('직접입력')
+      //
     },
     async fetchWeatherData (baseDate, baseTime, callback, weatherDataSize) {
       const response = await WeatherService.fetchWeatherData({
@@ -988,13 +1024,26 @@ export default {
       }
     },
     async createNewItem () {
-      // 품목 사용량, 재고량 계산
+      // 데이터 입력되지 않은 것들 필터링
+      // https://stackoverflow.com/questions/281264/remove-empty-elements-from-an-array-in-javascript
+      this.itemItems = this.itemItems.filter(function (el) {
+        return el.itemName !== '' && el.itemAmount !== ''
+      })
+
+      // itemdetails 콜렉션 생성
+      var insertedItemIds = []
       for (var i = 0; i < this.itemItems.length; i++) {
+        this.itemItems[i].userId = this.userId
+        this.itemItems[i].journalUsage = 0
         this.itemItems[i].itemUsage = 0
-        this.itemItems[i].itemStock = this.itemItems[i].itemAmount
+
+        const response3 = await ItemDetailService.createItemDetail({
+          itemDetail: this.itemItems[i]
+        })
+        insertedItemIds.push(response3.data.result.itemId)
       }
 
-      // 사진 데이터
+      // items 콜렉션 생성
       var pictureAData = ''
       var pictureBData = ''
       var pictureCData = ''
@@ -1013,17 +1062,24 @@ export default {
 
       const response = await ItemService.createItem({
         userId: this.userId,
-        // date: this.User_Profile.substring(10, 20),
         date: this.User_Profile,
         landId: this.iSelectLand,
         item: this.selectedItem,
-        itemDetail: this.itemItems,
+        itemDetail: insertedItemIds,
         purpose: this.purpose,
         pictureA: pictureAData,
         pictureB: pictureBData,
         pictureC: pictureCData
       })
-      // console.log(response.data)
+
+      // itemdetails 콜렉션의 parentId를 업데이트
+      for (var j = 0; j < insertedItemIds.length; j++) {
+        await ItemDetailService.updateItemDetailWithParentId({
+          itemId: insertedItemIds[j],
+          parentId: response.data.result._id
+        })
+      }
+
       this.newEvent.itemId = response.data.result._id
       var workTypeVal = ''
       const response2 = await WcService.fetchOneTextByCcode({
@@ -1031,14 +1087,9 @@ export default {
       })
       workTypeVal = response2.data[0].text
       this.newEvent.title = workTypeVal + ' 구입'
-      /*
-      this.newEvent.start = this.User_Profile.substring(10, 20)
-      this.newEvent.end = this.User_Profile.substring(10, 20)
-      */
       this.newEvent.start = this.User_Profile
       this.newEvent.end = this.User_Profile
       this.newEvent.color = 'orange'
-      // this.newEvent.eventIndex = this.eventIndex
     },
     async createNewJournal () {
       /*
@@ -1053,6 +1104,12 @@ export default {
       */
       // 날씨 데이터
       var weatherData = {'minT1H': this.minT1H, 'maxT1H': this.maxT1H, 'avgT1H': this.avgT1H, 'minREH': this.minREH, 'maxREH': this.maxREH, 'avgREH': this.avgREH, 'avgRN1': this.RN1, 'sky': this.skyStatus}
+
+      // 발생비용 입력되지 않은 것들 필터링
+      // https://stackoverflow.com/questions/281264/remove-empty-elements-from-an-array-in-javascript
+      this.cooItems = this.cooItems.filter(function (el) {
+        return el.category !== ''
+      })
 
       // 발생비용 데이터
       var cooDatas = []
@@ -1070,16 +1127,29 @@ export default {
       var incomeData = {'amount': this.incomeAmount, 'detail': this.incomeDetail}
 
       // 사용량 데이터
-      var usageDatas = []
-      // console.log(this.usageItems)
+      var itemDetailDatas = []
+
+      // 데이터 입력되지 않은 것들 필터링
+      // https://stackoverflow.com/questions/281264/remove-empty-elements-from-an-array-in-javascript
+      this.usageItems = this.usageItems.filter(function (el) {
+        return el.itemName !== '' && el.stock !== '' && el.usage !== ''
+      })
+
       for (var j = 0; j < this.usageItems.length; j++) {
         var tempUsageData = {}
-        tempUsageData.itemName = this.usageItems[j].itemName
+        tempUsageData.itemId = this.usageItems[j].itemName
         tempUsageData.usage = this.usageItems[j].usage
-        usageDatas.push(tempUsageData)
+        itemDetailDatas.push(tempUsageData)
 
-        // Items 컬렉션의 해당 아이템 사용량을 업데이트
-        this.updateItemUsage(this.userId, this.selectedLandId, this.selectedWorkTypeCode, tempUsageData.itemName, tempUsageData.usage)
+        // itemDetail 컬렉션의 해당 아이템 일지 사용량을 업데이트
+        var tempItemDetail = {}
+        tempItemDetail.userId = this.userId
+        tempItemDetail.itemId = this.usageItems[j].itemName
+        tempItemDetail.journalUsage = this.usageItems[j].usage
+        tempItemDetail.originalJournalUsage = 0
+        await ItemDetailService.updateJournalUsageByItemId({
+          itemDetail: tempItemDetail
+        })
       }
 
       // 생산량 데이터
@@ -1116,7 +1186,7 @@ export default {
         coo: cooDatas,
         shipment: shipmentData,
         income: incomeData,
-        usage: usageDatas,
+        itemDetail: itemDetailDatas,
         output: outputData,
         pictureA: pictureAData,
         pictureB: pictureBData,
@@ -1135,24 +1205,23 @@ export default {
       // this.newEvent.eventIndex = this.eventIndex
     },
     async updateItemUsage (userId, landId, item, itemName, usage) {
-      const response = await ItemService.updateItemUsageByJournalUsage({
+      await ItemService.updateItemUsageByJournalUsage({
         userId: userId,
         landId: landId,
         item: item,
         itemName: itemName,
         usage: usage
       })
-      console.log(response.data)
     },
-    async fetchItemByUserLandIdItemName (idxVal, itemNameVal) {
-      // 재고량 = 구입량 - 사용량으로 계산
-      const response = await ItemService.fetchItemByUserLandItemName({
+    async fetchItemDetail (idxVal, itemIdVal) {
+      const response = await ItemDetailService.fetchItemDetailByItemId({
         userId: this.userId,
-        landId: this.selectedLandId,
-        item: this.selectedWorkTypeCode,
-        itemName: itemNameVal
+        itemId: itemIdVal
       })
-      this.usageItems[idxVal].stock = response.data.itemAmount - ((response.data.itemUsage) ? response.data.itemUsage : 0)
+      this.usageItems[idxVal].stock = response.data[0].itemAmount - response.data[0].journalUsage - response.data[0].itemUsage
+      this.usageItems[idxVal].itemUsage = response.data[0].itemUsage
+      this.usageItems[idxVal].journalRealUsage = response.data[0].journalUsage
+      this.usageItems[idxVal].itemAmount = response.data[0].itemAmount
     },
     /*
     task1: function (callback) {
@@ -1185,7 +1254,6 @@ export default {
     },
     */
     getWeatherData: function (baseDate, baseSTime, baseETime, callback) {
-      // console.log('baseDate:' + baseDate + ', baseSTime:' + baseSTime + ', baseETime:' + baseETime)
       for (var i = baseSTime * 1; i < baseETime * 1; i++) {
         var baseTime = this.leadingZeros(i, 2) + '00'
         var weatherDataSize = baseETime - baseSTime
@@ -1326,7 +1394,6 @@ export default {
       }
     },
     onChangeWorkType: function (event) {
-      // console.log(event)
       this.selectedWorkTypeCode = event
       if (event === '새 작업추가') {
         this.addWorkType(0)
@@ -1335,13 +1402,34 @@ export default {
         this.fetchItemsByWcode(this.selectedWorkTypeCode)
       }
     },
+    onBlurItemSelect: function (event, idx) {
+      // console.log(e)
+      console.log('selected')
+      this.usageItems[idx].itemName = this.itemNames[1]
+    },
     onChangeItemName: function (event, idx) {
-      // console.log(event)
-      if (event === '직접입력') {
+      if (event === '777') {
         this.addCustomItem(idx)
       } else {
-        this.fetchItemByUserLandIdItemName(idx, event)
+        // 모든 옵션의 disabled 속성을 해제 시킨다
+        for (var k = 0; k < this.itemNames.length; k++) {
+          this.itemNames[k].disabled = false
+        }
+
+        // 모든 행에 대해서 이미 선택된 옵션만 disabled 속성을 적용한다
+        for (var i = 0; i < this.usageItems.length; i++) {
+          for (var j = 0; j < this.itemNames.length; j++) {
+            if (this.itemNames[j].itemId === this.usageItems[i].itemName) {
+              this.itemNames[j].disabled = true
+            }
+          }
+        }
+        this.fetchItemDetail(idx, event)
       }
+    },
+    onChangeJournalUsage: function (usage, index) {
+      // this.usageItems[index].stock = this.usageItems[index].itemAmount - this.usageItems[index].itemUsage - ((usage * 1) - this.itemItems[index].itemUsage + this.itemItems[index].journalRealUsage) + this.itemItems[index].journalRealUsage
+      this.usageItems[index].stock = this.usageItems[index].itemAmount - this.usageItems[index].itemUsage - (usage * 1)
     },
     onChangeWSTime: function (event) {
       this.newEvent.start = this.User_Profile.substring(10, 20) + ' ' + event
@@ -1412,21 +1500,45 @@ export default {
       })
     },
     deleteCooRow () {
-      if (this.cooItems.length > 1) {
-        this.cooItems.splice(this.cooItems.length - 1, 1)
+      /*
+      if (this.cooItems.length > 0) {
+        for (var i = 0; i < this.cooItems.length; i++) {
+          if (this.cooItems[i].checkBox) {
+            this.cooItems.splice(i, 1)
+            this.onChangeItemCost()
+          }
+        }
+      }
+      */
+      if (this.cooItems.length > 0) {
+        for (var i = 0; i < this.cooItems.length; i++) {
+          if (this.cooItems[i].checkBox) {
+            this.cooItems[i].deleteId = '777'
+          }
+        }
+        this.cooItems = this.cooItems.filter(function (el) {
+          return el.deleteId !== '777'
+        })
         this.onChangeItemCost()
       }
     },
     addUsageRow () {
       this.usageItems.push({
-        itemName: '',
+        itemName: '품목명을 선택하세요',
         stock: '',
         usage: ''
       })
     },
     deleteUsageRow () {
-      if (this.usageItems.length > 1) {
-        this.usageItems.splice(this.usageItems.length - 1, 1)
+      if (this.usageItems.length > 0) {
+        for (var i = 0; i < this.usageItems.length; i++) {
+          if (this.usageItems[i].checkBox) {
+            this.usageItems[i].deleteId = '777'
+          }
+        }
+        this.usageItems = this.usageItems.filter(function (el) {
+          return el.deleteId !== '777'
+        })
       }
     },
     addItem () {
@@ -1440,8 +1552,21 @@ export default {
       })
     },
     deleteItemRow () {
-      if (this.itemItems.length > 1) {
-        this.itemItems.splice(this.itemItems.length - 1, 1)
+      if (this.itemItems.length > 0) {
+        for (var i = 0; i < this.itemItems.length; i++) {
+          if (this.itemItems[i].checkBox) {
+            /*
+            if (this.itemItems[i].itemId) {
+              this.deletedItemIds.push(this.itemItems[i].itemId)
+            }
+            */
+            this.itemItems[i].itemId = '777'
+          }
+        }
+        this.itemItems = this.itemItems.filter(function (el) {
+          return el.itemId !== '777'
+        })
+
         this.onChangeItemPrice()
       }
     },

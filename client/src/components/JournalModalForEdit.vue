@@ -140,15 +140,14 @@
                       required
                       v-on:change="onChangeLand"
                       item-text="name"
-                      item-value="_id"                      
+                      item-value="_id"
+                      readonly                      
                     ></v-select>
                   </v-flex>
                   <v-flex xs6 sm6 md3>
                     <v-text-field
                       v-model="cropName"
                       label="작물명" 
-                      hint="농장명을 선택하면 자동입력됩니다"
-                      persistent-hint
                       required                      
                       ></v-text-field>
                   </v-flex>
@@ -164,8 +163,7 @@
                       v-on:change="onChangeWorkType"
                       item-text="text"
                       item-value="wCode"   
-                      hint="작물명에 따른 작업분류 선택"
-                      persistent-hint                                        
+                      readonly                                    
                     ></v-select>
                   </v-flex>
 
@@ -198,13 +196,16 @@
                   </v-flex>
                   
                   <template v-for="(item, index) in cooItems">
+                    <v-flex xs1 sm1 md1 :key="'F' + index">
+                      <v-checkbox v-model="item.checkBox"></v-checkbox>
+                    </v-flex>
                     <v-flex xs6 sm6 md6 :key="'A' + index">
                       <v-text-field
                         label="발생분류"                      
                         v-model="item.category"
                       ></v-text-field>
                     </v-flex>
-                    <v-flex xs6 sm6 md6 :key="'B' + index">
+                    <v-flex xs5 sm5 md5 :key="'B' + index">
                       <v-text-field
                         label="발생비용"
                         v-model="item.cost"
@@ -275,6 +276,9 @@
                     </v-flex>
 
                     <template v-for="(item, index) in usageItems">
+                      <v-flex xs1 sm1 md1 :key="'G' + index">
+                        <v-checkbox v-model="item.checkBox"></v-checkbox>
+                      </v-flex>
                       <v-flex xs4 sm4 md4 :key="'C' + index">
                         <v-select                          
                           :items="itemNames"
@@ -285,10 +289,12 @@
                           required                           
                           hint="품목명 선택"
                           persistent-hint
-                          v-on:change="onChangeItemName(item.itemName, index)"                                        
+                          v-on:change="onChangeItemName(item.itemName, index)"
+                          item-text="itemName"
+                          item-value="itemId"                                       
                         ></v-select>
                       </v-flex>
-                      <v-flex xs4 sm4 md4 :key="'D' + index">
+                      <v-flex xs3 sm3 md3 :key="'D' + index">
                         <v-text-field
                           label="재고량"
                           v-model="item.stock"
@@ -301,6 +307,7 @@
                         <v-text-field
                           label="사용량"
                           v-model="item.usage"
+                          v-on:change="onChangeJournalUsage(item.usage, index)"
                           type="number"
                           min="0"
                         ></v-text-field>
@@ -399,8 +406,10 @@
               <!-- <small>*필수 입력 사항입니다</small> -->
             </v-card-text>
             <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn outline color="indigo" flat @click.native="deleteJ">삭제</v-btn>
+              <!-- <v-spacer></v-spacer> -->
+              <v-flex class="text-sm-left">
+                <v-btn outline color="indigo" flat @click.native="deleteJ">삭제</v-btn>
+              </v-flex>
               <v-btn outline color="indigo" flat @click.native="dialog = false">취소</v-btn>              
               <v-btn color="primary" @click.native="save">수정</v-btn>
             </v-card-actions>
@@ -493,21 +502,36 @@
                   </v-flex>
                   
                   <template v-for="(item, index) in itemItems">
+                    <v-flex xs1 sm1 md1 :key="'H' + index">
+                      <v-checkbox v-model="item.checkBox"></v-checkbox>
+                    </v-flex>
                     <v-flex xs3 sm3 md3 :key="'C' + index">
                       <v-text-field
                         label="품목명"                      
                         v-model="item.itemName"
                       ></v-text-field>
                     </v-flex>
-                    <v-flex xs2 sm2 md2 :key="'D' + index">
+                    <!--
+                      <v-flex xs2 sm2 md2 :key="'D' + index">
                       <v-text-field
                         label="수량"
-                        v-model="item.itemAmount"   
+                        v-model="item.itemAmount"  
+                        v-on:input="onChangeItemAmount(item.itemAmount, index)" 
                         type="number"   
                         min="0"                  
                       ></v-text-field>
                     </v-flex>
-                    <v-flex xs3 sm3 md3 :key="'E' + index">
+                      -->
+                    <v-flex xs2 sm2 md2 :key="'D' + index">
+                      <v-text-field
+                        label="수량"
+                        v-model="item.itemAmount"  
+                        v-on:input="onChangeItemAmount(item.itemAmount, index)" 
+                        type="number"   
+                        min="item.itemUsage"                  
+                      ></v-text-field>
+                    </v-flex>
+                    <v-flex xs2 sm2 md2 :key="'E' + index">
                       <v-text-field
                         label="가격"
                         v-model="item.itemPrice"
@@ -516,13 +540,25 @@
                         min="0"
                       ></v-text-field>
                     </v-flex>
+                    <!--
                     <v-flex xs2 sm2 md2 :key="'F' + index">
                       <v-text-field
                         label="사용량"
                         v-model="item.itemUsage"
-                        v-on:change="onChangeItemUsage(item.itemUsage, index)"                        
+                        v-on:input="onChangeItemUsage(item.itemUsage, index)"                        
                         type="number"
                         min="0"
+                      ></v-text-field>
+                    </v-flex>  
+                    -->
+                    <v-flex xs2 sm2 md2 :key="'F' + index">
+                      <v-text-field
+                        label="사용량"
+                        v-model="item.itemUsage"
+                        v-on:input="onChangeItemUsage(item.itemUsage, index)"                        
+                        type="number"
+                        min="0"
+                        readonly
                       ></v-text-field>
                     </v-flex>  
                     <v-flex xs2 sm2 md2 :key="'G' + index">
@@ -531,6 +567,7 @@
                         v-model="item.itemStock"                        
                         type="number"
                         min="0"
+                        readonly
                       ></v-text-field>
                     </v-flex>  
                   </template>                                                     
@@ -607,11 +644,13 @@
               <!-- <small>*필수 입력 사항입니다</small> -->
             </v-card-text>
             <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn outline color="indigo" flat @click.native="deleteI">삭제</v-btn>
+              <!-- <v-spacer></v-spacer> -->
+              <v-flex class="text-sm-left">
+                <v-btn outline color="indigo" flat @click.native="deleteI">삭제</v-btn>
+              </v-flex>
               <v-btn outline color="indigo" flat @click.native="dialog = false">취소</v-btn>
               <!-- <v-btn color="blue darken-1" flat @click.native="dialog = false" :disabled="!valid">작성</v-btn> -->
-              <v-btn color="primary" @click.native="itemSave">작성</v-btn>
+              <v-btn color="primary" @click.native="itemSave">수정</v-btn>
             </v-card-actions>
             
                   </div>
@@ -640,6 +679,7 @@ import WcService from '@/services/WcService'
 import DcService from '@/services/DcService'
 import JournalService from '@/services/JournalService'
 import ItemService from '@/services/ItemService'
+import ItemDetailService from '@/services/ItemDetailService'
 import ImageInput from './ImageInput.vue'
 export default {
   $_veeValidate: {
@@ -647,6 +687,13 @@ export default {
   },
   data () {
     return {
+      // isBackupUsageItems: false,
+      // usageItemsBackup: [],
+      //
+      deletedJournalsItemIds: [],
+      deletedItemIds: [],
+      //
+      // originalJournalUsages: [],
       originalItemUsages: [],
       //
       iSelectLand: '',
@@ -663,13 +710,7 @@ export default {
       iavatar: {},
       purpose: '',
       itemPriceTotal: 0,
-      itemItems: [
-        {
-          itemName: '',
-          itemAmount: '',
-          itemPrice: ''
-        }
-      ],
+      itemItems: [],
       selectItem: '',
       items: [],
       Item_User_Profile: '',
@@ -702,12 +743,7 @@ export default {
       showShipment: false,
       sCode: '',
       usageItems: [],
-      cooItems: [
-        {
-          category: '',
-          cost: ''
-        }
-      ],
+      cooItems: [],
       avatar3: {},
       avatar2: {},
       avatar: {},
@@ -815,6 +851,17 @@ export default {
     ImageInput: ImageInput
   },
   methods: {
+    /*
+    async doJournalDataBackup () {
+      // 최초백업이 안 되어있을 경우 백업
+      if (!this.isBackupUsageItems) {
+        this.usageItemsBackup = this.usageItems
+        this.isBackupUsageItems = true
+        console.log('backup!')
+        console.log(this.usageItemsBackup)
+      }
+    },
+    */
     async getItem () {
       const response = await ItemService.fetchItem({
         id: this.itemId
@@ -831,7 +878,31 @@ export default {
       this.selectItem = response.data[0].item
 
       // 품목상세
-      this.itemItems = response.data[0].itemDetail
+      var itemDetails = response.data[0].itemDetail
+      this.itemItems = []
+      for (var i = 0; i < itemDetails.length; i++) {
+        const response2 = await ItemDetailService.fetchItemDetailByItemId({
+          userId: this.userId,
+          itemId: itemDetails[i]
+        })
+        this.itemItems.push(response2.data[0])
+        // 재고량 계산
+        this.itemItems[i].itemStock = response2.data[0].itemAmount - response2.data[0].journalUsage - this.itemItems[i].itemUsage
+        // 총 사용량 계산
+        this.itemItems[i].itemUsage = response2.data[0].journalUsage + response2.data[0].itemUsage
+
+        // 아이템 사용량
+        this.itemItems[i].itemRealUsage = response2.data[0].itemUsage
+
+        // parentId
+        this.itemItems[i].parentId = this.itemId
+
+        // itemId
+        this.itemItems[i].itemId = response2.data[0].itemId
+        // 현재 사용량 저장
+        // this.originalItemUsages[k] = this.itemItems[i].itemUsage
+      }
+      // console.log(this.itemItems)
       this.onChangeItemPrice()
 
       // 사용목적
@@ -892,6 +963,7 @@ export default {
       this.getCropCodeByLandId(this.selectLand)
       this.selectedWorkTypeCode = response.data[0].workCode
       this.selectWorkType = response.data[0].workCode
+      this.onChangeWorkType(this.selectWorkType)
 
       this.workTime = response.data[0].workTime
       this.workerNumber = response.data[0].workerNumber
@@ -921,31 +993,33 @@ export default {
         this.showIncome = false
         this.showUsage = true
 
-        // 셀렉트 박스에 커스텀 입력 사항을 추가
-        this.itemNames = []
-        for (var i = 0; i < response.data[0].usage.length; i++) {
-          this.itemNames.push(response.data[0].usage[i].itemName)
-        }
-
-        this.usageItems = response.data[0].usage
-
-        // Item 콜렉션의 품목 수량, 사용량을 로드하고 재고량을 계산(재고량 = 구입수량 - 자재사용량)
-        for (var j = 0; j < this.usageItems.length; j++) {
-          // console.log(this.usageItems[j].itemName)
-          const response2 = await ItemService.fetchItemByUserLandItemName({
+        // this.itemNames = []
+        for (var k = 0; k < response.data[0].itemDetail.length; k++) {
+          // 셀렉트 박스
+          const response3 = await ItemDetailService.fetchItemDetailByItemId({
             userId: this.userId,
-            landId: this.selectedLandId,
-            item: this.selectedWorkTypeCode,
-            itemName: this.usageItems[j].itemName
+            itemId: response.data[0].itemDetail[k].itemId
           })
-          // console.log(response2.data)
-          // this.usageItems[j].stock = response2.data[0].itemDetail[0].itemAmount - response2.data[0].itemDetail[0].itemUsage
-          this.usageItems[j].stock = response2.data.itemAmount - response2.data.itemUsage
+          /*
+          // console.log(response3.data)
+          this.itemNames.push(response3.data[0])
+          */
+
+          var tmpUsageItem = {}
+          tmpUsageItem.itemName = response3.data[0].itemId
+          tmpUsageItem.usage = response.data[0].itemDetail[k].usage
+          tmpUsageItem.originalJournalUsage = response.data[0].itemDetail[k].usage  // 원래 사용량 저장
+          // 재고량 = itemAmount - journalUsage - itemUsage
+          tmpUsageItem.stock = response3.data[0].itemAmount - response3.data[0].journalUsage - response3.data[0].itemUsage
+          tmpUsageItem.itemAmount = response3.data[0].itemAmount
+          tmpUsageItem.journalRealUsage = response3.data[0].journalUsage
+          tmpUsageItem.itemUsage = response3.data[0].itemUsage
+          this.usageItems.push(tmpUsageItem)
 
           // 현재 사용량 저장
-          this.originalItemUsages[j] = this.usageItems[j].usage
+          // this.originalJournalUsages[k] = tmpUsageItem.usage
         }
-        this.fetchItemsByWcodeForEdit(this.selectedWorkTypeCode) //
+        // this.itemNames.push('직접입력')
 
         this.showOutput = false
       } else if (this.selectedWorkTypeText === '생산') {
@@ -962,6 +1036,8 @@ export default {
         this.showUsage = false
         this.showOutput = false
       }
+
+      // this.doJournalDataBackup()
 
       this.workContent = response.data[0].workContent
       this.remarks = response.data[0].remarks
@@ -985,16 +1061,6 @@ export default {
         this.avatar3 = null
       }
     },
-    async fetchItemByUserLandIdItemName (idxVal, itemNameVal) {
-      // 재고량 = 구입량 - 사용량
-      const response = await ItemService.fetchItemByUserLandItemName({
-        userId: this.userId,
-        landId: this.selectedLandId,
-        item: this.selectedWorkTypeCode,
-        itemName: itemNameVal
-      })
-      this.usageItems[idxVal].stock = response.data.itemAmount - ((response.data.itemUsage) ? response.data.itemUsage : 0)
-    },
     async fetchItemsByWcode (workCode) {
       const response = await ItemService.fetchItemsByWcode({
         userId: this.userId,
@@ -1003,23 +1069,21 @@ export default {
       this.itemNames = []
       for (var i = 0; i < response.data.length; i++) {
         for (var j = 0; j < response.data[i].itemDetail.length; j++) {
-          this.itemNames.push(response.data[i].itemDetail[j].itemName)
+          const response2 = await ItemDetailService.fetchItemDetailByItemId({
+            userId: this.userId,
+            itemId: response.data[i].itemDetail[j]
+          })
+          this.itemNames.push(response2.data[0])
         }
       }
-      this.itemNames.push('직접입력')
-    },
-    async fetchItemsByWcodeForEdit (workCode) {
-      const response = await ItemService.fetchItemsByWcode({
-        userId: this.userId,
-        wCode: workCode
-      })
-      // this.itemNames = []
-      for (var i = 0; i < response.data.length; i++) {
-        for (var j = 0; j < response.data[i].itemDetail.length; j++) {
-          this.itemNames.push(response.data[i].itemDetail[j].itemName)
-        }
-      }
-      this.itemNames.push('직접입력')
+      var tmpItemName2 = {}
+      tmpItemName2.itemId = '777'
+      tmpItemName2.itemName = '직접입력'
+      this.itemNames.push(tmpItemName2)
+      // this.itemNames.push('직접입력')
+
+      // 선택가능한 itemNames 초기화
+      this.initItemNames()
     },
     async getLands () {
       const response = await LandService.fetchLands({
@@ -1057,14 +1121,33 @@ export default {
       this.workType.push({text: '새 작업추가'})
     },
     async updateItem () {
-      // 품목 사용량이 입력되지 않았을 경우 0으로 초기화
+      // 데이터 입력되지 않은 것들 필터링
+      // https://stackoverflow.com/questions/281264/remove-empty-elements-from-an-array-in-javascript
+      this.itemItems = this.itemItems.filter(function (el) {
+        return el.itemName !== '' && el.itemAmount !== 0
+      })
+
+      // itemdetails 콜렉션 Update
+      var updatedItemIds = []
       for (var i = 0; i < this.itemItems.length; i++) {
-        if (this.itemItems[i].itemUsage) {
-        } else {
-          this.itemItems[i].itemUsage = 0
-        }
+        this.itemItems[i].parentId = this.itemId
+        this.itemItems[i].userId = this.userId
+        const response3 = await ItemDetailService.updateItemUsageByItemId({
+          itemDetail: this.itemItems[i]
+        })
+
+        updatedItemIds.push(response3.data.result.itemId)
       }
 
+      for (var j = 0; j < this.deletedItemIds.length; j++) {
+        // journals 콜렉션에서 해당 itemId Delete
+        this.deleteJournalByItemId(this.deletedItemIds[j])
+        // itemdetails 콜렉션 Delete
+        await ItemDetailService.deleteItemDetailByItemId(this.deletedItemIds[j])
+      }
+      // console.log(updatedItemIds)
+
+      // items 콜렉션 Update, Delete
       var pictureAData = ''
       var pictureBData = ''
       var pictureCData = ''
@@ -1084,10 +1167,10 @@ export default {
       await ItemService.updateItem({
         id: this.itemId,
         userId: this.userId,
-        // date: this.Item_User_Profile.substring(10, 20),
         date: this.Item_User_Profile,
+        landId: this.iSelectLand,
         item: this.selectItem,
-        itemDetail: this.itemItems,
+        itemDetail: updatedItemIds,
         purpose: this.purpose,
         pictureA: pictureAData,
         pictureB: pictureBData,
@@ -1101,8 +1184,6 @@ export default {
       })
       workTypeVal = response2.data[0].text
       this.updatedEvent.title = workTypeVal + ' 구입'
-      // this.updatedEvent.start = this.Item_User_Profile.substring(10, 20)
-      // this.updatedEvent.end = this.Item_User_Profile.substring(10, 20)
       this.updatedEvent.start = this.Item_User_Profile
       this.updatedEvent.end = this.Item_User_Profile
       this.updatedEvent.itemId = this.itemId
@@ -1130,10 +1211,60 @@ export default {
         pictureCData = this.avatar3.uploadedFilename
       }
 
+      // 발생비용 입력되지 않은 것들 필터링
+      // https://stackoverflow.com/questions/281264/remove-empty-elements-from-an-array-in-javascript
+      this.cooItems = this.cooItems.filter(function (el) {
+        return el.category !== ''
+      })
+
+      // 사용량 데이터
+      var itemDetailDatas = []
+
+      // 데이터 입력되지 않은 것들 필터링
+      // https://stackoverflow.com/questions/281264/remove-empty-elements-from-an-array-in-javascript
+      this.usageItems = this.usageItems.filter(function (el) {
+        return el.itemName !== '' && el.stock !== '' && el.usage !== ''
+      })
+
+/*
+      if (this.isBackupUsageItems) {  // 작업분류가 변경된 경우
+        console.log(this.usageItemsBackup)
+        // ItemDetail에서 usageItems에 해당하는 itemId들 삭제
+        for (var i = 0; i < this.usageItemsBackup.length; i++) {
+          this.deleteJournalUsage(this.usageItemsBackup[i].itemName, this.usageItemsBackup[i].journalRealUsage)
+        }
+      }
+*/
+      for (var j = 0; j < this.usageItems.length; j++) {
+        var tempUsageData = {}
+        tempUsageData.itemId = this.usageItems[j].itemName
+        tempUsageData.usage = this.usageItems[j].usage
+        itemDetailDatas.push(tempUsageData)
+
+        // itemDetail 컬렉션의 해당 아이템 일지 사용량을 업데이트
+        var tempItemDetail = {}
+        tempItemDetail.userId = this.userId
+        tempItemDetail.itemId = this.usageItems[j].itemName
+        tempItemDetail.journalUsage = this.usageItems[j].usage * 1
+        if (!this.usageItems[j].originalJournalUsage) {
+          tempItemDetail.originalJournalUsage = 0
+        } else {
+          tempItemDetail.originalJournalUsage = this.usageItems[j].originalJournalUsage
+        }
+        await ItemDetailService.updateJournalUsageByItemId({
+          itemDetail: tempItemDetail
+        })
+      }
+
+      // itemdetails 컬렉션의 특정 품목 journal 사용량 Update
+      console.log(this.deletedJournalsItemIds)
+      for (var k = 0; k < this.deletedJournalsItemIds.length; k++) {
+        this.deleteJournalUsage(this.deletedJournalsItemIds[k].itemId, this.deletedJournalsItemIds[k].journalUsage)
+      }
+
       await JournalService.updateJournal({
         id: this.journalId,
         userId: this.userId,
-        // date: this.User_Profile.substring(10, 20),
         date: this.User_Profile,
         landId: this.selectLand,
         workCode: this.selectedWorkTypeCode,
@@ -1144,28 +1275,15 @@ export default {
         coo: this.cooItems,
         shipment: shipment,
         income: income,
-        usage: this.usageItems,
+        itemDetail: itemDetailDatas,
         output: output,
         pictureA: pictureAData,
         pictureB: pictureBData,
         pictureC: pictureCData
       })
 
-      // items 컬렉션의 특정 품목 사용량 Update
-      var absoluteValForUsage = 0
-      for (var i = 0; i < this.usageItems.length; i++) {
-        if (this.usageItems[i].usage !== this.originalItemUsages[i]) {
-          absoluteValForUsage = this.usageItems[i].usage - this.originalItemUsages[i]
-          // console.log('absoluteValForUsage:' + absoluteValForUsage)
-          this.updateItemUsage(this.userId, this.selectedLandId, this.selectedWorkTypeCode, this.usageItems[i].itemName, absoluteValForUsage)
-        }
-      }
-
       this.fetchNameByLandId(this.selectLand)
-      // this.fetchCropNameByCropCode(this.selectedCropCode)
       this.fetchTextByCode(this.selectedWorkTypeCode)
-      // this.updatedEvent.start = this.User_Profile.substring(10, 20)
-      // this.updatedEvent.end = this.User_Profile.substring(10, 20)
       this.updatedEvent.start = this.User_Profile
       this.updatedEvent.end = this.User_Profile
       this.updatedEvent.journalId = this.journalId
@@ -1186,12 +1304,14 @@ export default {
       await ItemService.deleteItem(id)
     },
     async deleteJournal (id) {
+      /*
       // items 컬렉션의 특정 품목 사용량 Update
       var absoluteValForUsage = 0
       for (var i = 0; i < this.usageItems.length; i++) {
         absoluteValForUsage = 0 - this.usageItems[i].usage
         this.updateItemUsage(this.userId, this.selectedLandId, this.selectedWorkTypeCode, this.usageItems[i].itemName, absoluteValForUsage)
       }
+      */
 
       await JournalService.deleteJournal(id)
     },
@@ -1232,29 +1352,73 @@ export default {
         code: workCode
       })
       this.selectedWorkTypeText = response.data[0].text
+
       if (this.selectedWorkTypeText === '출하') {
         this.showShipment = true
         this.showIncome = true
         this.showUsage = false
+        /*
+        // ItemDetail에서 usageItems에 해당하는 itemId들 삭제
+        for (var i = 0; i < this.usageItems.length; i++) {
+          this.deleteJournalUsage(this.usageItems[i].itemName, this.usageItems[i].journalRealUsage)
+        }
+        */
         this.usageItems = []
         this.showOutput = false
       } else if (this.selectedWorkTypeText === '비료' || this.selectedWorkTypeText === '농약' || this.selectedWorkTypeText === '사료') {
         this.showShipment = false
         this.showIncome = false
         this.showUsage = true
+        this.usageItems = []  //
         this.showOutput = false
       } else if (this.selectedWorkTypeText === '생산') {
         this.showShipment = false
         this.showIncome = false
         this.showUsage = false
+        /*
+        // ItemDetail에서 usageItems에 해당하는 itemId들 삭제
+        for (var j = 0; j < this.usageItems.length; j++) {
+          this.deleteJournalUsage(this.usageItems[j].itemName, this.usageItems[j].journalRealUsage)
+        }
+        */
         this.usageItems = []
         this.showOutput = true
       } else {
         this.showShipment = false
         this.showIncome = false
         this.showUsage = false
+        /*
+        // ItemDetail에서 usageItems에 해당하는 itemId들 삭제
+        for (var k = 0; k < this.usageItems.length; k++) {
+          this.deleteJournalUsage(this.usageItems[k].itemName, this.usageItems[k].journalRealUsage)
+        }
+        */
+        this.usageItems = []  //
         this.showOutput = false
       }
+    },
+    async deleteJournalByItemId (itemId) {
+      await JournalService.deleteJournalByItemId(itemId)
+    },
+    async deleteJournalUsage (itemId, journalUsage) {
+      var tmpItemDetail = {}
+      tmpItemDetail.userId = this.userId
+      tmpItemDetail.itemId = itemId
+      tmpItemDetail.journalUsage = journalUsage
+
+      await ItemDetailService.deleteJournalUsageByItemId({
+        itemDetail: tmpItemDetail
+      })
+    },
+    async fetchItemDetail (idxVal, itemIdVal) {
+      const response = await ItemDetailService.fetchItemDetailByItemId({
+        userId: this.userId,
+        itemId: itemIdVal
+      })
+      this.usageItems[idxVal].stock = response.data[0].itemAmount - response.data[0].journalUsage - response.data[0].itemUsage
+      this.usageItems[idxVal].itemUsage = response.data[0].itemUsage
+      this.usageItems[idxVal].journalRealUsage = response.data[0].journalUsage
+      this.usageItems[idxVal].itemAmount = response.data[0].itemAmount
     },
     onChangeILand: function (event) {
       this.getCropCodeByILandId(this.iSelectLand)
@@ -1303,7 +1467,18 @@ export default {
       if (event === '직접입력') {
         this.addCustomItem(idx)
       } else {
-        this.fetchItemByUserLandIdItemName(idx, event)
+        // 선택가능한 itemNames 초기화
+        this.initItemNames()
+        this.fetchItemDetail(idx, event)
+      }
+    },
+    onChangeJournalUsage: function (usage, index) {
+      // this.usageItems[index].stock = this.usageItems[index].itemAmount - this.usageItems[index].itemUsage - (usage * 1)
+      if (((usage * 1) - this.usageItems[index].originalJournalUsage) > this.usageItems[index].stock) {
+        this.usageItems[index].usage = this.usageItems[index].originalJournalUsage
+        this.usageItems[index].stock = this.usageItems[index].itemAmount - this.usageItems[index].journalRealUsage
+      } else {
+        this.usageItems[index].stock = this.usageItems[index].itemAmount - this.usageItems[index].journalRealUsage + this.usageItems[index].originalJournalUsage - (usage * 1)
       }
     },
     onChangeWSTime: function (event) {
@@ -1316,8 +1491,33 @@ export default {
       this.selectedWETime = tmpStr.replace(':', '')
       console.log(this.selectedWETime)
     },
-    onChangeItemUsage: function (event, index) {
-      this.itemItems[index].itemStock = this.itemItems[index].itemAmount - event
+    onChangeItemUsage: async function (event, index) {
+      // 재고량 계산
+      // this.itemItems[index].itemStock = this.itemItems[index].itemAmount - this.itemItems[index].journalUsage - ((event * 1) - this.itemItems[index].journalUsage + this.itemItems[index].itemRealUsage) + this.itemItems[index].itemRealUsage
+    },
+    onChangeItemAmount: async function (event, index) {
+      console.log(event + '/' + index)
+      if (event >= this.itemItems[index].journalUsage) {
+        // 재고량 계산
+        this.itemItems[index].itemStock = event - this.itemItems[index].journalUsage
+      } else {
+        this.itemItems[index].itemAmount = this.itemItems[index].journalUsage
+      }
+    },
+    initItemNames () {
+      // 모든 옵션의 disabled 속성을 해제 시킨다
+      for (var k = 0; k < this.itemNames.length; k++) {
+        this.itemNames[k].disabled = false
+      }
+
+      // 모든 행에 대해서 이미 선택된 옵션만 disabled 속성을 적용한다
+      for (var i = 0; i < this.usageItems.length; i++) {
+        for (var j = 0; j < this.itemNames.length; j++) {
+          if (this.itemNames[j].itemId === this.usageItems[i].itemName) {
+            this.itemNames[j].disabled = true
+          }
+        }
+      }
     },
     itemSave () {
       this.updateItem()
@@ -1388,6 +1588,11 @@ export default {
         cancelButtonText: '취소합니다'
       }).then((result) => {
         if (result.value) {
+          // itemdetail에 삭제되는 일지의 사용량 삭제
+          for (var i = 0; i < this.usageItems.length; i++) {
+            this.deleteJournalUsage(this.usageItems[i].itemName, this.usageItems[i].usage)
+          }
+
           this.deleteJournal(this.journalId)
           this.$swal(
             '삭제했습니다!',
@@ -1425,8 +1630,25 @@ export default {
       })
     },
     deleteCooRow () {
-      if (this.cooItems.length > 1) {
-        this.cooItems.splice(this.cooItems.length - 1, 1)
+      /*
+      if (this.cooItems.length > 0) {
+        for (var i = 0; i < this.cooItems.length; i++) {
+          if (this.cooItems[i].checkBox) {
+            this.cooItems.splice(i, 1)
+            this.onChangeItemCost()
+          }
+        }
+      }
+      */
+      if (this.cooItems.length > 0) {
+        for (var i = 0; i < this.cooItems.length; i++) {
+          if (this.cooItems[i].checkBox) {
+            this.cooItems[i].deleteId = '777'
+          }
+        }
+        this.cooItems = this.cooItems.filter(function (el) {
+          return el.deleteId !== '777'
+        })
         this.onChangeItemCost()
       }
     },
@@ -1438,24 +1660,47 @@ export default {
       })
     },
     deleteUsageRow () {
-      if (this.usageItems.length > 1) {
-        // items 컬렉션의 특정 품목 사용량 Update
-        var absoluteValForUsage = 0 - this.usageItems[this.usageItems.length - 1].usage
-        this.updateItemUsage(this.userId, this.selectedLandId, this.selectedWorkTypeCode, this.usageItems[this.usageItems.length - 1].itemName, absoluteValForUsage)
-
-        this.usageItems.splice(this.usageItems.length - 1, 1)
+      if (this.usageItems.length > 0) {
+        for (var i = 0; i < this.usageItems.length; i++) {
+          if (this.usageItems[i].checkBox) {
+            if (this.usageItems[i].itemName) {
+              var tmpDeleteItem = {}
+              tmpDeleteItem.itemId = this.usageItems[i].itemName
+              tmpDeleteItem.journalUsage = this.usageItems[i].journalRealUsage
+              this.deletedJournalsItemIds.push(tmpDeleteItem)
+            }
+            this.usageItems[i].itemId = '777'
+          }
+        }
+        this.usageItems = this.usageItems.filter(function (el) {
+          return el.itemId !== '777'
+        })
       }
     },
     addItemRow () {
       this.itemItems.push({
         itemName: '',
-        itemAmount: '',
-        itemPrice: ''
+        itemAmount: 0,
+        itemPrice: 0,
+        itemUsage: 0,
+        journalUsage: 0,
+        itemStock: 0
       })
     },
     deleteItemRow () {
-      if (this.itemItems.length > 1) {
-        this.itemItems.splice(this.itemItems.length - 1, 1)
+      if (this.itemItems.length > 0) {
+        for (var i = 0; i < this.itemItems.length; i++) {
+          if (this.itemItems[i].checkBox) {
+            if (this.itemItems[i].itemId) {
+              this.deletedItemIds.push(this.itemItems[i].itemId)
+            }
+            this.itemItems[i].itemId = '777'
+          }
+        }
+        this.itemItems = this.itemItems.filter(function (el) {
+          return el.itemId !== '777'
+        })
+
         this.onChangeItemPrice()
       }
     },
