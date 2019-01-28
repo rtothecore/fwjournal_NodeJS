@@ -79,5 +79,9 @@ export default {
 
   updateItemUsageByJournalUsage (parmas) {
     return Api().put('itemUpdateUsage', parmas)
+  },
+
+  fetchItemSearchBy5 (params) {
+    return Api().get('items/searchBy5/' + params.startDate + '/' + params.endDate + '/' + params.userId + '/' + params.landId + '/' + params.itemName, params)
   }
 }
