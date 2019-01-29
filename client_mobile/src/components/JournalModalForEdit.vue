@@ -911,13 +911,43 @@ export default {
           this.skyStatus = '눈'
           break
       }
+      if (this.skyStatus === 'No data') {
+        this.skyStatus = '-'
+      }
       this.RN1 = response.data[0].weather.avgRN1
-      this.minT1H = response.data[0].weather.minT1H + '℃'
-      this.maxT1H = response.data[0].weather.maxT1H + '℃'
-      this.avgT1H = Math.round(response.data[0].weather.avgT1H) + '℃'
-      this.minREH = response.data[0].weather.minREH + '%'
-      this.maxREH = response.data[0].weather.maxREH + '%'
-      this.avgREH = Math.round(response.data[0].weather.avgREH) + '%'
+      if (this.RN1 === 'No data') {
+        this.RN1 = '-'
+      }
+      if (response.data[0].weather.minT1H === 'No data') {
+        this.minT1H = '-'
+      } else {
+        this.minT1H = response.data[0].weather.minT1H + '℃'
+      }
+      if (response.data[0].weather.maxT1H === 'No data') {
+        this.maxT1H = '-'
+      } else {
+        this.maxT1H = response.data[0].weather.maxT1H + '℃'
+      }
+      if (response.data[0].weather.avgT1H === 'No data') {
+        this.avgT1H = '-'
+      } else {
+        this.avgT1H = Math.round(response.data[0].weather.avgT1H) + '℃'
+      }
+      if (response.data[0].weather.minREH === 'No data') {
+        this.minREH = '-'
+      } else {
+        this.minREH = response.data[0].weather.minREH + '%'
+      }
+      if (response.data[0].weather.maxREH === 'No data') {
+        this.maxREH = '-'
+      } else {
+        this.maxREH = response.data[0].weather.maxREH + '%'
+      }
+      if (response.data[0].weather.avgREH === 'No data') {
+        this.avgREH = '-'
+      } else {
+        this.avgREH = Math.round(response.data[0].weather.avgREH) + '%'
+      }
 
       this.selectLand = response.data[0].landId
       this.selectedLandId = response.data[0].landId

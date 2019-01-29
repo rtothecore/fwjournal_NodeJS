@@ -818,14 +818,14 @@ export default {
         this.minREH = response.data[0].rehMin
         this.minREHText = this.minREH + '%'
       } else {
-        this.skyStatus = 'No data'
-        this.RN1 = 'No data'
-        this.avgT1H = 'No data'
-        this.maxT1H = 'No data'
-        this.minT1H = 'No data'
-        this.avgREH = 'No data'
-        this.maxREH = 'No data'
-        this.minREH = 'No data'
+        this.skyStatusText = '-'
+        this.RN1 = '-'
+        this.avgT1HText = '-'
+        this.maxT1HText = '-'
+        this.minT1HText = '-'
+        this.avgREHText = '-'
+        this.maxREHText = '-'
+        this.minREHText = '-'
       }
     },
     async getLands () {
@@ -1405,8 +1405,13 @@ export default {
       }
     },
     onChangeJournalUsage: function (usage, index) {
-      // this.usageItems[index].stock = this.usageItems[index].itemAmount - this.usageItems[index].itemUsage - ((usage * 1) - this.itemItems[index].itemUsage + this.itemItems[index].journalRealUsage) + this.itemItems[index].journalRealUsage
-      this.usageItems[index].stock = this.usageItems[index].itemAmount - this.usageItems[index].itemUsage - (usage * 1)
+      // this.usageItems[index].stock = this.usageItems[index].itemAmount - this.usageItems[index].itemUsage - (usage * 1)
+      if ((usage * 1) > this.usageItems[index].stock) {
+        this.usageItems[index].usage = 0
+        this.usageItems[index].stock = this.usageItems[index].itemAmount - this.usageItems[index].journalRealUsage
+      } else {
+        this.usageItems[index].stock = this.usageItems[index].itemAmount - this.usageItems[index].itemUsage - this.usageItems[index].journalRealUsage - (usage * 1)
+      }
     },
     onChangeWSTime: function (event) {
       this.newEvent.start = this.User_Profile.substring(10, 20) + ' ' + event
