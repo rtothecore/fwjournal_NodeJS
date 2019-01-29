@@ -41,18 +41,7 @@
                     ></v-text-field>
                   </v-flex>
                   <v-flex xs8>
-                    <!--
-                    <v-text-field 
-                        v-model="editedItem.address"
-                        :counter="30"
-                        :error-messages="errors.collect('address')"
-                        label="주소"
-                        required
-                        v-validate="'required|max:30'"
-                        data-vv-name="address"
-                        :disabled="this.editedIndex !== -1"
-                    ></v-text-field>
-                    -->
+                    
                     <v-text-field 
                         v-model="editedItem.address"
                         :counter="30"
@@ -65,6 +54,16 @@
                   </v-flex>
                   <v-flex xs4>
                      <v-btn outline color="indigo" @click.native="searchAddr">주소찾기</v-btn>
+                  </v-flex>
+                  <v-flex xs8 sm8 md8>                    
+                    <v-text-field 
+                        v-model="editedItem.addressDetail"
+                        :counter="20"                        
+                        label="상세주소"                        
+                        data-vv-name="addressDetail"                      
+                    ></v-text-field>
+                  </v-flex>
+                  <v-flex xs4 sm6 md4>                     
                   </v-flex>
                   <v-flex xs6>
                     <v-text-field 
@@ -287,6 +286,7 @@ export default {
       _id: '',
       name: '',
       address: '',
+      addressDetail: '',
       size: '',
       sizeDetail: '',
       bcs: '',
@@ -298,6 +298,7 @@ export default {
       _id: '',
       name: '',
       address: '',
+      addressDetail: '',
       size: '',
       sizeDetail: '',
       bcs: '',
@@ -390,6 +391,7 @@ export default {
         userId: this.userId,
         name: this.editedItem.name,
         address: this.editedItem.address,
+        addressDetail: this.editedItem.addressDetail,
         size: this.editedItem.size,
         sizeDetail: this.editedItem.sizeDetail,
         cropCode: this.cropCode
@@ -408,6 +410,7 @@ export default {
         id: this.editedItem._id,
         name: this.editedItem.name,
         address: this.editedItem.address,
+        addressDetail: this.editedItem.addressDetail,
         size: this.editedItem.size,
         sizeDetail: this.editedItem.sizeDetail,
         cropCode: this.cropCode
