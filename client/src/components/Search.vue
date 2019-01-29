@@ -137,12 +137,13 @@
             </v-tooltip>
           </template>
           <template slot="items" slot-scope="props">
-            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="text-xs-left"><h4>{{ getDateWithKorean(props.item.date) }}</h4></td>
-            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="text-xs-left"><h4>{{ props.item.farmName }}</h4></td>
-            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="text-xs-left"><h4>{{ props.item.cropName }}</h4></td>
-            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="text-xs-left"><h4>{{ props.item.workType }}</h4></td>
-            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="text-xs-left"><h4>{{ props.item.workContent }}</h4></td>
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="text-xs-left" @click="editItem(props.item)"><h4>{{ getDateWithKorean(props.item.date) }}</h4></td>
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="text-xs-left" @click="editItem(props.item)"><h4>{{ props.item.farmName }}</h4></td>
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="text-xs-left" @click="editItem(props.item)"><h4>{{ props.item.cropName }}</h4></td>
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="text-xs-left" @click="editItem(props.item)"><h4>{{ props.item.workType }}</h4></td>
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="text-xs-left" @click="editItem(props.item)"><h4>{{ props.item.workContent }}</h4></td>
             <!-- <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="text-xs-left"><h4>{{ props.item.remarks }}</h4></td> -->
+            <!--
             <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="text-xs-left">
               <v-btn icon class="mx-0" @click="editItem(props.item)">
                 <v-icon color="teal">edit</v-icon>
@@ -151,6 +152,7 @@
                 <v-icon color="pink">delete</v-icon>
               </v-btn>
             </td>
+            -->
           </template>
         </v-data-table>
         <div class="text-xs-center pt-2">
@@ -251,9 +253,9 @@ export default {
         { text: '농장명', value: 'farmName', align: 'left', sortable: false, width: '15%' },
         { text: '작물명', value: 'cropName', align: 'left', sortable: false, width: '15%' },
         { text: '작업분류', value: 'workType', align: 'left', sortable: false, width: '15%' },
-        { text: '작업내용', value: 'workContent', align: 'left', sortable: false, width: '20%' },
+        { text: '작업내용', value: 'workContent', align: 'left', sortable: false, width: '20%' }
         // { text: '특기사항', value: 'remarks', align: 'left', sortable: false, width: '10%' },
-        { text: '관리', value: 'name', align: 'left', sortable: false, width: '12%' }
+        // { text: '관리', value: 'name', align: 'left', sortable: false, width: '12%' }
       ],
       editedIndex: -1,
       journals: [],

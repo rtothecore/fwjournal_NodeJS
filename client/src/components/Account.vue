@@ -1256,6 +1256,26 @@ export default {
       this.incomeTotal = tmpIncomeTotal
     },
     async getIncomeData () {
+      var tmpDataPoints = this.getBetweenMonthData(this.sDate, this.eDate)
+
+      const response = await JournalService.fetchJournalInc({
+        userId: this.userId,
+        startDate: this.sDate,
+        endDate: this.eDate
+      })
+
+      for (var i = 0; i < response.data.length; i++) {
+        for (var j = 0; j < tmpDataPoints.length; j++) {
+          if (response.data[i]._id.date === tmpDataPoints[j].label) {
+            tmpDataPoints[j].y = response.data[i].totalIncome
+          }
+        }
+      }
+      this.chartOptionsForIncome.data[0].dataPoints = tmpDataPoints
+      this.chartOptionsForIncome.axisY.title = '원'
+
+      this.chartForIncome.render()
+      /*
       const response = await JournalService.fetchJournalInc({
         userId: this.userId,
         startDate: this.sDate,
@@ -1276,6 +1296,7 @@ export default {
       this.chartOptionsForIncome.axisY.title = '원'
 
       this.chartForIncome.render()
+      */
     },
     async getIncomeSum () {
       const response = await JournalService.fetchJournalInc({
