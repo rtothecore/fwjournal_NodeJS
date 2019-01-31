@@ -196,7 +196,7 @@ import LandService from '@/services/LandService'
 import ScService from '@/services/ScService'
 import WcService from '@/services/WcService'
 import ItemService from '@/services/ItemService'
-import ItemDetailService from '@/services/ItemDetailService'
+// import ItemDetailService from '@/services/ItemDetailService'
 import ImageInput from './ImageInput.vue'
 export default {
   $_veeValidate: {
@@ -250,7 +250,8 @@ export default {
       pagination: {
         // https://github.com/vuetifyjs/vuetify/issues/442
         sortBy: 'date',
-        descending: true
+        descending: true,
+        rowsPerPage: 10
       },
       selected: [],
       dialog: false,
@@ -386,44 +387,6 @@ export default {
         }
       }
     },
-    async getItems () {
-      const response = await ItemService.fetchItemsByDateNUserId({
-        userId: this.userId,
-        startDate: this.startDate,
-        endDate: this.endDate
-      })
-      // console.log(response.data)
-
-      for (var i = 0; i < response.data.length; i++) {
-        for (var j = 0; j < response.data[i].itemDetail.length; j++) {
-          var tmpItemData = {}
-          tmpItemData._id = response.data[i]._id
-          tmpItemData.date = response.data[i].date
-          // 농장명
-          const response3 = await LandService.fetchNameByLandId({
-            landId: response.data[i].landId
-          })
-          tmpItemData.landName = response3.data[0].name
-
-          // 구입품목
-          const response4 = await WcService.fetchOneTextByCcode({
-            code: response.data[i].item
-          })
-          tmpItemData.item = response4.data[0].text
-
-          // 품목명, 구입량, 사용량, 재고량
-          const response2 = await ItemDetailService.fetchItemDetailByItemId({
-            userId: this.userId,
-            itemId: response.data[i].itemDetail[j]
-          })
-          tmpItemData.itemName = response2.data[0].itemName
-          tmpItemData.itemAmount = response2.data[0].itemAmount
-          tmpItemData.itemUsage = response2.data[0].itemUsage + response2.data[0].journalUsage
-          tmpItemData.itemStock = tmpItemData.itemAmount - tmpItemData.itemUsage
-          this.items.push(tmpItemData)
-        }
-      }
-    },
     async getItemsBy5 () {
       this.items = []
 
@@ -439,13 +402,31 @@ export default {
 
       var tmpSearchWord = this.searchWord
       if (!tmpSearchWord) {
-        tmpSearchWord = ''
+        tmpSearchWord = 0
       }
 
       if (!this.selectLand) {
         this.selectLand = 0
       }
 
+      const response = await ItemService.fetchItemLookupBy5({
+        userId: this.userId,
+        startDate: tmpStartDate,
+        endDate: tmpEndDate,
+        itemName: tmpSearchWord,
+        landId: this.selectLand
+      })
+
+      for (var i = 0; i < response.data.length; i++) {
+        this.items.push(response.data[i])
+        this.items[i].itemName = response.data[i].itemDetailInfo.itemName
+        this.items[i].landName = response.data[i].landInfo.name
+        this.items[i].item = response.data[i].wcsInfo.text
+        this.items[i].itemAmount = response.data[i].itemDetailInfo.itemAmount
+        this.items[i].itemUsage = response.data[i].itemDetailInfo.journalUsage + response.data[i].itemDetailInfo.itemUsage
+        this.items[i].itemStock = this.items[i].itemAmount - this.items[i].itemUsage
+      }
+/* ORIGINAL
       const response = await ItemService.fetchItemSearchBy5({
         userId: this.userId,
         startDate: tmpStartDate,
@@ -473,34 +454,6 @@ export default {
 
         // 총 사용량
         this.items[i].itemUsage = this.items[i].itemUsage + this.items[i].journalUsage
-
-        // 재고수량
-        this.items[i].itemStock = this.items[i].itemAmount - this.items[i].itemUsage
-      }
-/*
-      const response = await ItemService.fetchItemsAggBy5({
-        userId: this.userId,
-        startDate: tmpStartDate,
-        endDate: tmpEndDate,
-        itemName: tmpSearchWord,
-        landId: this.selectLand
-      })
-      for (var k = 0; k < response.data.length; k++) {
-        this.items.push(response.data[k]._id)
-      }
-
-      for (var i = 0; i < this.items.length; i++) {
-        // 농장명
-        const response3 = await LandService.fetchNameByLandId({
-          landId: this.items[i].landId
-        })
-        this.items[i].landName = response3.data[0].name
-
-        // 구입품목
-        const response2 = await WcService.fetchOneTextByCcode({
-          code: this.items[i].item
-        })
-        this.items[i].item = response2.data[0].text
 
         // 재고수량
         this.items[i].itemStock = this.items[i].itemAmount - this.items[i].itemUsage
@@ -655,7 +608,7 @@ export default {
       this.searchWord = ''
       this.items = []
       this.init()
-      this.getItems()
+      this.getItemsBy5()
       this.$validator.reset()
     },
     replaceAt: function (data, index, replacement) {

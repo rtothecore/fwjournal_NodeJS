@@ -255,14 +255,15 @@
                     <v-data-table
                       :headers="headers"
                       :items="crops"
-                      :rows-per-page-items=[10]
+                      :pagination.sync="pagination2"
+                      hide-actions
                       class="elevation-1"
                       v-if='showMarketPrice'
                     >
                       <template slot="headerCell" slot-scope="props">
                         <v-tooltip bottom>
                           <span slot="activator">
-                            {{ props.header.text }}
+                            <h4><strong>{{ props.header.text }}</strong></h4>
                           </span>
                           <span>
                             {{ props.header.text }}
@@ -270,15 +271,18 @@
                         </v-tooltip>
                       </template>
                       <template slot="items" slot-scope="props">
-                        <td>{{ props.item.PRDLST_NM }}</td>
-                        <td class="text-xs-right">{{ props.item.PBLMNG_WHSAL_MRKT_NM }}</td>
-                        <td class="text-xs-right">{{ props.item.GRAD }}</td>
-                        <td class="text-xs-right">{{ props.item.DELNGBUNDLE_QY }}{{ props.item.STNDRD }}</td>
-                        <td class="text-xs-right">{{ props.item.MUMM_AMT }}</td>
-                        <td class="text-xs-right">{{ props.item.AVRG_AMT }}</td>
-                        <td class="text-xs-right">{{ props.item.MXMM_AMT }}</td>
+                        <td :style="{backgroundColor: (props.index % 2 ? '#E0E4FF' : 'transparent')}"><h4>{{ props.item.PRDLST_NM }}</h4></td>
+                        <td :style="{backgroundColor: (props.index % 2 ? '#E0E4FF' : 'transparent')}"><h4>{{ props.item.PBLMNG_WHSAL_MRKT_NM }}</h4></td>
+                        <td :style="{backgroundColor: (props.index % 2 ? '#E0E4FF' : 'transparent')}"><h4>{{ props.item.GRAD }}</h4></td>
+                        <td :style="{backgroundColor: (props.index % 2 ? '#E0E4FF' : 'transparent')}"><h4>{{ props.item.DELNGBUNDLE_QY }}{{ props.item.STNDRD }}</h4></td>
+                        <td :style="{backgroundColor: (props.index % 2 ? '#E0E4FF' : 'transparent')}"><h4>{{ props.item.MUMM_AMT }}</h4></td>
+                        <td :style="{backgroundColor: (props.index % 2 ? '#E0E4FF' : 'transparent')}"><h4>{{ props.item.AVRG_AMT }}</h4></td>
+                        <td :style="{backgroundColor: (props.index % 2 ? '#E0E4FF' : 'transparent')}"><h4>{{ props.item.MXMM_AMT }}</h4></td>
                       </template>
                     </v-data-table>
+                    <div class="text-xs-center pt-2">
+                      <v-pagination v-model="pagination2.page" :length="pages2"></v-pagination>
+                    </div>
                   </div>
                 </b-col>              
               </b-row>              
@@ -286,7 +290,7 @@
           </b-col>
         </b-row>
 
-        <hr/>
+        <!-- <hr/> -->
       </div>
 
       <div v-if='showPredictTable' style="width:1200px; margin:0 auto;">
@@ -312,7 +316,8 @@
                     <v-data-table
                       :headers="headersForPredict"
                       :items="journals"
-                      :rows-per-page-items=[10]
+                      :pagination.sync="pagination"
+                      hide-actions
                       class="elevation-1"
                       v-if='showPredictTable'
                     >
@@ -327,18 +332,23 @@
                         </v-tooltip>
                       </template>
                       <template slot="items" slot-scope="props">                        
-                        <td :style="{backgroundColor: (props.index % 2 ? '#E0E4FF' : 'transparent')}"><h4>{{ props.item.landName }}</h4></td>
-                        <td :style="{backgroundColor: (props.index % 2 ? '#E0E4FF' : 'transparent')}"><h4>{{ getDateWithKorean(props.item.date) }}</h4></td>
-                        <td :style="{backgroundColor: (props.index % 2 ? '#E0E4FF' : 'transparent')}"><h4>{{ props.item.workName }}</h4></td>
-                        <td :style="{backgroundColor: (props.index % 2 ? '#E0E4FF' : 'transparent')}"><h4>{{ props.item.sky }}</h4></td>
-                        <td :style="{backgroundColor: (props.index % 2 ? '#E0E4FF' : 'transparent')}"><h4>{{ props.item.t1h }}</h4></td>  
+                        <td :style="{backgroundColor: (props.index % 2 ? '#E0E4FF' : 'transparent')}" @click="showItem(props.item)"><h4>{{ props.item.landName }}</h4></td>
+                        <td :style="{backgroundColor: (props.index % 2 ? '#E0E4FF' : 'transparent')}" @click="showItem(props.item)"><h4>{{ getDateWithKorean(props.item.date) }}</h4></td>
+                        <td :style="{backgroundColor: (props.index % 2 ? '#E0E4FF' : 'transparent')}" @click="showItem(props.item)"><h4>{{ props.item.workName }}</h4></td>
+                        <td :style="{backgroundColor: (props.index % 2 ? '#E0E4FF' : 'transparent')}" @click="showItem(props.item)"><h4>{{ props.item.sky }}</h4></td>
+                        <td :style="{backgroundColor: (props.index % 2 ? '#E0E4FF' : 'transparent')}" @click="showItem(props.item)"><h4>{{ props.item.t1h }}</h4></td>  
+                        <!--
                         <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="justify-center layout px-0">
                           <v-btn icon class="mx-0" @click="showItem(props.item)">
                             <v-icon color="teal">remove_red_eye</v-icon>
                           </v-btn>
                         </td>          
+                        -->
                       </template>
                     </v-data-table>
+                    <div class="text-xs-center pt-2">
+                      <v-pagination v-model="pagination.page" :length="pages"></v-pagination>
+                    </div>
                   </div>
                 </b-col>              
               </b-row>              
@@ -355,7 +365,7 @@
     import moment from 'moment'
     import {bus} from '../main'
     import JournalService from '@/services/JournalService'
-    import WcService from '@/services/WcService'
+    // import WcService from '@/services/WcService'
     // import ScService from '@/services/ScService'
     import LandService from '@/services/LandService'
     import WeatherService from '@/services/WeatherService'
@@ -367,6 +377,17 @@
     export default {
   data () {
         return {
+          pagination2: {
+            // https://github.com/vuetifyjs/vuetify/issues/442
+            descending: true,
+            rowsPerPage: 10
+          },
+          pagination: {
+            // https://github.com/vuetifyjs/vuetify/issues/442
+            sortBy: 'date',
+            descending: true,
+            rowsPerPage: 10
+          },
           selectLand: '',
           landItems: [],
           showPredictTable: true,
@@ -387,8 +408,8 @@
             { text: '작업일', sortable: false, value: 'date' },
             { text: '작업명', sortable: false, value: 'workName' },
             { text: '날씨', sortable: false, value: 'sky' },
-            { text: '온도', sortable: false, value: 't1h' },
-            { text: '관리', value: 'name', sortable: false, align: 'left', width: '5%' }
+            { text: '온도', sortable: false, value: 't1h' }
+            // { text: '관리', value: 'name', sortable: false, align: 'left', width: '5%' }
           ],
           headers: [
             {
@@ -397,12 +418,12 @@
               sortable: false,
               value: 'PRDLST_NM'
             },
-            { text: '도매시장명', value: 'PBLMNG_WHSAL_MRKT_NM' },
-            { text: '등급', value: 'GRAD' },
-            { text: '거래단량', value: 'DELNGBUNDLE_QY' },
-            { text: '최소가', value: 'MUMM_AMT' },
-            { text: '평균가', value: 'AVRG_AMT' },
-            { text: '최대가', value: 'MXMM_AMT' }
+            { text: '도매시장명', sortable: false, value: 'PBLMNG_WHSAL_MRKT_NM' },
+            { text: '등급', sortable: false, value: 'GRAD' },
+            { text: '거래단량', sortable: false, value: 'DELNGBUNDLE_QY' },
+            { text: '최소가', sortable: false, value: 'MUMM_AMT' },
+            { text: '평균가', sortable: false, value: 'AVRG_AMT' },
+            { text: '최대가', sortable: false, value: 'MXMM_AMT' }
           ],
           crops: [],
           myCrops: [],
@@ -506,6 +527,35 @@
           }
         })
   },
+  watch: {
+        crops () {
+          this.$nextTick(() => {
+            this.pagination2.totalItems = this.crops.length
+          })
+        },
+        // https://github.com/vuetifyjs/vuetify/issues/4455
+        journals () {
+          this.$nextTick(() => {
+            this.pagination.totalItems = this.journals.length
+          })
+        }
+  },
+  computed: {
+        pages2 () {
+          if (this.pagination2.rowsPerPage == null ||
+            this.pagination2.totalItems == null
+          ) return 0
+
+          return Math.ceil(this.pagination2.totalItems / this.pagination2.rowsPerPage)
+        },
+        pages () {
+          if (this.pagination.rowsPerPage == null ||
+            this.pagination.totalItems == null
+          ) return 0
+
+          return Math.ceil(this.pagination.totalItems / this.pagination.rowsPerPage)
+        }
+  },
   methods: {
         onChangeLand: function (event) {
           this.selectLand = event
@@ -538,6 +588,7 @@
             const response3 = await PriceService.fetchPriceData({
               productName: this.myCrops[j]
             })
+            // console.log(response3.data)
             if (response3.data) {
               // console.log(response3.data.Grid_20150401000000000216_1.row)
               for (var k = 0; k < response3.data.Grid_20150401000000000216_1.row.length; k++) {
@@ -553,42 +604,14 @@
           }
         },
         async getJournal () {
-          const response = await JournalService.fetchJournals({
+          const response = await JournalService.fetchJournalLookupByUserId({
             userId: this.userId
           })
-          // console.log(response.data)
           for (var i = 0; i < response.data.length; i++) {
             var tmpEvent = {}
 
-            // 작업분류명
-            var workTypeVal = ''
-            const response2 = await WcService.fetchOneTextByCcode({
-              code: response.data[i].workCode
-            })
-            workTypeVal = response2.data[0].text
+            tmpEvent.title = response.data[i].landInfo.name + ' - ' + response.data[i].wcsInfo.text
 
-            // 작물명
-            /*
-            var cropNameVal = ''
-            const response3 = await LandService.fetchCropNameByLandId({
-              landId: response.data[i].landId
-            })
-            cropNameVal = response3.data[0].text
-            */
-
-            // 농장명
-            var landNameVal = ''
-            const response4 = await LandService.fetchNameByLandId({
-              landId: response.data[i].landId
-            })
-            landNameVal = response4.data[0].name
-
-            // tmpEvent.title = response4.data[0].name + ' - ' + response3.data[0].text + '\n' + response2.data[0].text + ' - ' + response.data[i].workContent
-            tmpEvent.title = landNameVal + ' - ' + workTypeVal
-            /*
-            var tmpSTime = response.data[i].date + ' ' + response.data[i].workSTime.substring(0, 2) + ':' + response.data[i].workSTime.substring(2, 4)
-            var tmpETime = response.data[i].date + ' ' + response.data[i].workETime.substring(0, 2) + ':' + response.data[i].workETime.substring(2, 4)
-            */
             var tmpTime = response.data[i].date
             tmpEvent.start = tmpTime
             tmpEvent.end = tmpTime
@@ -596,35 +619,25 @@
             tmpEvent.textColor = 'white'
             this.events.push(tmpEvent)
             tmpEvent.eventIndex = this.events.indexOf(tmpEvent)
-            // console.log(this.events.indexOf(tmpEvent))
           }
         },
         async getItem () {
-          const response = await ItemService.fetchItems({
+          const response = await ItemService.fetchItemsLookupByUserId({
             userId: this.userId
           })
+
           for (var i = 0; i < response.data.length; i++) {
             var tmpEvent = {}
-
-            // 작업분류명
-            var workTypeVal = ''
-            const response2 = await WcService.fetchOneTextByCcode({
-              code: response.data[i].item
-            })
-            workTypeVal = response2.data[0].text
-
-            tmpEvent.title = workTypeVal + ' 구입'
+            tmpEvent.title = response.data[i].wcsInfo.text + ' 구입'
             var tmpTime = response.data[i].date
             tmpEvent.start = tmpTime
             tmpEvent.end = tmpTime
-            // tmpEvent.journalId = response.data[i]._id
             tmpEvent.itemId = response.data[i]._id
             tmpEvent.color = 'orange'
             tmpEvent.textColor = 'white'
             this.events.push(tmpEvent)
             tmpEvent.eventIndex = this.events.indexOf(tmpEvent)
           }
-          // console.log(response.data)
         },
         async fetchTodayWeather (nx, ny) {
           const response = await WeatherService.fetchTodayWeather({
@@ -863,52 +876,43 @@
           }
         },
         async getJournalsByDate () {
-          const response = await JournalService.fetchJournalsByDateNUserId({
+          const response = await JournalService.fetchJournalLookup({
             startDate: this.startDate,
             endDate: this.endDate,
             userId: this.userId
           })
+
           if (response.data.length > 0) {
             var tmpJournals = response.data
             for (var i = 0; i < response.data.length; i++) {
-              const response2 = await LandService.fetchNameByLandId({
-                landId: response.data[i].landId
-              })
-              tmpJournals[i].landName = response2.data[0].name
-              // this.weatherLoc = response2.data[0].name
-
-              const response3 = await WcService.fetchOneTextByCcode({
-                code: response.data[i].workCode
-              })
-              tmpJournals[i].workName = response3.data[0].text
-
+              tmpJournals[i].landName = response.data[i].landInfo.name
+              tmpJournals[i].workName = response.data[i].wcsInfo.text
               tmpJournals[i].sky = tmpJournals[i].weather.sky
+              if (tmpJournals[i].sky === 'No data') {
+                tmpJournals[i].sky = '-'
+              }
               tmpJournals[i].t1h = tmpJournals[i].weather.avgT1H
+              if (tmpJournals[i].t1h === 'No data') {
+                tmpJournals[i].t1h = '-'
+              }
             }
             this.journals = tmpJournals
           } else {  // 작년 10일이내의 데이터가 없는 경우 작년 해당월의 데이터를 보여줌
-            const response4 = await JournalService.fetchJournalsByYMUserId({
+            const response4 = await JournalService.fetchJournalLookupByYMUserId({
               ym: this.lastYearYM,
               userId: this.userId
             })
             var tmpJournals2 = response4.data
+
             for (var j = 0; j < response4.data.length; j++) {
-              const response5 = await LandService.fetchNameByLandId({
-                landId: response4.data[j].landId
-              })
-              tmpJournals2[j].landName = response5.data[0].name
-              // this.weatherLoc = response5.data[0].name
-
-              const response6 = await WcService.fetchOneTextByCcode({
-                code: response4.data[j].workCode
-              })
-              tmpJournals2[j].workName = response6.data[0].text
-
+              tmpJournals2[j].landName = response4.data[j].landInfo.name
+              tmpJournals2[j].workName = response4.data[j].wcsInfo.text
               tmpJournals2[j].sky = tmpJournals2[j].weather.sky
               tmpJournals2[j].t1h = tmpJournals2[j].weather.avgT1H
             }
             this.journals = tmpJournals2
           }
+
           if (this.journals.length === 0) {
             this.showPredictTable = false
           }

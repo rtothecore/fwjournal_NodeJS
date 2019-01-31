@@ -182,8 +182,8 @@ import JournalService from '@/services/JournalService'
 import LandService from '@/services/LandService'
 import ScService from '@/services/ScService'
 import WcService from '@/services/WcService'
-import DcService from '@/services/DcService'
-import ItemService from '@/services/ItemService'
+// import DcService from '@/services/DcService'
+// import ItemService from '@/services/ItemService'
 import ImageInput from './ImageInput.vue'
 export default {
   $_veeValidate: {
@@ -237,7 +237,8 @@ export default {
       pagination: {
         // https://github.com/vuetifyjs/vuetify/issues/442
         sortBy: 'date',
-        descending: true
+        descending: true,
+        rowsPerPage: 10
       },
       selected: [],
       dialog: false,
@@ -278,10 +279,10 @@ export default {
     this.$validator.localize('ko', this.dictionary)
     var vm = this
     bus.$on('toJournalForUpdate', function (value) {
-      vm.getJournalsBy4()
+      vm.getJournalsBy5()
     })
     bus.$on('toJournalForDel', function (value) {
-      vm.getJournalsBy4()
+      vm.getJournalsBy5()
     })
   },
   beforeCreate: function () {
@@ -317,11 +318,11 @@ export default {
   },
   computed: {
     computedDateFormatted () {
-      console.log(this.startDate)
+      // console.log(this.startDate)
       return this.startDate
     },
     computedDateFormatted2 () {
-      console.log(this.endDate)
+      // console.log(this.endDate)
       return this.endDate
     },
     pages () {
@@ -370,12 +371,28 @@ export default {
       this.landItems.push(landItemForAll)
     },
     async getJournals () {
-      const response = await JournalService.fetchJournalsByDateNUserId({
+      const response = await JournalService.fetchJournalLookup({
         startDate: this.startDate,
         endDate: this.endDate,
         userId: this.userId
       })
       var tmpJournals = response.data
+
+      for (var i = 0; i < tmpJournals.length; i++) {
+        tmpJournals[i].farmName = tmpJournals[i].landInfo.name
+        tmpJournals[i].cropName = tmpJournals[i].dcsInfo.text
+        tmpJournals[i].workType = tmpJournals[i].wcsInfo.text
+      }
+      this.journals = tmpJournals
+      /* ORIGINAL
+      const response = await JournalService.fetchJournalsByDateNUserId({
+        startDate: this.startDate,
+        endDate: this.endDate,
+        userId: this.userId
+      })
+
+      var tmpJournals = response.data
+
       for (var i = 0; i < response.data.length; i++) {
         const response2 = await LandService.fetchNameByLandId({
           landId: response.data[i].landId
@@ -409,9 +426,11 @@ export default {
           }
         }
       }
+
       this.journals = tmpJournals
+      */
     },
-    async getJournalsBy4 () {
+    async getJournalsBy5 () {
       var tmpStartDate = this.startDate
       if (!tmpStartDate) {
         tmpStartDate = 0
@@ -431,7 +450,43 @@ export default {
         this.selectLand = 0
       }
 
-      const response = await JournalService.fetchJournalsBy4LandId({
+      const response = await JournalService.fetchJournalsBy5LandId({
+        userId: this.userId,
+        startDate: tmpStartDate,
+        endDate: tmpEndDate,
+        searchWord: tmpSearchWord,
+        landId: this.selectLand
+      })
+      var tmpJournals = response.data
+
+      for (var i = 0; i < tmpJournals.length; i++) {
+        tmpJournals[i].farmName = tmpJournals[i].landInfo.name
+        tmpJournals[i].cropName = tmpJournals[i].dcsInfo.text
+        tmpJournals[i].workType = tmpJournals[i].wcsInfo.text
+      }
+      this.journals = tmpJournals
+      /* ORIGINAL
+      var tmpStartDate = this.startDate
+      if (!tmpStartDate) {
+        tmpStartDate = 0
+      }
+
+      var tmpEndDate = this.endDate
+      if (!tmpEndDate) {
+        tmpEndDate = 0
+      }
+
+      var tmpSearchWord = this.searchWord
+      if (!tmpSearchWord) {
+        tmpSearchWord = 0
+      }
+
+      if (!this.selectLand) {
+        this.selectLand = 0
+      }
+
+      const response = await JournalService.fetchJournalsBy5LandId({
+        userId: this.userId,
         startDate: tmpStartDate,
         endDate: tmpEndDate,
         searchWord: tmpSearchWord,
@@ -457,6 +512,7 @@ export default {
         tmpJournals[i].workType = response3.data[0].text
       }
       this.journals = tmpJournals
+      */
     },
     async deleteJournal (id) {
       await JournalService.deleteJournal(id)
@@ -496,12 +552,12 @@ export default {
     onChangeWSTime: function (event) {
       var tmpStr = event
       this.editedItem.workSTime = tmpStr.replace(':', '')
-      console.log(this.editedItem.workSTime)
+      // console.log(this.editedItem.workSTime)
     },
     onChangeWETime: function (event) {
       var tmpStr = event
       this.editedItem.workETime = tmpStr.replace(':', '')
-      console.log(this.editedItem.workETime)
+      // console.log(this.editedItem.workETime)
     },
     onChangeEditWorkType: function (event) {
       this.getWorkCodeById(event)
@@ -519,7 +575,7 @@ export default {
       this.selectedWorkType = event
     },
     onChangeEditItemWorkType: function (event) {
-      console.log(event)
+      // console.log(event)
     },
     onChangeItemCost: function (event) {
       this.CooTotal = Number('0')
@@ -576,7 +632,7 @@ export default {
           this.getJournals()
         } else {
           // 선택한 농장명이 전체가 아닐 경우
-          this.getJournalsBy4()
+          this.getJournalsBy5()
         }
       }).catch(() => {})
     },

@@ -877,10 +877,8 @@ export default {
       this.getWorkTypeByCropCode(this.selectedCropCode)
 
       // 주소 얻어서 날씨 통계 데이터 가져오기
-      // this.User_Profile
       var addressSplit = response.data[0].address.split(' ')
       var tmpAddress = addressSplit[0] + ' ' + addressSplit[1] + ' ' + addressSplit[2]
-      // this.getWeatherCrawlerDataAggByAddress(this.User_Profile, this.User_Profile, response.data[0].address)
       this.getWeatherCrawlerDataAggByAddress(this.User_Profile, this.User_Profile, tmpAddress)
     },
     async getCropCodeByILandId (landId) {
@@ -1039,6 +1037,7 @@ export default {
         this.itemItems[i].userId = this.userId
         this.itemItems[i].journalUsage = 0
         this.itemItems[i].itemUsage = 0
+        this.itemItems[i].createDate = this.User_Profile.replace(/-/gi, '')
 
         const response3 = await ItemDetailService.createItemDetail({
           itemDetail: this.itemItems[i]

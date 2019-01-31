@@ -119,7 +119,7 @@ export default {
       const response = await SmsAuthService.getAuthCode({
         phone_no: this.phoneNo
       })
-      // console.log(response.data[0].auth_code)
+      console.log(response.data[0].auth_code)
       if (this.authCode === response.data[0].auth_code) {
         clearInterval(this.authTimer)
         // https://router.vuejs.org/guide/essentials/navigation.html

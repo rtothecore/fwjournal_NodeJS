@@ -117,7 +117,7 @@
             <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.itemAmount }}</h4></td>
             <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.itemUsage }}</h4></td>
             <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.itemStock }}</h4></td>
-            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.itemPrice }}</h4></td>
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ getStrWithComma(props.item.itemPrice) }}</h4></td>
             <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="justify-center layout px-0">
               <v-btn icon class="mx-0" @click="showItem(props.item)">
                 <v-icon color="teal">remove_red_eye</v-icon>
@@ -147,7 +147,7 @@ import {bus} from '../main'
 import moment from 'moment'
 // import JournalService from '@/services/JournalService'
 import ItemService from '@/services/ItemService'
-import WcService from '@/services/WcService'
+// import WcService from '@/services/WcService'
 import LandService from '@/services/LandService'
 export default {
   $_veeValidate: {
@@ -170,7 +170,8 @@ export default {
       pagination: {
         // https://github.com/vuetifyjs/vuetify/issues/442
         sortBy: 'date',
-        descending: true
+        descending: true,
+        rowsPerPage: 10
       },
       selected: [],
       headers: [
@@ -242,53 +243,44 @@ export default {
       if (!this.selectLand) {
         this.selectLand = 0
       }
-      const response = await ItemService.fetchItemAggByDateNLandId({
+
+      const response = await ItemService.fetchItemLookupBy4({
         userId: this.userId,
         startDate: this.startDate,
         endDate: this.endDate,
         landId: this.selectLand
       })
+
       if (response.data.length > 0) {
         var tmpItems = []
         for (var k = 0; k < response.data.length; k++) {
-          tmpItems.push(response.data[k]._id)
-        }
-        for (var i = 0; i < response.data.length; i++) {
-          const response7 = await LandService.fetchNameByLandId({
-            landId: response.data[i]._id.landId
-          })
-          tmpItems[i].landName = response7.data[0].name
-
-          const response2 = await WcService.fetchOneTextByCcode({
-            code: response.data[i]._id.item
-          })
-          tmpItems[i].item = response2.data[0].text
-
-          tmpItems[i].itemStock = tmpItems[i].itemAmount - tmpItems[i].itemUsage
+          tmpItems.push(response.data[k])
+          tmpItems[k].landName = response.data[k].landInfo.name
+          tmpItems[k].item = response.data[k].wcsInfo.text
+          tmpItems[k].itemName = response.data[k].itemDetailInfo.itemName
+          tmpItems[k].itemAmount = response.data[k].itemDetailInfo.itemAmount
+          tmpItems[k].itemUsage = response.data[k].itemDetailInfo.journalUsage + response.data[k].itemDetailInfo.itemUsage
+          tmpItems[k].itemStock = tmpItems[k].itemAmount - tmpItems[k].itemUsage
+          tmpItems[k].itemPrice = response.data[k].itemDetailInfo.itemPrice
         }
         this.items = tmpItems
       } else {  // 작년 10일이내의 데이터가 없는 경우 작년 해당월의 데이터를 보여줌
-        const response4 = await ItemService.fetchItemAggByYMNLandId({
+        const response4 = await ItemService.fetchItemLookupByYMUserIdLandId({
           ym: this.lastYearYM,
           userId: this.userId,
           landId: this.selectLand
         })
+
         var tmpItems2 = []
         for (var l = 0; l < response4.data.length; l++) {
-          tmpItems2.push(response4.data[l]._id)
-        }
-        for (var j = 0; j < response4.data.length; j++) {
-          const response8 = await LandService.fetchNameByLandId({
-            landId: response4.data[j]._id.landId
-          })
-          tmpItems2[j].landName = response8.data[0].name
-
-          const response5 = await WcService.fetchOneTextByCcode({
-            code: response4.data[j]._id.item
-          })
-          tmpItems2[j].item = response5.data[0].text
-
-          tmpItems2[j].itemStock = tmpItems2[j].itemAmount - tmpItems2[j].itemUsage
+          tmpItems2.push(response4.data[l])
+          tmpItems2[l].landName = response4.data[l].landInfo.name
+          tmpItems2[l].item = response4.data[l].wcsInfo.text
+          tmpItems2[l].itemName = response4.data[l].itemDetailInfo.itemName
+          tmpItems2[l].itemAmount = response4.data[l].itemDetailInfo.itemAmount
+          tmpItems2[l].itemUsage = response4.data[l].itemDetailInfo.journalUsage + response4.data[l].itemDetailInfo.itemUsage
+          tmpItems2[l].itemStock = tmpItems2[l].itemAmount - tmpItems2[l].itemUsage
+          tmpItems2[l].itemPrice = response4.data[l].itemDetailInfo.itemPrice
         }
         this.items = tmpItems2
       }
@@ -344,6 +336,12 @@ export default {
       var tmpStr = this.replaceAt(dataVal, 4, '년')
       tmpStr = this.replaceAt(tmpStr, 7, '월')
       tmpStr += '일'
+      return tmpStr
+    },
+    getStrWithComma: function (dataVal) {
+      var tmpStr = dataVal + ''
+      tmpStr = tmpStr.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+      tmpStr = '￦' + tmpStr
       return tmpStr
     }
   },
