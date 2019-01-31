@@ -150,9 +150,11 @@
                   </v-flex>
                   <v-flex xs12 sm6 md8/>
 
-                  <v-flex xs4 sm6 md6/>
+                  <v-flex xs6 sm6 md6>
+                    <v-btn outline color="indigo" flat @click.native="deleteI">삭제</v-btn>
+                  </v-flex> 
 
-                  <v-flex xs8 sm6 md6>
+                  <v-flex xs6 sm6 md6>
                     <v-btn outline color="indigo" @click.native="close">취소</v-btn>
                     <v-btn color="primary" @click.native="save">저장</v-btn>
                   </v-flex>
@@ -441,6 +443,30 @@ export default {
       this.getDCS(item.scsCode)
       this.editedItem.cropCode = item.dcsCode
       this.dialog = true
+    },
+    deleteI () {
+      const index = this.editedIndex
+      this.$swal({
+        title: '이 농장을 삭제 하시겠습니까?',
+        text: '이 농장과 연계된 모든작업, 자재일지가 같이 삭제됩니다',
+        type: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: '네, 삭제합니다',
+        cancelButtonText: '취소합니다'
+      }).then((result) => {
+        if (result.value) {
+          this.lands.splice(index, 1)
+          this.deleteLand(this.editedItem._id)
+          this.$swal(
+            '삭제했습니다!',
+            '일지가 삭제되었습니다',
+            'success'
+          )
+          this.dialog = false
+        }
+      })
     },
     deleteItem (item) {
       const index = this.lands.indexOf(item)

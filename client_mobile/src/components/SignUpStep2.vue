@@ -77,9 +77,13 @@
 <script>
 import moment from 'moment'
 import SmsAuthService from '@/services/SmsAuthService'
+const { detect } = require('detect-browser')
+const browser = detect()
 export default {
   data () {
     return {
+      dummyStyle: 'height:210px',
+      mainStyle: 'width: 500px; height: 520px; margin: auto;',
       isTimeout: false,
       after3Min: '',
       authTimer: '',
@@ -91,6 +95,18 @@ export default {
     }
   },
   mounted () {
+    if (browser) {
+      console.log(browser.name)
+      console.log(browser.version)
+      console.log(browser.os)
+      if (browser.name === 'chrome') {
+        this.mainStyle = 'width: 500px; height: 520px; margin: auto;'
+        this.dummyStyle = 'height:210px'
+      } else if (browser.name === 'ie') {
+        this.mainStyle = 'width: 500px; height: 520px; margin-bottom: auto;'
+        this.dummyStyle = 'height:110px'
+      }
+    }
   },
   methods: {
     async createNewAuthCode () {

@@ -142,9 +142,9 @@ import {bus} from '../main'
 import moment from 'moment'
 import JournalService from '@/services/JournalService'
 // import ScService from '@/services/ScService'
-import WcService from '@/services/WcService'
+// import WcService from '@/services/WcService'
 import LandService from '@/services/LandService'
-import DcService from '@/services/DcService'
+// import DcService from '@/services/DcService'
 export default {
   $_veeValidate: {
     validator: 'new'
@@ -166,7 +166,8 @@ export default {
       pagination: {
         // https://github.com/vuetifyjs/vuetify/issues/442
         sortBy: 'date',
-        descending: true
+        descending: true,
+        rowsPerPage: 10
       },
       selected: [],
       headers: [
@@ -242,33 +243,20 @@ export default {
       if (!this.selectLand) {
         this.selectLand = 0
       }
-      const response = await JournalService.fetchJournalsByDateNUserIdNLandId({
+
+      const response = await JournalService.fetchJournalLookupBy4({
         startDate: this.startDate,
         endDate: this.endDate,
         userId: this.userId,
         landId: this.selectLand
       })
+
       if (response.data.length > 0) {
         var tmpJournals = response.data
         for (var i = 0; i < response.data.length; i++) {
-          const response2 = await LandService.fetchNameByLandId({
-            landId: response.data[i].landId
-          })
-
-          tmpJournals[i].landName = response2.data[0].name
-
-          tmpJournals[i].cropCode = response2.data[0].cropCode
-
-          const response4 = await DcService.fetchCropNameByCropCode({
-            cropCode: tmpJournals[i].cropCode
-          })
-          tmpJournals[i].cropName = response4.data[0].text
-
-          const response3 = await WcService.fetchOneTextByCcode({
-            code: response.data[i].workCode
-          })
-          tmpJournals[i].workType = response3.data[0].text
-
+          tmpJournals[i].landName = response.data[i].landInfo.name
+          tmpJournals[i].cropName = response.data[i].dcsInfo.text
+          tmpJournals[i].workType = response.data[i].wcsInfo.text
           tmpJournals[i].sky = tmpJournals[i].weather.sky
           switch (tmpJournals[i].sky) {
             case '0' :
@@ -284,35 +272,28 @@ export default {
               tmpJournals[i].sky = '눈'
               break
           }
-          tmpJournals[i].t1h = Math.round(tmpJournals[i].weather.avgT1H) + '℃'
+          if (tmpJournals[i].sky === 'No data') {
+            tmpJournals[i].sky = '-'
+          }
+          if (!tmpJournals[i].t1h) {
+            tmpJournals[i].t1h = '-'
+          } else {
+            tmpJournals[i].t1h = Math.round(tmpJournals[i].weather.avgT1H) + '℃'
+          }
         }
         this.journals = tmpJournals
       } else {  // 작년 10일이내의 데이터가 없는 경우 작년 해당월의 데이터를 보여줌
-        const response4 = await JournalService.fetchJournalsByYMUserIdLandId({
+        const response4 = await JournalService.fetchJournalLookupByYMUserIdLandId({
           ym: this.lastYearYM,
           userId: this.userId,
           landId: this.selectLand
         })
         var tmpJournals2 = response4.data
+
         for (var j = 0; j < response4.data.length; j++) {
-          const response5 = await LandService.fetchNameByLandId({
-            landId: response4.data[j].landId
-          })
-
-          tmpJournals2[j].landName = response5.data[0].name
-
-          tmpJournals2[j].cropCode = response5.data[0].cropCode
-
-          const response7 = await DcService.fetchCropNameByCropCode({
-            cropCode: tmpJournals2[j].cropCode
-          })
-          tmpJournals2[j].cropName = response7.data[0].text
-
-          const response6 = await WcService.fetchOneTextByCcode({
-            code: response4.data[j].workCode
-          })
-          tmpJournals2[j].workType = response6.data[0].text
-
+          tmpJournals2[j].landName = response4.data[j].landInfo.name
+          tmpJournals2[j].cropName = response4.data[j].dcsInfo.text
+          tmpJournals2[j].workType = response4.data[j].wcsInfo.text
           tmpJournals2[j].sky = tmpJournals2[j].weather.sky
           switch (tmpJournals2[j].sky) {
             case '0' :
@@ -328,7 +309,14 @@ export default {
               tmpJournals2[j].sky = '눈'
               break
           }
-          tmpJournals2[j].t1h = Math.round(tmpJournals2[j].weather.avgT1H) + '℃'
+          if (tmpJournals2[i].sky === 'No data') {
+            tmpJournals2[i].sky = '-'
+          }
+          if (!tmpJournals2[i].t1h) {
+            tmpJournals2[i].t1h = '-'
+          } else {
+            tmpJournals2[i].t1h = Math.round(tmpJournals2[i].weather.avgT1H) + '℃'
+          }
         }
         this.journals = tmpJournals2
       }

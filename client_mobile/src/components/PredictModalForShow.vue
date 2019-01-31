@@ -274,7 +274,9 @@
                           label="품목명"
                           data-vv-name="item.itemName"
                           required                           
-                          readonly                                        
+                          readonly
+                          item-text="itemName"
+                          item-value="itemId"                                       
                         ></v-select>
                       </v-flex>
                       <v-flex xs6 :key="'D' + index">
@@ -407,6 +409,7 @@ import WcService from '@/services/WcService'
 import DcService from '@/services/DcService'
 import JournalService from '@/services/JournalService'
 import ItemService from '@/services/ItemService'
+import ItemDetailService from '@/services/ItemDetailService'
 import ImageInput from './ImageInputForShow.vue'
 export default {
   $_veeValidate: {
@@ -458,12 +461,7 @@ export default {
       showIncome: false,
       showShipment: false,
       sCode: '',
-      usageItems: [
-        {
-          itemName: '',
-          usage: ''
-        }
-      ],
+      usageItems: [],
       cooItems: [
         {
           category: '',
@@ -620,13 +618,43 @@ export default {
           this.skyStatus = '눈'
           break
       }
+      if (this.skyStatus === 'No data') {
+        this.skyStatus = '-'
+      }
       this.RN1 = response.data[0].weather.avgRN1
-      this.minT1H = response.data[0].weather.minT1H + '℃'
-      this.maxT1H = response.data[0].weather.maxT1H + '℃'
-      this.avgT1H = Math.round(response.data[0].weather.avgT1H) + '℃'
-      this.minREH = response.data[0].weather.minREH + '%'
-      this.maxREH = response.data[0].weather.maxREH + '%'
-      this.avgREH = Math.round(response.data[0].weather.avgREH) + '%'
+      if (this.RN1 === 'No data') {
+        this.RN1 = '-'
+      }
+      if (response.data[0].weather.minT1H === 'No data') {
+        this.minT1H = '-'
+      } else {
+        this.minT1H = response.data[0].weather.minT1H + '℃'
+      }
+      if (response.data[0].weather.maxT1H === 'No data') {
+        this.maxT1H = '-'
+      } else {
+        this.maxT1H = response.data[0].weather.maxT1H + '℃'
+      }
+      if (response.data[0].weather.avgT1H === 'No data') {
+        this.avgT1H = '-'
+      } else {
+        this.avgT1H = Math.round(response.data[0].weather.avgT1H) + '℃'
+      }
+      if (response.data[0].weather.minREH === 'No data') {
+        this.minREH = '-'
+      } else {
+        this.minREH = response.data[0].weather.minREH + '%'
+      }
+      if (response.data[0].weather.maxREH === 'No data') {
+        this.maxREH = '-'
+      } else {
+        this.maxREH = response.data[0].weather.maxREH + '%'
+      }
+      if (response.data[0].weather.avgREH === 'No data') {
+        this.avgREH = '-'
+      } else {
+        this.avgREH = Math.round(response.data[0].weather.avgREH) + '%'
+      }
 
       this.selectLand = response.data[0].landId
       this.getCropCodeByLandId(this.selectLand)
@@ -657,11 +685,41 @@ export default {
         this.usageItems = []
         this.showOutput = false
       } else if (this.selectedWorkTypeText === '비료' || this.selectedWorkTypeText === '농약' || this.selectedWorkTypeText === '사료') {
+        /* ORIGINAL
         this.showShipment = false
         this.showIncome = false
         this.showUsage = true
         this.usageItems = response.data[0].usage
+        this.fetchItemsByWcode(this.selectedWorkTypeCode) //
+        this.showOutput = false
+        */
+        this.showShipment = false
+        this.showIncome = false
+        this.showUsage = true
+        // this.fetchItemsByWcode(this.selectedWorkTypeCode) //
+        // this.itemNames = []
+        for (var k = 0; k < response.data[0].itemDetail.length; k++) {
+          const response3 = await ItemDetailService.fetchItemDetailByItemId({
+            userId: this.userId,
+            itemId: response.data[0].itemDetail[k].itemId
+          })
+          // console.log(response3.data)
+          // this.itemNames.push(response3.data[0])
 
+          var tmpUsageItem = {}
+          tmpUsageItem.itemName = response3.data[0].itemId
+          tmpUsageItem.usage = response.data[0].itemDetail[k].usage
+          tmpUsageItem.originalJournalUsage = response.data[0].itemDetail[k].usage  // 원래 사용량 저장
+          // 재고량 = itemAmount - journalUsage - itemUsage
+          tmpUsageItem.stock = response3.data[0].itemAmount - response3.data[0].journalUsage - response3.data[0].itemUsage
+          tmpUsageItem.itemAmount = response3.data[0].itemAmount
+          tmpUsageItem.journalRealUsage = response3.data[0].journalUsage
+          tmpUsageItem.itemUsage = response3.data[0].itemUsage
+          this.usageItems.push(tmpUsageItem)
+
+          // 현재 사용량 저장
+          // this.originalJournalUsages[k] = tmpUsageItem.usage
+        }
         this.fetchItemsByWcode(this.selectedWorkTypeCode) //
 
         this.showOutput = false
@@ -698,6 +756,7 @@ export default {
       }
     },
     async fetchItemsByWcode (workCode) {
+      /* ORIGINAL
       const response = await ItemService.fetchItemsByWcode({
         userId: this.userId,
         wCode: workCode
@@ -707,6 +766,23 @@ export default {
           this.itemNames.push(response.data[i].itemDetail[j].itemName)
         }
       }
+      */
+      const response = await ItemService.fetchItemsByWcode({
+        userId: this.userId,
+        wCode: workCode
+      })
+      // console.log(response.data)
+      this.itemNames = []
+      for (var i = 0; i < response.data.length; i++) {
+        for (var j = 0; j < response.data[i].itemDetail.length; j++) {
+          const response2 = await ItemDetailService.fetchItemDetailByItemId({
+            userId: this.userId,
+            itemId: response.data[i].itemDetail[j]
+          })
+          this.itemNames.push(response2.data[0])
+        }
+      }
+      console.log(this.itemNames)
     },
     async getLands () {
       const response = await LandService.fetchLands({

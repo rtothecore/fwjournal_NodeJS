@@ -303,7 +303,8 @@
                           persistent-hint
                           v-on:change="onChangeItemName(item.itemName, index)" 
                           item-text="itemName"
-                          item-value="itemId"                                        
+                          item-value="itemId"
+                          :readonly="item.readonlyVal"                                        
                         ></v-select>
                       </v-flex>
                       <v-flex xs5 :key="'D' + index">
@@ -656,6 +657,7 @@ import DcService from '@/services/DcService'
 import JournalService from '@/services/JournalService'
 import ItemService from '@/services/ItemService'
 import ItemDetailService from '@/services/ItemDetailService'
+import WcDataService from '@/services/WcDataService'
 import ImageInput from './ImageInput.vue'
 export default {
   $_veeValidate: {
@@ -986,7 +988,6 @@ export default {
 
         // this.itemNames = []
         for (var k = 0; k < response.data[0].itemDetail.length; k++) {
-          // 셀렉트 박스
           const response3 = await ItemDetailService.fetchItemDetailByItemId({
             userId: this.userId,
             itemId: response.data[0].itemDetail[k].itemId
@@ -997,6 +998,7 @@ export default {
           */
 
           var tmpUsageItem = {}
+          tmpUsageItem.readonlyVal = true
           tmpUsageItem.itemName = response3.data[0].itemId
           tmpUsageItem.usage = response.data[0].itemDetail[k].usage
           tmpUsageItem.originalJournalUsage = response.data[0].itemDetail[k].usage  // 원래 사용량 저장
@@ -1010,7 +1012,6 @@ export default {
           // 현재 사용량 저장
           // this.originalJournalUsages[k] = tmpUsageItem.usage
         }
-        // this.itemNames.push('직접입력')
 
         this.showOutput = false
       } else if (this.selectedWorkTypeText === '생산') {
@@ -1101,6 +1102,60 @@ export default {
       this.selectedCropCode = response.data[0].cropCode
       this.getCropNameByCropCode(this.selectedCropCode)
       this.getWorkTypeByCropCode(this.selectedCropCode)
+
+      // 주소 얻어서 날씨 통계 데이터 가져오기
+      var addressSplit = response.data[0].address.split(' ')
+      var tmpAddress = addressSplit[0] + ' ' + addressSplit[1] + ' ' + addressSplit[2]
+      this.getWeatherCrawlerDataAggByAddress(this.User_Profile, this.User_Profile, tmpAddress)
+    },
+    async getWeatherCrawlerDataAggByAddress (sDate, eDate, address) {
+      const response = await WcDataService.fetchWeatherAggDataByAddr({
+        startDate: sDate,
+        endDate: eDate,
+        address: address
+      })
+      // console.log(response.data)
+
+      if (response.data.length >= 1) {
+        this.skyStatus = response.data[0].pty
+        switch (this.skyStatus) {
+          case 0 :
+            this.skyStatusText = '맑음'
+            break
+          case 1 :
+            this.skyStatusText = '비'
+            break
+          case 2 :
+            this.skyStatusText = '비/눈'
+            break
+          case 3 :
+            this.skyStatusText = '눈'
+            break
+        }
+
+        this.RN1 = response.data[0].rn1
+        this.avgT1H = response.data[0].t1hAvg
+        this.avgT1HText = Math.round(this.avgT1H) + '℃'
+        this.maxT1H = response.data[0].t1hMax
+        this.maxT1HText = this.maxT1H + '℃'
+        this.minT1H = response.data[0].t1hMin
+        this.minT1HText = this.minT1H + '℃'
+        this.avgREH = response.data[0].rehAvg
+        this.avgREHText = Math.round(this.avgREH) + '%'
+        this.maxREH = response.data[0].rehMax
+        this.maxREHText = this.maxREH + '%'
+        this.minREH = response.data[0].rehMin
+        this.minREHText = this.minREH + '%'
+      } else {
+        this.skyStatusText = '-'
+        this.RN1 = '-'
+        this.avgT1HText = '-'
+        this.maxT1HText = '-'
+        this.minT1HText = '-'
+        this.avgREHText = '-'
+        this.maxREHText = '-'
+        this.minREHText = '-'
+      }
     },
     async getWorkTypeByCropCode (cropCode) {
       const response = await WcService.fetchTextByCropCode({
@@ -1476,11 +1531,19 @@ export default {
     },
     onChangeItemAmount: async function (event, index) {
       console.log(event + '/' + index)
-      if (event >= this.itemItems[index].journalUsage) {
-        // 재고량 계산
-        this.itemItems[index].itemStock = event - this.itemItems[index].journalUsage
+      // 구입수량이 사용량 + 재고량보다 작아지면 안됨
+      if (event < this.itemItems[index].itemStock + this.itemItems[index].journalUsage) {
+        this.itemItems[index].itemAmount = this.itemItems[index].itemStock + this.itemItems[index].journalUsage
       } else {
-        this.itemItems[index].itemAmount = this.itemItems[index].journalUsage
+        this.itemItems[index].itemStock = event - this.itemItems[index].journalUsage
+        /*
+        if (event >= this.itemItems[index].journalUsage) {
+          // 재고량 계산
+          this.itemItems[index].itemStock = event - this.itemItems[index].journalUsage
+        } else {
+          this.itemItems[index].itemAmount = this.itemItems[index].journalUsage
+        }
+        */
       }
     },
     initItemNames () {
@@ -1623,6 +1686,7 @@ export default {
     },
     addUsageRow () {
       this.usageItems.push({
+        readonlyVal: false,
         itemName: '',
         stock: '',
         usage: ''

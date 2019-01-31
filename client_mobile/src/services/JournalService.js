@@ -21,8 +21,8 @@ export default {
     return Api().get('journals/searchBy3/' + params.startDate + '/' + params.endDate + '/' + params.searchWord, params)
   },
 
-  fetchJournalsBy4LandId (params) {
-    return Api().get('journals/searchBy4LandId/' + params.startDate + '/' + params.endDate + '/' + params.searchWord + '/' + params.landId, params)
+  fetchJournalsBy5LandId (params) {
+    return Api().get('journals/searchBy5LandId/' + params.userId + '/' + params.startDate + '/' + params.endDate + '/' + params.searchWord + '/' + params.landId, params)
   },
 
   fetchJournalsBy4 (params) {
@@ -84,5 +84,25 @@ export default {
 
   fetchJournalCOOSum (params) {
     return Api().get('journalsGetCOOAggData/' + params.userId + '/' + params.startDate + '/' + params.endDate, params)
+  },
+
+  fetchJournalLookup (params) {
+    return Api().get('journalsLookup/' + params.startDate + '/' + params.endDate + '/' + params.userId, params)
+  },
+
+  fetchJournalLookupBy4 (params) {
+    return Api().get('journalsLookupBy4/' + params.startDate + '/' + params.endDate + '/' + params.userId + '/' + params.landId, params)
+  },
+
+  fetchJournalLookupByUserId (params) {
+    return Api().get('journalsLookupByUserId/' + params.userId, params)
+  },
+
+  fetchJournalLookupByYMUserId (params) {
+    return Api().get('journalsLookupByYMUserId/' + params.ym + '/' + params.userId, params)
+  },
+
+  fetchJournalLookupByYMUserIdLandId (params) {
+    return Api().get('journalsLookupByYMUserIdLandId/' + params.ym + '/' + params.userId + '/' + params.landId, params)
   }
 }

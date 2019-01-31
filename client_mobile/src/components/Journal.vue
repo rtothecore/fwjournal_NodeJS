@@ -220,7 +220,8 @@
                     <v-data-table
                       :headers="headers"
                       :items="crops"
-                      :rows-per-page-items=[10]
+                      :pagination.sync="pagination2"
+                      hide-actions
                       class="elevation-1"
                       v-if='showMarketPrice'
                     >
@@ -244,6 +245,9 @@
                         <td class="text-xs-right">{{ props.item.MXMM_AMT }}</td>
                       </template>
                     </v-data-table>
+                    <div class="text-xs-center pt-2">
+                      <v-pagination v-model="pagination2.page" :length="pages2"></v-pagination>
+                    </div>
                   </div>
                 </b-col>              
               </b-row>              
@@ -277,7 +281,8 @@
                     <v-data-table
                       :headers="headersForPredict"
                       :items="journals"
-                      :rows-per-page-items=[10]
+                      :pagination.sync="pagination"
+                      hide-actions
                       class="elevation-1"
                       v-if='showPredictTable'
                     >
@@ -297,6 +302,9 @@
                         <td :style="{backgroundColor: (props.index % 2 ? '#E0E4FF' : 'transparent')}" @click="showItem(props.item)"><h5>{{ props.item.workName }}</h5></td>                                                     
                       </template>
                     </v-data-table>
+                    <div class="text-xs-center pt-2">
+                      <v-pagination v-model="pagination.page" :length="pages"></v-pagination>
+                    </div>
                   </div>
                 </b-col>              
               </b-row>              
@@ -313,7 +321,7 @@
     import moment from 'moment'
     import {bus} from '../main'
     import JournalService from '@/services/JournalService'
-    import WcService from '@/services/WcService'
+    // import WcService from '@/services/WcService'
     // import ScService from '@/services/ScService'
     import LandService from '@/services/LandService'
     import WeatherService from '@/services/WeatherService'
@@ -325,6 +333,17 @@
     export default {
   data () {
         return {
+          pagination2: {
+            // https://github.com/vuetifyjs/vuetify/issues/442
+            descending: true,
+            rowsPerPage: 10
+          },
+          pagination: {
+            // https://github.com/vuetifyjs/vuetify/issues/442
+            sortBy: 'date',
+            descending: true,
+            rowsPerPage: 10
+          },
           selectLand: '',
           landItems: [],
           showPredictTable: true,
@@ -481,6 +500,35 @@
           }
         })
   },
+  watch: {
+        crops () {
+          this.$nextTick(() => {
+            this.pagination2.totalItems = this.crops.length
+          })
+        },
+        // https://github.com/vuetifyjs/vuetify/issues/4455
+        journals () {
+          this.$nextTick(() => {
+            this.pagination.totalItems = this.journals.length
+          })
+        }
+  },
+  computed: {
+        pages2 () {
+          if (this.pagination2.rowsPerPage == null ||
+            this.pagination2.totalItems == null
+          ) return 0
+
+          return Math.ceil(this.pagination2.totalItems / this.pagination2.rowsPerPage)
+        },
+        pages () {
+          if (this.pagination.rowsPerPage == null ||
+            this.pagination.totalItems == null
+          ) return 0
+
+          return Math.ceil(this.pagination.totalItems / this.pagination.rowsPerPage)
+        }
+  },
   methods: {
         onChangeLand: function (event) {
           this.selectLand = event
@@ -528,37 +576,12 @@
           }
         },
         async getJournal () {
-          const response = await JournalService.fetchJournals({
+            const response = await JournalService.fetchJournalLookupByUserId({
             userId: this.userId
           })
-          // console.log(response.data)
           for (var i = 0; i < response.data.length; i++) {
             var tmpEvent = {}
 
-            // 작업분류명
-            var workTypeVal = ''
-            const response2 = await WcService.fetchOneTextByCcode({
-              code: response.data[i].workCode
-            })
-            workTypeVal = response2.data[0].text
-
-            /*
-            // 작물명
-            var cropNameVal = ''
-            const response3 = await LandService.fetchCropNameByLandId({
-              landId: response.data[i].landId
-            })
-            cropNameVal = response3.data[0].text
-
-            // 농장명
-            var landNameVal = ''
-            const response4 = await LandService.fetchNameByLandId({
-              landId: response.data[i].landId
-            })
-            landNameVal = response4.data[0].name
-            */
-
-            // tmpEvent.title = landNameVal + ' - ' + cropNameVal + ' - ' + workTypeVal
             tmpEvent.title = workTypeVal
 
             var tmpTime = response.data[i].date
@@ -567,37 +590,26 @@
             tmpEvent.journalId = response.data[i]._id
             tmpEvent.textColor = 'white'
             this.events.push(tmpEvent)
-            tmpEvent.eventIndex = this.events.indexOf(tmpEvent)
-            // console.log(this.events.indexOf(tmpEvent))
+            tmpEvent.eventIndex = this.events.indexOf(tmpEvent)          
           }
         },
         async getItem () {
-          const response = await ItemService.fetchItems({
+          const response = await ItemService.fetchItemsLookupByUserId({
             userId: this.userId
           })
+
           for (var i = 0; i < response.data.length; i++) {
             var tmpEvent = {}
-
-            // 작업분류명
-            var workTypeVal = ''
-            const response2 = await WcService.fetchOneTextByCcode({
-              code: response.data[i].item
-            })
-            workTypeVal = response2.data[0].text
-
-            // tmpEvent.title = workTypeVal + ' 구입'
             tmpEvent.title = workTypeVal
             var tmpTime = response.data[i].date
             tmpEvent.start = tmpTime
             tmpEvent.end = tmpTime
-            // tmpEvent.journalId = response.data[i]._id
             tmpEvent.itemId = response.data[i]._id
             tmpEvent.color = 'orange'
             tmpEvent.textColor = 'white'
             this.events.push(tmpEvent)
             tmpEvent.eventIndex = this.events.indexOf(tmpEvent)
           }
-          // console.log(response.data)
         },
         async fetchTodayWeather (nx, ny) {
           const response = await WeatherService.fetchTodayWeather({
@@ -836,52 +848,43 @@
           }
         },
         async getJournalsByDate () {
-          const response = await JournalService.fetchJournalsByDateNUserId({
+          const response = await JournalService.fetchJournalLookup({
             startDate: this.startDate,
             endDate: this.endDate,
             userId: this.userId
           })
+
           if (response.data.length > 0) {
             var tmpJournals = response.data
             for (var i = 0; i < response.data.length; i++) {
-              const response2 = await LandService.fetchNameByLandId({
-                landId: response.data[i].landId
-              })
-              tmpJournals[i].landName = response2.data[0].name
-              // this.weatherLoc = response2.data[0].name
-
-              const response3 = await WcService.fetchOneTextByCcode({
-                code: response.data[i].workCode
-              })
-              tmpJournals[i].workName = response3.data[0].text
-
+              tmpJournals[i].landName = response.data[i].landInfo.name
+              tmpJournals[i].workName = response.data[i].wcsInfo.text
               tmpJournals[i].sky = tmpJournals[i].weather.sky
+              if (tmpJournals[i].sky === 'No data') {
+                tmpJournals[i].sky = '-'
+              }
               tmpJournals[i].t1h = tmpJournals[i].weather.avgT1H
+              if (tmpJournals[i].t1h === 'No data') {
+                tmpJournals[i].t1h = '-'
+              }
             }
             this.journals = tmpJournals
           } else {  // 작년 10일이내의 데이터가 없는 경우 작년 해당월의 데이터를 보여줌
-            const response4 = await JournalService.fetchJournalsByYMUserId({
+            const response4 = await JournalService.fetchJournalLookupByYMUserId({
               ym: this.lastYearYM,
               userId: this.userId
             })
             var tmpJournals2 = response4.data
+
             for (var j = 0; j < response4.data.length; j++) {
-              const response5 = await LandService.fetchNameByLandId({
-                landId: response4.data[j].landId
-              })
-              tmpJournals2[j].landName = response5.data[0].name
-              // this.weatherLoc = response5.data[0].name
-
-              const response6 = await WcService.fetchOneTextByCcode({
-                code: response4.data[j].workCode
-              })
-              tmpJournals2[j].workName = response6.data[0].text
-
+              tmpJournals2[j].landName = response4.data[j].landInfo.name
+              tmpJournals2[j].workName = response4.data[j].wcsInfo.text
               tmpJournals2[j].sky = tmpJournals2[j].weather.sky
               tmpJournals2[j].t1h = tmpJournals2[j].weather.avgT1H
             }
             this.journals = tmpJournals2
           }
+          
           if (this.journals.length === 0) {
             this.showPredictTable = false
           }

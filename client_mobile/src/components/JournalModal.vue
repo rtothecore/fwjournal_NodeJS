@@ -1007,6 +1007,7 @@ export default {
         this.itemItems[i].userId = this.userId
         this.itemItems[i].journalUsage = 0
         this.itemItems[i].itemUsage = 0
+        this.itemItems[i].createDate = this.User_Profile.replace(/-/gi, '')
 
         const response3 = await ItemDetailService.createItemDetail({
           itemDetail: this.itemItems[i]
