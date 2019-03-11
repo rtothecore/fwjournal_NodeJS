@@ -110,8 +110,15 @@
           </b-form-group>
           </h4>
 
+<!--
           <v-switch
             :label="`작업일지 공유: ${switch1.toString()}`"
+            v-model="switch1"
+            v-on:change="onChangeShareFlag"
+          ></v-switch>
+-->
+          <v-switch
+            :label="`작업일지 공유: ${switch1Label.toString()}`"
             v-model="switch1"
             v-on:change="onChangeShareFlag"
           ></v-switch>
@@ -163,6 +170,7 @@ import {bus} from '../main'
 import UserService from '@/services/UserService'
 export default {
   data: () => ({
+    switch1Label: '공유함',
     switch1: true,
     phoneNo: '',
     name: '',
@@ -212,8 +220,10 @@ export default {
       this.phoneNo = response.data[0].phone_no
       if (response.data[0].share_flag === '0') {
         this.switch1 = false
+        this.switch1Label = '공유안함'
       } else {
         this.switch1 = true
+        this.switch1Label = '공유함'
       }
     },
     async updateUserAgeSex () {
@@ -235,8 +245,10 @@ export default {
     async updateUserShareFlag () {
       if (this.switch1) {
         this.shareFlag = 1
+        this.switch1Label = '공유함'
       } else {
         this.shareFlag = 0
+        this.switch1Label = '공유안함'
       }
       await UserService.updateUserShareFlag({
         id: this.userId,

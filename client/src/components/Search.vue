@@ -376,59 +376,18 @@ export default {
         endDate: this.endDate,
         userId: this.userId
       })
+      // console.log(response.data)
       var tmpJournals = response.data
 
       for (var i = 0; i < tmpJournals.length; i++) {
         tmpJournals[i].farmName = tmpJournals[i].landInfo.name
+        if (this.userId !== tmpJournals[i].userId) {
+          tmpJournals[i].farmName = '👻)' + tmpJournals[i].farmName
+        }
         tmpJournals[i].cropName = tmpJournals[i].dcsInfo.text
         tmpJournals[i].workType = tmpJournals[i].wcsInfo.text
       }
       this.journals = tmpJournals
-      /* ORIGINAL
-      const response = await JournalService.fetchJournalsByDateNUserId({
-        startDate: this.startDate,
-        endDate: this.endDate,
-        userId: this.userId
-      })
-
-      var tmpJournals = response.data
-
-      for (var i = 0; i < response.data.length; i++) {
-        const response2 = await LandService.fetchNameByLandId({
-          landId: response.data[i].landId
-        })
-        tmpJournals[i].farmName = response2.data[0].name
-        tmpJournals[i].cropCode = response2.data[0].cropCode
-
-        const response3 = await DcService.fetchCropNameByCropCode({
-          cropCode: response2.data[0].cropCode
-        })
-        tmpJournals[i].cropName = response3.data[0].text
-
-        const response4 = await WcService.fetchOneTextByCcode({
-          code: response.data[i].workCode
-        })
-        tmpJournals[i].workType = response4.data[0].text
-
-        const response5 = await WcService.fetchWorkCodesByWorkcode({
-          code: response.data[i].workCode
-        })
-        tmpJournals[i].workItems = response5.data
-
-        tmpJournals[i].itemNames = []
-        const response6 = await ItemService.fetchItemsByWcode({
-          userId: this.userId,
-          wCode: response.data[i].workCode
-        })
-        for (var j = 0; j < response6.data.length; j++) {
-          for (var k = 0; k < response6.data[j].itemDetail.length; k++) {
-            tmpJournals[i].itemNames.push(response6.data[j].itemDetail[k].itemName)
-          }
-        }
-      }
-
-      this.journals = tmpJournals
-      */
     },
     async getJournalsBy5 () {
       var tmpStartDate = this.startDate
@@ -461,58 +420,13 @@ export default {
 
       for (var i = 0; i < tmpJournals.length; i++) {
         tmpJournals[i].farmName = tmpJournals[i].landInfo.name
+        if (this.userId !== tmpJournals[i].userId) {
+          tmpJournals[i].farmName = '👻)' + tmpJournals[i].farmName
+        }
         tmpJournals[i].cropName = tmpJournals[i].dcsInfo.text
         tmpJournals[i].workType = tmpJournals[i].wcsInfo.text
       }
       this.journals = tmpJournals
-      /* ORIGINAL
-      var tmpStartDate = this.startDate
-      if (!tmpStartDate) {
-        tmpStartDate = 0
-      }
-
-      var tmpEndDate = this.endDate
-      if (!tmpEndDate) {
-        tmpEndDate = 0
-      }
-
-      var tmpSearchWord = this.searchWord
-      if (!tmpSearchWord) {
-        tmpSearchWord = 0
-      }
-
-      if (!this.selectLand) {
-        this.selectLand = 0
-      }
-
-      const response = await JournalService.fetchJournalsBy5LandId({
-        userId: this.userId,
-        startDate: tmpStartDate,
-        endDate: tmpEndDate,
-        searchWord: tmpSearchWord,
-        landId: this.selectLand
-      })
-      var tmpJournals = response.data
-
-      for (var i = 0; i < response.data.length; i++) {
-        // 농장명
-        const response4 = await LandService.fetchNameByLandId({
-          landId: response.data[i].landId
-        })
-        tmpJournals[i].farmName = response4.data[0].name
-        // 작물명
-        const response2 = await LandService.fetchCropNameByLandId({
-          landId: response.data[i].landId
-        })
-        tmpJournals[i].cropName = response2.data[0].text
-
-        const response3 = await WcService.fetchOneTextByCcode({
-          code: response.data[i].workCode
-        })
-        tmpJournals[i].workType = response3.data[0].text
-      }
-      this.journals = tmpJournals
-      */
     },
     async deleteJournal (id) {
       await JournalService.deleteJournal(id)

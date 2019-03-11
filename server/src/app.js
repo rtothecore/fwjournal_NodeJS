@@ -112,7 +112,7 @@ mongoose.Promise = global.Promise;
 // mongoose.connect('mongodb://localhost:27017/fwjournal')
 // mongoose.connect('mongodb://192.168.0.73:27017/fwjournal')
 // http://mongoosejs.com/docs/connections.html
-mongoose.connect('mongodb://journal:journal**@192.168.66.30:27017/fwjournal')
+mongoose.connect('mongodb://fwjournal:fwjournal**@192.168.66.40:28017/fwjournal')
 var db = mongoose.connection
 db.on("error", console.error.bind(console, "connection error"));
 db.once("open", function(callback){
@@ -133,6 +133,7 @@ var SmsAuth = require("../models/smsAuth")
 var JoinUser = require("../models/joinUser")
 var LeaveUser = require("../models/leaveUser")
 var Item = require("../models/item")
+var ItemDetail = require("../models/itemDetail")
 
 const serviceKey = '73Jjl5lZRvBRKkGsPnGmZ7EL9JtwsWNi3hhCIN8cpVJzMdRRgyzntwz2lHmTKeR1tp7NWzoihNGGazcDEFgh8w%3D%3D'
 const serviceKeyForPrice = '8d8857fa9186167880dafee9a8c55dda0d2711b96cd4ae893983f7d870941d2e'
@@ -917,7 +918,7 @@ app.put('/journals/:id', (req, res) => {
     journals.COO = req.body.coo;
     journals.shipment = req.body.shipment;
     journals.income = req.body.income;
-    journals.usage = req.body.usage;
+    journals.itemDetail = req.body.itemDetail;
     journals.output = req.body.output;
     journals.pictureA = req.body.pictureA;
     journals.pictureB = req.body.pictureB;
@@ -947,6 +948,23 @@ app.delete('/journals/:id', (req, res) => {
 			success: true
 		})
 	})
+})
+
+// Delete journal by itemId
+app.delete('/journalsByItemId/:itemId', (req, res) => {	
+	console.log(req.params.itemId)
+	// https://docs.mongodb.com/manual/reference/operator/update/pull/
+	Journal.update(
+		{},
+		{ $pull: { itemDetail: { itemId : req.params.itemId } } },
+		{ multi: true },
+		function(err, doc) {
+	        if(err) { console.log(err); }
+	        else {
+	          res.send({success: true})
+	        }
+	    }
+	)
 })
 
 // Fetch journals by userId, startDate, endDate, landId
@@ -1027,28 +1045,253 @@ app.get('/journals/searchBy4/:startDate/:endDate/:workType/:workContent', (req, 
 })
 
 // Fetch journals by date, workType, landId
-app.get('/journals/searchBy4LandId/:startDate/:endDate/:searchWord/:landId', (req, res) => {
+app.get('/journals/searchBy5LandId/:userId/:startDate/:endDate/:searchWord/:landId', (req, res) => {
   // console.log(req.params)
-  var query = Journal.find({})
-  if(0 != req.params.startDate) {
-  	query.where('date').gte(req.params.startDate)
-  }
-  if(0 != req.params.endDate) {
-  	query.where('date').lte(req.params.endDate)
-  }
+  var searchArray = []
+  var tmpArrayItem = { "userId" : req.params.userId }
+  searchArray.push(tmpArrayItem)
+  tmpArrayItem = { "date" : { "$gte": req.params.startDate, "$lte": req.params.endDate } }
+  searchArray.push(tmpArrayItem)
 
-  var searchWord = req.params.searchWord  
-  if(0 != req.params.searchWord) {
-  	query.where('workContent').regex(searchWord)  	
-  }
+  if (req.params.landId === "0") {		  	
+  } else {
+  	landIdVal = mongoose.Types.ObjectId(req.params.landId)
+  	tmpArrayItem = { "landId" : landIdVal }
+  	searchArray.push(tmpArrayItem)
+  }  
 
-  if(0 != req.params.landId) {
-  	query.where('landId').equals(req.params.landId)
-  }
+  if (req.params.searchWord === "0") {		  	
+  } else {
+  	tmpArrayItem = { "workContent" : { "$regex": req.params.searchWord, "$options": 'g' } } 
+  	searchArray.push(tmpArrayItem)
+  }  
 
-  query.exec().then(result => {
-  	res.send(result)
-  })
+  // var userIdForSearch = []
+  // userIdForSearch.push(req.params.userId)
+	// 1. 나의 share_flag 조회	
+	User.find({ "id" : req.params.userId }, '', function (error, user) {
+		if (error) { console.error(error); }
+		// console.log(user[0])
+		if (user.length > 0 && user[0].share_flag === "1") {	// share_flag가 1인 경우에만 공유 검색
+			// 2. lands 콜렉션에서 나의 cropCode를 조회하여 dcs 콜렉션에서 소분류 코드를 얻음
+			Land.aggregate([
+				{
+				    '$match' : { 'userId' : user[0].id }       				              	
+			    },
+			    {
+			        '$lookup':
+			        {
+			            from: 'dcs',
+					    localField: 'cropCode',
+					    foreignField: 'dCode',
+					    as: 'dcsInfo'
+					}
+				},
+				{
+				    '$unwind' : '$dcsInfo'
+				}
+			], function (err, lands) {
+				if (err) {
+					next(err);
+			    } else {
+			    	var sCodeArray = []
+			    	for (var i = 0; i < lands.length; i++) {
+			    		sCodeArray.push(lands[i].dcsInfo.sCode)
+			    	}
+			    	// 3. lands 콜렉션에서 나의 소분류코드와 같은 userId를 조회
+		    		Land.aggregate([
+		    			{
+					        '$lookup':
+					        {
+					            from: 'dcs',
+							    localField: 'cropCode',
+							    foreignField: 'dCode',
+							    as: 'dcsInfo'
+							}
+						},
+						{
+						    '$unwind' : '$dcsInfo'
+						},
+						{
+						    '$match' : { 'dcsInfo.sCode' : { '$in': sCodeArray }, 'userId': { '$ne': user[0].id } }
+						}
+		    		], function (err2, lands2) {
+						if (err2) {
+							next(err2);
+					    } else {
+					    	var sameScsUsers = []
+					    	for (var j = 0; j < lands2.length; j++) {
+					    		sameScsUsers.push(lands2[j].userId)
+					    	}
+					    	// 4. 3에서 얻은 userId들 중 share_flag 가 1 인 userId만 필터링
+							User.find({ "id": { "$in": sameScsUsers }, "share_flag": "1" }, '', function (error2, user2) {
+								if (error2) { console.error(error2); }
+								var userIdForSearch = []
+								for (var k = 0; k < user2.length; k++) {
+									userIdForSearch.push(user2[k].id)
+								}
+								userIdForSearch.push(user[0].id)
+								var tempUserIds = {"$in" : userIdForSearch}																
+								searchArray[0] = {"userId": tempUserIds}								
+								// 5. 4에서 얻은 userId들로 검색							
+								Journal.aggregate([
+								{
+								    '$lookup':
+								    {
+								      from: 'lands',
+								      localField: 'landId',
+								      foreignField: '_id',
+								      as: 'landInfo'
+								    }
+								},
+								{
+									"$unwind" : "$landInfo"
+								},
+						        {
+								    '$lookup':
+								    {
+								      from: 'dcs',
+								      localField: 'landInfo.cropCode',
+								      foreignField: 'dCode',
+								      as: 'dcsInfo'
+								    }
+								},
+								{
+									"$unwind" : "$dcsInfo"
+								},
+								{
+								    '$lookup':
+								    {
+								      from: 'wcs',
+								      localField: 'workCode',
+								      foreignField: 'wCode',
+								      as: 'wcsInfo'
+								    }
+								},
+								{
+									"$unwind" : "$wcsInfo"
+								},
+						        {
+						            "$match" : { "$and" : searchArray
+						       				   }            	
+						        },
+						        { "$sort" : { "date": 1 } }
+							    ], function (err, result) {
+							        if (err) {
+							            next(err);
+							        } else {
+							            res.send(result);
+							        }
+							    });					
+							});				    	
+					    }
+					})
+			    }
+			});
+		} else {	// share_flag가 0인 경우 자신의 일지만 검색
+			Journal.aggregate([
+			{
+			    '$lookup':
+			    {
+			      from: 'lands',
+			      localField: 'landId',
+			      foreignField: '_id',
+			      as: 'landInfo'
+			    }
+			},
+			{
+				"$unwind" : "$landInfo"
+			},
+	        {
+			    '$lookup':
+			    {
+			      from: 'dcs',
+			      localField: 'landInfo.cropCode',
+			      foreignField: 'dCode',
+			      as: 'dcsInfo'
+			    }
+			},
+			{
+				"$unwind" : "$dcsInfo"
+			},
+			{
+			    '$lookup':
+			    {
+			      from: 'wcs',
+			      localField: 'workCode',
+			      foreignField: 'wCode',
+			      as: 'wcsInfo'
+			    }
+			},
+			{
+				"$unwind" : "$wcsInfo"
+			},
+	        {
+	            "$match" : { "$and" : searchArray
+	       				   }            	
+	        },
+	        { "$sort" : { "date": 1 } }
+		    ], function (err, result) {
+		        if (err) {
+		            next(err);
+		        } else {
+		            res.send(result);
+		        }
+		    });
+		}
+	})
+
+/*
+  Journal.aggregate([
+		{
+		    '$lookup':
+		    {
+		      from: 'lands',
+		      localField: 'landId',
+		      foreignField: '_id',
+		      as: 'landInfo'
+		    }
+		},
+		{
+			"$unwind" : "$landInfo"
+		},
+        {
+		    '$lookup':
+		    {
+		      from: 'dcs',
+		      localField: 'landInfo.cropCode',
+		      foreignField: 'dCode',
+		      as: 'dcsInfo'
+		    }
+		},
+		{
+			"$unwind" : "$dcsInfo"
+		},
+		{
+		    '$lookup':
+		    {
+		      from: 'wcs',
+		      localField: 'workCode',
+		      foreignField: 'wCode',
+		      as: 'wcsInfo'
+		    }
+		},
+		{
+			"$unwind" : "$wcsInfo"
+		},
+        {
+            "$match" : { "$and" : searchArray
+       				   }            	
+        },
+        { "$sort" : { "date": 1 } }
+    ], function (err, result) {
+        if (err) {
+            next(err);
+        } else {
+            res.send(result);
+        }
+    });
+*/
 })
 
 // Fetch journals by year, month
@@ -1063,13 +1306,289 @@ app.get('/journals/searchByYM/:ym', (req, res) => {
 
 // Fetch journals by year, month, userId
 app.get('/journals/searchByYMUserId/:ym/:userId', (req, res) => {
-  console.log(req.params)
+  // console.log(req.params)
   Journal.find({}, '', function (error, journals) {
     if (error) { console.error(error); }
     res.send(journals)
   })
   .where('date').regex(req.params.ym)
   .where('userId').equals(req.params.userId)
+})
+
+// Fetch journals lookup by year, month, userId
+app.get('/journalsLookupByYMUserId/:ym/:userId', (req, res) => {
+  // console.log(req.params)
+  Journal.aggregate([
+		{
+		    '$lookup':
+		    {
+		      from: 'lands',
+		      localField: 'landId',
+		      foreignField: '_id',
+		      as: 'landInfo'
+		    }
+		},
+		{
+			"$unwind" : "$landInfo"
+		},
+		{
+		    '$lookup':
+		    {
+		      from: 'wcs',
+		      localField: 'workCode',
+		      foreignField: 'wCode',
+		      as: 'wcsInfo'
+		    }
+		},
+		{
+			"$unwind" : "$wcsInfo"
+		},
+        {
+            "$match" : { "$and" : [ { "userId" : req.params.userId },
+            					    { "date" : { "$regex": req.params.ym } }            					    
+       						  	  ] 
+       				   }            	
+        },
+        { "$sort" : { "date": 1 } }
+    ], function (err, result) {
+        if (err) {
+            next(err);
+        } else {
+            res.send(result);
+        }
+    });
+})
+
+// Fetch journals lookup by year, month, userId
+app.get('/journalsLookupByYMUserIdLandId/:ym/:userId/:landId', (req, res) => {
+  // console.log(req.params)
+  var searchArray = []
+  var tmpArrayItem = { "userId" : req.params.userId }
+  searchArray.push(tmpArrayItem)
+  tmpArrayItem = { "date" : { "$regex": req.params.ym } }
+  searchArray.push(tmpArrayItem)
+
+  if (req.params.landId === "0") {		  	
+  } else {	  	
+	landIdVal = mongoose.Types.ObjectId(req.params.landId)
+	tmpArrayItem = { "landId" : landIdVal }
+  	searchArray.push(tmpArrayItem)
+  }
+
+  // var userIdForSearch = []
+  	// userIdForSearch.push(req.params.userId)
+	// 1. 나의 share_flag 조회	
+	User.find({ "id" : req.params.userId }, '', function (error, user) {
+		if (error) { console.error(error); }
+		// console.log(user[0])
+		if (user.length > 0 && user[0].share_flag === "1") {	// share_flag가 1인 경우에만 공유 검색
+			// 2. lands 콜렉션에서 나의 cropCode를 조회하여 dcs 콜렉션에서 소분류 코드를 얻음
+			Land.aggregate([
+				{
+				    '$match' : { 'userId' : user[0].id }       				              	
+			    },
+			    {
+			        '$lookup':
+			        {
+			            from: 'dcs',
+					    localField: 'cropCode',
+					    foreignField: 'dCode',
+					    as: 'dcsInfo'
+					}
+				},
+				{
+				    '$unwind' : '$dcsInfo'
+				}
+			], function (err, lands) {
+				if (err) {
+					next(err);
+			    } else {
+			    	var sCodeArray = []
+			    	for (var i = 0; i < lands.length; i++) {
+			    		sCodeArray.push(lands[i].dcsInfo.sCode)
+			    	}
+			    	// 3. lands 콜렉션에서 나의 소분류코드와 같은 userId를 조회
+		    		Land.aggregate([
+		    			{
+					        '$lookup':
+					        {
+					            from: 'dcs',
+							    localField: 'cropCode',
+							    foreignField: 'dCode',
+							    as: 'dcsInfo'
+							}
+						},
+						{
+						    '$unwind' : '$dcsInfo'
+						},
+						{
+						    '$match' : { 'dcsInfo.sCode' : { '$in': sCodeArray }, 'userId': { '$ne': user[0].id } }
+						}
+		    		], function (err2, lands2) {
+						if (err2) {
+							next(err2);
+					    } else {
+					    	var sameScsUsers = []
+					    	for (var j = 0; j < lands2.length; j++) {
+					    		sameScsUsers.push(lands2[j].userId)
+					    	}
+					    	// 4. 3에서 얻은 userId들 중 share_flag 가 1 인 userId만 필터링
+							User.find({ "id": { "$in": sameScsUsers }, "share_flag": "1" }, '', function (error2, user2) {
+								if (error2) { console.error(error2); }
+								var userIdForSearch = []
+								for (var k = 0; k < user2.length; k++) {
+									userIdForSearch.push(user2[k].id)
+								}
+								userIdForSearch.push(user[0].id)
+								var tempUserIds = {"$in" : userIdForSearch}																
+								searchArray[0] = {"userId": tempUserIds}								
+								// 5. 4에서 얻은 userId들로 검색							
+								Journal.aggregate([
+								{
+								    '$lookup':
+								    {
+								      from: 'lands',
+								      localField: 'landId',
+								      foreignField: '_id',
+								      as: 'landInfo'
+								    }
+								},
+								{
+									"$unwind" : "$landInfo"
+								},
+								{
+								    '$lookup':
+								    {
+								      from: 'dcs',
+								      localField: 'landInfo.cropCode',
+								      foreignField: 'dCode',
+								      as: 'dcsInfo'
+								    }
+								},
+								{
+									"$unwind" : "$dcsInfo"
+								},
+								{
+								    '$lookup':
+								    {
+								      from: 'wcs',
+								      localField: 'workCode',
+								      foreignField: 'wCode',
+								      as: 'wcsInfo'
+								    }
+								},
+								{
+									"$unwind" : "$wcsInfo"
+								},
+						        {
+						            "$match" : { "$and" : searchArray
+						       				   }            	
+						        },
+						        { "$sort" : { "date": 1 } }
+							    ], function (err, result) {
+							        if (err) {
+							            next(err);
+							        } else {
+							            res.send(result);
+							        }
+							    });				
+							});				    	
+					    }
+					})
+			    }
+			});
+		} else {	// share_flag가 0인 경우 자신의 일지만 검색
+			Journal.aggregate([
+			{
+			    '$lookup':
+			    {
+			      from: 'lands',
+			      localField: 'landId',
+			      foreignField: '_id',
+			      as: 'landInfo'
+			    }
+			},
+			{
+				"$unwind" : "$landInfo"
+			},
+			{
+			    '$lookup':
+			    {
+			      from: 'dcs',
+			      localField: 'landInfo.cropCode',
+			      foreignField: 'dCode',
+			      as: 'dcsInfo'
+			    }
+			},
+			{
+				"$unwind" : "$dcsInfo"
+			},
+			{
+			    '$lookup':
+			    {
+			      from: 'wcs',
+			      localField: 'workCode',
+			      foreignField: 'wCode',
+			      as: 'wcsInfo'
+			    }
+			},
+			{
+				"$unwind" : "$wcsInfo"
+			},
+	        {
+	            "$match" : { "$and" : searchArray
+	       				   }            	
+	        },
+	        { "$sort" : { "date": 1 } }
+		    ], function (err, result) {
+		        if (err) {
+		            next(err);
+		        } else {
+		            res.send(result);
+		        }
+		    });
+		}
+	})
+
+/*
+  Journal.aggregate([
+		{
+		    '$lookup':
+		    {
+		      from: 'lands',
+		      localField: 'landId',
+		      foreignField: '_id',
+		      as: 'landInfo'
+		    }
+		},
+		{
+			"$unwind" : "$landInfo"
+		},
+		{
+		    '$lookup':
+		    {
+		      from: 'wcs',
+		      localField: 'workCode',
+		      foreignField: 'wCode',
+		      as: 'wcsInfo'
+		    }
+		},
+		{
+			"$unwind" : "$wcsInfo"
+		},
+        {
+            "$match" : { "$and" : searchArray
+       				   }            	
+        },
+        { "$sort" : { "date": 1 } }
+    ], function (err, result) {
+        if (err) {
+            next(err);
+        } else {
+            res.send(result);
+        }
+    });
+*/
 })
 
 // Fetch journals by year, month, userId, landId
@@ -1105,6 +1624,428 @@ app.get('/journals/:startDate/:endDate/:userId', (req, res) => {
   })
   .where('date').gte(req.params.startDate).lte(req.params.endDate)
   .where('userId').equals(req.params.userId)
+})
+
+// Fetch lookup journals by date & userId & landId
+app.get('/journalsLookupBy4/:startDate/:endDate/:userId/:landId', (req, res) => {
+	var searchArray = []
+	var tmpArrayItem = { "userId" : req.params.userId }
+	searchArray.push(tmpArrayItem)
+	tmpArrayItem = { "date" : { "$gte": req.params.startDate, "$lte": req.params.endDate } }
+	searchArray.push(tmpArrayItem)
+
+	if (req.params.landId === "0") {		  	
+	} else {	  	
+		landIdVal = mongoose.Types.ObjectId(req.params.landId)
+	  	tmpArrayItem = { "landId" : landIdVal }
+  		searchArray.push(tmpArrayItem)
+	}
+
+	// var userIdForSearch = []
+  	// userIdForSearch.push(req.params.userId)
+	// 1. 나의 share_flag 조회	
+	User.find({ "id" : req.params.userId }, '', function (error, user) {
+		if (error) { console.error(error); }
+		// console.log(user[0])
+		if (user.length > 0 && user[0].share_flag === "1") {	// share_flag가 1인 경우에만 공유 검색
+			// 2. lands 콜렉션에서 나의 cropCode를 조회하여 dcs 콜렉션에서 소분류 코드를 얻음
+			Land.aggregate([
+				{
+				    '$match' : { 'userId' : user[0].id }       				              	
+			    },
+			    {
+			        '$lookup':
+			        {
+			            from: 'dcs',
+					    localField: 'cropCode',
+					    foreignField: 'dCode',
+					    as: 'dcsInfo'
+					}
+				},
+				{
+				    '$unwind' : '$dcsInfo'
+				}
+			], function (err, lands) {
+				if (err) {
+					next(err);
+			    } else {
+			    	var sCodeArray = []
+			    	for (var i = 0; i < lands.length; i++) {
+			    		sCodeArray.push(lands[i].dcsInfo.sCode)
+			    	}
+			    	// 3. lands 콜렉션에서 나의 소분류코드와 같은 userId를 조회
+		    		Land.aggregate([
+		    			{
+					        '$lookup':
+					        {
+					            from: 'dcs',
+							    localField: 'cropCode',
+							    foreignField: 'dCode',
+							    as: 'dcsInfo'
+							}
+						},
+						{
+						    '$unwind' : '$dcsInfo'
+						},
+						{
+						    '$match' : { 'dcsInfo.sCode' : { '$in': sCodeArray }, 'userId': { '$ne': user[0].id } }
+						}
+		    		], function (err2, lands2) {
+						if (err2) {
+							next(err2);
+					    } else {
+					    	var sameScsUsers = []
+					    	for (var j = 0; j < lands2.length; j++) {
+					    		sameScsUsers.push(lands2[j].userId)
+					    	}
+					    	// 4. 3에서 얻은 userId들 중 share_flag 가 1 인 userId만 필터링
+							User.find({ "id": { "$in": sameScsUsers }, "share_flag": "1" }, '', function (error2, user2) {
+								if (error2) { console.error(error2); }
+								var userIdForSearch = []
+								for (var k = 0; k < user2.length; k++) {
+									userIdForSearch.push(user2[k].id)
+								}
+								userIdForSearch.push(user[0].id)
+								var tempUserIds = {"$in" : userIdForSearch}																
+								searchArray[0] = {"userId": tempUserIds}								
+								// 5. 4에서 얻은 userId들로 검색							
+								Journal.aggregate([
+								{
+								    '$lookup':
+								    {
+								      from: 'lands',
+								      localField: 'landId',
+								      foreignField: '_id',
+								      as: 'landInfo'
+								    }
+								},
+								{
+									"$unwind" : "$landInfo"
+								},
+						        {
+								    '$lookup':
+								    {
+								      from: 'dcs',
+								      localField: 'landInfo.cropCode',
+								      foreignField: 'dCode',
+								      as: 'dcsInfo'
+								    }
+								},
+								{
+									"$unwind" : "$dcsInfo"
+								},
+								{
+								    '$lookup':
+								    {
+								      from: 'wcs',
+								      localField: 'workCode',
+								      foreignField: 'wCode',
+								      as: 'wcsInfo'
+								    }
+								},
+								{
+									"$unwind" : "$wcsInfo"
+								},
+						        {
+						            "$match" : { "$and" : searchArray
+						       				   }            	
+						        },
+						        { "$sort" : { "_id.date": 1 } }
+						    	], function (err, result) {
+						        	if (err) {
+						            	next(err);
+						        	} else {
+						            	res.send(result);
+						        	}
+						    	});				
+							});				    	
+					    }
+					})
+			    }
+			});
+		} else {	// share_flag가 0인 경우 자신의 일지만 검색
+			Journal.aggregate([
+			{
+			    '$lookup':
+			    {
+			      from: 'lands',
+			      localField: 'landId',
+			      foreignField: '_id',
+			      as: 'landInfo'
+			    }
+			},
+			{
+				"$unwind" : "$landInfo"
+			},
+	        {
+			    '$lookup':
+			    {
+			      from: 'dcs',
+			      localField: 'landInfo.cropCode',
+			      foreignField: 'dCode',
+			      as: 'dcsInfo'
+			    }
+			},
+			{
+				"$unwind" : "$dcsInfo"
+			},
+			{
+			    '$lookup':
+			    {
+			      from: 'wcs',
+			      localField: 'workCode',
+			      foreignField: 'wCode',
+			      as: 'wcsInfo'
+			    }
+			},
+			{
+				"$unwind" : "$wcsInfo"
+			},
+	        {
+	            "$match" : { "$and" : searchArray
+	       				   }            	
+	        },
+	        { "$sort" : { "_id.date": 1 } }
+		    ], function (err, result) {
+		        if (err) {
+		            next(err);
+		        } else {
+		            res.send(result);
+		        }
+		    });
+		}
+	})
+
+/*
+	Journal.aggregate([
+		{
+		    '$lookup':
+		    {
+		      from: 'lands',
+		      localField: 'landId',
+		      foreignField: '_id',
+		      as: 'landInfo'
+		    }
+		},
+		{
+			"$unwind" : "$landInfo"
+		},
+        {
+		    '$lookup':
+		    {
+		      from: 'dcs',
+		      localField: 'landInfo.cropCode',
+		      foreignField: 'dCode',
+		      as: 'dcsInfo'
+		    }
+		},
+		{
+			"$unwind" : "$dcsInfo"
+		},
+		{
+		    '$lookup':
+		    {
+		      from: 'wcs',
+		      localField: 'workCode',
+		      foreignField: 'wCode',
+		      as: 'wcsInfo'
+		    }
+		},
+		{
+			"$unwind" : "$wcsInfo"
+		},
+        {
+            "$match" : { "$and" : searchArray
+       				   }            	
+        },
+        { "$sort" : { "_id.date": 1 } }
+    ], function (err, result) {
+        if (err) {
+            next(err);
+        } else {
+            res.send(result);
+        }
+    });
+*/
+})
+
+// Fetch lookup journals by date & userId
+app.get('/journalsLookup/:startDate/:endDate/:userId', (req, res) => {
+	console.log("journalsLookup IN!")
+	var userIdForSearch = []
+	userIdForSearch.push(req.params.userId)
+	// 1. 나의 share_flag 조회	
+	User.find({ "id" : req.params.userId }, '', function (error, user) {
+		if (error) { console.error(error); }
+		// console.log(user[0])
+		if (user.length > 0 && user[0].share_flag === "1") {	// share_flag가 1인 경우에만 공유 검색
+			// 2. lands 콜렉션에서 나의 cropCode를 조회하여 dcs 콜렉션에서 소분류 코드를 얻음
+			Land.aggregate([
+				{
+				    '$match' : { 'userId' : user[0].id }       				              	
+			    },
+			    {
+			        '$lookup':
+			        {
+			            from: 'dcs',
+					    localField: 'cropCode',
+					    foreignField: 'dCode',
+					    as: 'dcsInfo'
+					}
+				},
+				{
+				    '$unwind' : '$dcsInfo'
+				}
+			], function (err, lands) {
+				if (err) {
+					next(err);
+			    } else {
+			    	var sCodeArray = []
+			    	for (var i = 0; i < lands.length; i++) {
+			    		sCodeArray.push(lands[i].dcsInfo.sCode)
+			    	}
+			    	// 3. lands 콜렉션에서 나의 소분류코드와 같은 userId를 조회
+		    		Land.aggregate([
+		    			{
+					        '$lookup':
+					        {
+					            from: 'dcs',
+							    localField: 'cropCode',
+							    foreignField: 'dCode',
+							    as: 'dcsInfo'
+							}
+						},
+						{
+						    '$unwind' : '$dcsInfo'
+						},
+						{
+						    '$match' : { 'dcsInfo.sCode' : { '$in': sCodeArray }, 'userId': { '$ne': user[0].id } }
+						}
+		    		], function (err2, lands2) {
+						if (err2) {
+							next(err2);
+					    } else {
+					    	var sameScsUsers = []
+					    	for (var j = 0; j < lands2.length; j++) {
+					    		sameScsUsers.push(lands2[j].userId)
+					    	}
+					    	// 4. 3에서 얻은 userId들 중 share_flag 가 1 인 userId만 필터링
+							User.find({ "id": { "$in": sameScsUsers }, "share_flag": "1" }, '', function (error2, user2) {
+								if (error2) { console.error(error2); }
+								for (var k = 0; k < user2.length; k++) {
+									userIdForSearch.push(user2[k].id)
+								}
+								// 5. 4에서 얻은 userId들로 검색							
+								Journal.aggregate([
+									{
+							            "$match" : { "$and" : [ { "userId" : { "$in": userIdForSearch } },
+							            					    { "date" : { "$gte": req.params.startDate, "$lte": req.params.endDate } }            					    
+							       						  	  ] 
+							       				   }            	
+							        },
+									{
+									    '$lookup':
+									    {
+									      from: 'lands',
+									      localField: 'landId',
+									      foreignField: '_id',
+									      as: 'landInfo'
+									    }
+									},
+									{
+										"$unwind" : "$landInfo"
+									},
+							        {
+									    '$lookup':
+									    {
+									      from: 'dcs',
+									      localField: 'landInfo.cropCode',
+									      foreignField: 'dCode',
+									      as: 'dcsInfo'
+									    }
+									},
+									{
+										"$unwind" : "$dcsInfo"
+									},
+									{
+									    '$lookup':
+									    {
+									      from: 'wcs',
+									      localField: 'workCode',
+									      foreignField: 'wCode',
+									      as: 'wcsInfo'
+									    }
+									},
+									{
+										"$unwind" : "$wcsInfo"
+									},
+							        { "$sort" : { "_id.date": 1 } }
+							    ], function (err, result) {
+							        if (err) {
+							            next(err);
+							        } else {
+							            res.send(result);
+							        }
+							    });					
+							});				    	
+					    }
+					})
+			    }
+			});
+		} else {	// share_flag가 0인 경우 자신의 일지만 검색
+			Journal.aggregate([
+			{
+	            "$match" : { "$and" : [ { "userId" : req.params.userId },
+	            					    { "date" : { "$gte": req.params.startDate, "$lte": req.params.endDate } }            					    
+	       						  	  ] 
+	       				   }            	
+	        },
+			{
+			    '$lookup':
+			    {
+			      from: 'lands',
+			      localField: 'landId',
+			      foreignField: '_id',
+			      as: 'landInfo'
+			    }
+			},
+			{
+				"$unwind" : "$landInfo"
+			},
+	        {
+			    '$lookup':
+			    {
+			      from: 'dcs',
+			      localField: 'landInfo.cropCode',
+			      foreignField: 'dCode',
+			      as: 'dcsInfo'
+			    }
+			},
+			{
+				"$unwind" : "$dcsInfo"
+			},
+			{
+			    '$lookup':
+			    {
+			      from: 'wcs',
+			      localField: 'workCode',
+			      foreignField: 'wCode',
+			      as: 'wcsInfo'
+			    }
+			},
+			{
+				"$unwind" : "$wcsInfo"
+			},
+	        { "$sort" : { "_id.date": 1 } }
+	    ], function (err, result) {
+	        if (err) {
+	            next(err);
+	        } else {
+	            res.send(result);
+	        }
+	    });
+		}
+	})	
 })
 
 // Fetch journals by date & userId
@@ -1158,12 +2099,51 @@ app.get('/journals/searchBy4_2/:startDate/:endDate/:userId/:landId', (req, res) 
 
 // Fetch journals by userId
 app.get('/journals/:userId', (req, res) => {
-  var db = req.db
   Journal.find({}, '', function (error, journals) {
     if (error) { console.error(error); }
     res.send(journals)
   })
   .where('userId').equals(req.params.userId)
+})
+
+// Fetch journals lookup by userId
+app.get('/journalsLookupByUserId/:userId', (req, res) => {
+	Journal.aggregate([
+		{
+		    '$lookup':
+		    {
+		      from: 'lands',
+		      localField: 'landId',
+		      foreignField: '_id',
+		      as: 'landInfo'
+		    }
+		},
+		{
+			"$unwind" : "$landInfo"
+		},        
+		{
+		    '$lookup':
+		    {
+		      from: 'wcs',
+		      localField: 'workCode',
+		      foreignField: 'wCode',
+		      as: 'wcsInfo'
+		    }
+		},
+		{
+			"$unwind" : "$wcsInfo"
+		},
+        {
+            "$match" : { "userId" : req.params.userId }           	
+        },
+        { "$sort" : { "date": 1 } }
+    ], function (err, result) {
+        if (err) {
+            next(err);
+        } else {
+            res.send(result);
+        }
+    });
 })
 
 // Fetch journal by id
@@ -1227,7 +2207,9 @@ app.post('/journal', (req, res) => {
   console.log(req.body);  
   var userId = req.body.userId;
   var date = req.body.date;
-  var landId = req.body.landId;
+  // var landId = req.body.landId;
+  landIdVal = mongoose.Types.ObjectId(req.body.landId)
+  var landId = landIdVal
   var workCode = req.body.workCode;
   var workContent = req.body.workContent;
   var workTime = req.body.workTime;
@@ -1237,35 +2219,12 @@ app.post('/journal', (req, res) => {
   var coo = req.body.coo;
   var shipment = req.body.shipment;
   var income = req.body.income;
-  var usage = req.body.usage;
+  var itemDetail = req.body.itemDetail;
   var output = req.body.output;
   var pictureA = req.body.pictureA;
   var pictureB = req.body.pictureB;
   var pictureC = req.body.pictureC;
-  /*
-  for(var i = 0; i < req.body.coo.length; i++) {
-  	coo[i] = new Object();
-  	coo[i].minT1H = req.body.coo[i].minT1H;
-  	coo[i].sky = req.body.weather[i].sky;
-  	coo[i].t1h = req.body.weather[i].t1h;
-  	coo[i].reh = req.body.weather[i].reh;
-  	coo[i].rn1 = req.body.weather[i].rn1;
-  }
-  */
-
-  /*
-  var weather = [];
-  for(var i = 0; i < req.body.weather.length; i++) {
-  	weather[i] = new Object();
-  	weather[i].baseTime = req.body.weather[i].baseTime;
-  	weather[i].sky = req.body.weather[i].sky;
-  	weather[i].t1h = req.body.weather[i].t1h;
-  	weather[i].reh = req.body.weather[i].reh;
-  	weather[i].rn1 = req.body.weather[i].rn1;
-  }
-  var remarks = req.body.remarks
-  */
-
+  
   var new_journal = new Journal({
     userId: userId,
     date: date,
@@ -1279,7 +2238,7 @@ app.post('/journal', (req, res) => {
     COO: coo,
     shipment: shipment,
     income: income,
-    usage: usage,
+    itemDetail: itemDetail,
     output: output,
     pictureA: pictureA,
     pictureB: pictureB,
@@ -1541,6 +2500,7 @@ app.post('/lands', (req, res) => {
   var userId = req.body.userId;
   var name = req.body.name;
   var address = req.body.address;
+  var addressDetail = req.body.addressDetail;
   var size = req.body.size;
   var sizeDetail = req.body.sizeDetail;
   var cropCode = req.body.cropCode;
@@ -1548,6 +2508,7 @@ app.post('/lands', (req, res) => {
     userId: userId,
     name: name,
     address: address,
+    addressDetail: addressDetail,
     size: size,
     sizeDetail: sizeDetail,
     cropCode: cropCode
@@ -1567,7 +2528,7 @@ app.post('/lands', (req, res) => {
 // Fetch all lands by userId
 app.get('/lands/:id', (req, res) => {
   console.log(req.params)
-  Land.find({}, 'userId name address size sizeDetail cropCode', function (error, lands) {
+  Land.find({}, 'userId name address addressDetail size sizeDetail cropCode', function (error, lands) {
     if (error) { console.error(error); }
     res.send({
       lands: lands
@@ -1584,6 +2545,7 @@ app.put('/lands/:id', (req, res) => {
     if (error) { console.error(error); }
     lands.name = req.body.name
     lands.address = req.body.address
+    lands.addressDetail = req.body.addressDetail
     lands.size = req.body.size
     lands.sizeDetail = req.body.sizeDetail
     lands.cropCode = req.body.cropCode
@@ -1898,6 +2860,7 @@ app.post('/addNewUser', (req, res) => {
   var pw_date = getNowDate();
   var tmp_pw_date = "";
   var mod_date = "";
+  var share_flag = "0";
 
   var new_user = new User({
     id: id,
@@ -1910,7 +2873,8 @@ app.post('/addNewUser', (req, res) => {
     join_date: join_date,
     pw_date: pw_date,
     tmp_pw_date: tmp_pw_date,   
-    mod_date: mod_date    
+    mod_date: mod_date,
+    share_flag: share_flag   
   })
 
   var join_user = new JoinUser({
@@ -2230,6 +3194,7 @@ app.put('/item/:id', (req, res) => {
 
     item.userId = req.body.userId;
     item.date = req.body.date;
+    item.landId = req.body.landId;
     item.item = req.body.item;
   	item.itemDetail = req.body.itemDetail;
   	item.purpose = req.body.purpose;
@@ -2247,21 +3212,6 @@ app.put('/item/:id', (req, res) => {
     })
   })  
 })
-
-/*
-// Fetch items by userId, landId, item, itemName
-app.get('/items/getByUserLandItemName/:userId/:landId/:item/:itemName', (req, res) => {
-  console.log(req.params)
-  Item.find({}, '', function (error, items) {
-    if (error) { console.error(error); }
-    res.send(items)
-  })
-  .where('userId').equals(req.params.userId)
-  .where('landId').equals(req.params.landId)
-  .where('item').equals(req.params.item)
-  .where('itemDetail.itemName').equals(req.params.itemName)
-})
-*/
 
 // Update item usage
 app.put('/itemUpdateUsage', (req, res) => { 
@@ -2299,10 +3249,12 @@ app.put('/itemUpdateUsage', (req, res) => {
 
 // Add new item
 app.post('/item', (req, res) => {
-  // console.log(req.body);
+  console.log(req.body);
   var userId = req.body.userId;
   var date = req.body.date;
-  var landId = req.body.landId;
+  // var landId = req.body.landId;
+  landIdVal = mongoose.Types.ObjectId(req.body.landId)
+  var landId = landIdVal
   var item = req.body.item;
   var itemDetail = req.body.itemDetail;
   var purpose = req.body.purpose;
@@ -2341,6 +3293,34 @@ app.get('/items/:userId', (req, res) => {
     res.send(items)
   })
   .where('userId').equals(req.params.userId)
+})
+
+// Fetch items lookup by userId
+app.get('/itemsLookupByUserId/:userId', (req, res) => {
+	Item.aggregate([        
+		{
+		    '$lookup':
+		    {
+		      from: 'wcs',
+		      localField: 'item',
+		      foreignField: 'wCode',
+		      as: 'wcsInfo'
+		    }
+		},
+		{
+			"$unwind" : "$wcsInfo"
+		},
+        {
+            "$match" : { "userId" : req.params.userId }           	
+        },
+        { "$sort" : { "date": 1 } }
+    ], function (err, result) {
+        if (err) {
+            next(err);
+        } else {
+            res.send(result);
+        }
+    });
 })
 
 // Fetch items with aggregate
@@ -2383,10 +3363,19 @@ app.get('/item/agg/:userId/:startDate/:endDate', (req, res) => {
 app.get('/item/aggByDateNLandId/:userId/:startDate/:endDate/:landId', (req, res) => {
 	if(req.params.landId === "0") {		
 		req.params.landId = ''
-	}	
+	}
 	Item.aggregate([
 		{
-			"$unwind" : "$itemDetail"
+		    '$lookup':
+		    {
+		      from: 'itemdetails',
+		      localField: 'itemDetail',
+		      foreignField: 'itemId',
+		      as: 'item_details'
+		    }
+		},
+		{
+			"$unwind" : "$item_details"
 		},
         {
             "$group" : {
@@ -2395,10 +3384,10 @@ app.get('/item/aggByDateNLandId/:userId/:startDate/:endDate/:landId', (req, res)
                 		  "userId" : "$userId",
                 		  "landId" : "$landId", 
 		             	  "item" : "$item",
-		             	  "itemName" : "$itemDetail.itemName", 
-		             	  "itemAmount" : "$itemDetail.itemAmount", 
-		             	  "itemPrice" : "$itemDetail.itemPrice", 
-		             	  "itemUsage" : "$itemDetail.itemUsage" 
+		             	  "itemName" : "$item_details.itemName", 
+		             	  "itemAmount" : "$item_details.itemAmount", 
+		             	  "itemPrice" : "$item_details.itemPrice", 
+		             	  "itemUsage" : "$item_details.itemUsage" 
                 		}
             }
         },
@@ -2426,7 +3415,16 @@ app.get('/item/aggByYMNLandId/:userId/:ym/:landId', (req, res) => {
 	}	
 	Item.aggregate([
 		{
-			"$unwind" : "$itemDetail"
+		    '$lookup':
+		    {
+		      from: 'itemdetails',
+		      localField: 'itemDetail',
+		      foreignField: 'itemId',
+		      as: 'item_details'
+		    }
+		},
+		{
+			"$unwind" : "$item_details"
 		},
         {
             "$group" : {
@@ -2435,16 +3433,15 @@ app.get('/item/aggByYMNLandId/:userId/:ym/:landId', (req, res) => {
                 		  "userId" : "$userId",
                 		  "landId" : "$landId", 
 		             	  "item" : "$item",
-		             	  "itemName" : "$itemDetail.itemName", 
-		             	  "itemAmount" : "$itemDetail.itemAmount", 
-		             	  "itemPrice" : "$itemDetail.itemPrice", 
-		             	  "itemUsage" : "$itemDetail.itemUsage" 
+		             	  "itemName" : "$item_details.itemName", 
+		             	  "itemAmount" : "$item_details.itemAmount", 
+		             	  "itemPrice" : "$item_details.itemPrice", 
+		             	  "itemUsage" : "$item_details.itemUsage" 
                 		}
             }
         },
         {
             "$match" : { "$and" : [ { "_id.userId" : req.params.userId },
-            					    // { "_id.date" : { "$gte": req.params.startDate, "$lte": req.params.endDate } },
             					    { "_id.date" : { "$regex": req.params.ym } },
             					    { "_id.landId" : { "$regex": req.params.landId, "$options": 'g' } }            					    
        						  	  ] 
@@ -2513,17 +3510,42 @@ app.get('/item/:id', (req, res) => {
 
 // Delete item
 app.delete('/item/:id', (req, res) => {
-	var db = req.db
-	Item.remove({
-		_id: req.params.id
-	}, function(err, lands) {
-		if (err) {
-			res.send(err)
-		}
-		res.send({
-			success: true
-		})
-	})
+
+  ItemDetail.find({}, '', function (error, ids) {
+    if (error) { console.error(error); }
+    
+    // 삭제할 itemId 얻기
+    var itemIdArray = []
+    for (var i = 0; i < ids.length; i++) {
+    	itemIdArray.push(ids[i].itemId)
+    }
+
+    // journal에서 해당 itemId 삭제
+	Journal.update(
+		{},
+		{ $pull: { itemDetail: { itemId : { $in: itemIdArray } } } },
+		{ multi: true },
+		function(err, doc) {
+	        if(err) { console.log(err); }
+	        else {	     
+	          // item 삭제
+	          Item.remove({
+				_id: req.params.id
+			  }, function(err, lands) {
+				if (err) {
+					res.send(err)
+				}
+				// itemdetails 컬렉션에서 parentId에 해당하는 도큐먼트 삭제
+				ItemDetail.remove({parentId: req.params.id}, function(err2, ids2) {
+					if (err2) { res.send(err2) }
+					res.send({success: true})							
+				})
+			 })
+	        }
+	    }
+	)
+  })
+  .where('parentId').equals(req.params.id)
 })
 
 // Fetch items by date, item
@@ -2595,6 +3617,349 @@ app.get('/items/searchBy4_2/:startDate/:endDate/:userId/:landId', (req, res) => 
   })
 })
 
+// Fetch items by date, userId, landId
+app.get('/items/searchBy5/:startDate/:endDate/:userId/:landId/:itemName', (req, res) => { 
+	// console.log(req.params)
+	var startDate = req.params.startDate.replace(/-/gi, "")
+	startDate += '000000000'
+	// console.log(startDate)
+
+	var endDate = req.params.endDate.replace(/-/gi, "")
+	endDate += '235959999'
+	// console.log(endDate)
+
+	if ('ALL' == req.params.itemName) {
+		req.params.itemName = ""
+	}
+
+	var itemDetails = []
+	ItemDetail.find({ "itemName" : { $regex: req.params.itemName, $options: 'g' } }, '', function (error, ids) {
+	 	if (error) { console.error(error); }
+	 
+	 	var idArray = []
+	 	for (var i = 0; i < ids.length; i++) {
+	 		idArray.push(ids[i].parentId)
+	 	}
+	 	var itemResult = getItemByLandId(idArray, req.params.landId)
+	 	itemResult.then(function(result) {
+ 			// console.log(result)
+ 			for (var j = 0; j < ids.length; j++) {
+ 				for (var k = 0; k < result.length; k++) {
+ 					// console.log(ids[j].parentId + '//' + result[k]._id)
+ 					if (ids[j].parentId == result[k]._id) {
+ 						var tmpIds = {}			
+ 						tmpIds.landId = result[k].landId
+ 						tmpIds.date = result[k].date
+ 						tmpIds.item = result[k].item
+ 						tmpIds._id = result[k]._id
+ 						tmpIds.userId = result[k].userId
+ 						tmpIds.itemId = ids[j].itemId
+ 						tmpIds.itemName = ids[j].itemName
+ 						tmpIds.itemAmount = ids[j].itemAmount
+ 						tmpIds.itemUsage = ids[j].itemUsage
+ 						tmpIds.journalUsage = ids[j].journalUsage
+ 						tmpIds.itemPrice = ids[j].itemPrice 						 						
+ 						itemDetails.push(tmpIds) 
+ 					} 					
+ 				}
+ 			}
+ 			// console.log(itemDetails)
+ 			res.send(itemDetails)						
+ 		})
+
+
+	})
+	.where('userId').equals(req.params.userId)
+	.where('itemId').gte(startDate).lte(endDate)
+})
+
+// Fetch items lookup by date, userId, landId
+app.get('/items/lookupBy5/:startDate/:endDate/:userId/:landId/:itemName', (req, res) => { 
+	// console.log(req.params)
+	var searchArray = []
+	var tmpArrayItem = { "userId" : req.params.userId }
+	searchArray.push(tmpArrayItem)
+	tmpArrayItem = { "date" : { "$gte": req.params.startDate, "$lte": req.params.endDate } }
+	searchArray.push(tmpArrayItem)
+
+	if (req.params.landId === "0") {		  	
+	} else {	  	
+		landIdVal = mongoose.Types.ObjectId(req.params.landId)
+	  	tmpArrayItem = { "landId" : landIdVal }
+  		searchArray.push(tmpArrayItem)
+	}  
+
+	if (req.params.itemName === "0") {		  	
+	} else {
+	  	tmpArrayItem = { "itemDetailInfo.itemName" : { "$regex": req.params.itemName } } 
+	  	searchArray.push(tmpArrayItem)
+	}  
+
+	Item.aggregate([
+		{
+			"$unwind" : "$itemDetail"
+		},
+		{
+		    '$lookup':
+		    {
+		      from: 'itemdetails',
+		      localField: 'itemDetail',
+		      foreignField: 'itemId',
+		      as: 'itemDetailInfo'
+		    }
+		},
+		{
+		    '$unwind': '$itemDetailInfo'
+		},
+		{
+		    '$lookup':
+		    {
+		      from: 'lands',
+		      localField: 'landId',
+		      foreignField: '_id',
+		      as: 'landInfo'
+		    }
+		},
+		{
+		    '$unwind': '$landInfo'
+		},
+		{
+		    '$lookup':
+		    {
+		      from: 'wcs',
+		      localField: 'item',
+		      foreignField: 'wCode',
+		      as: 'wcsInfo'
+		    }
+		},
+		{
+		    '$unwind': '$wcsInfo'
+		},
+		{
+		    '$match' : {
+		            	'$and' : searchArray      
+		               }
+		},
+		{ '$sort' : { 'date': 1 } }
+    ], function (err, result) {
+        if (err) {
+            next(err);
+        } else {
+            res.send(result);
+        }
+    });
+})
+
+// Fetch items lookup by date, userId, landId
+app.get('/items/lookupBy4/:startDate/:endDate/:userId/:landId', (req, res) => { 
+	// console.log(req.params)
+	var searchArray = []
+	var tmpArrayItem = { "userId" : req.params.userId }
+	searchArray.push(tmpArrayItem)
+	tmpArrayItem = { "date" : { "$gte": req.params.startDate, "$lte": req.params.endDate } }
+	searchArray.push(tmpArrayItem)
+
+	if (req.params.landId === "0") {		  	
+	} else {	  	
+		landIdVal = mongoose.Types.ObjectId(req.params.landId)
+	  	tmpArrayItem = { "landId" : landIdVal }
+  		searchArray.push(tmpArrayItem)
+	}
+
+	Item.aggregate([
+		{
+			"$unwind" : "$itemDetail"
+		},
+		{
+		    '$lookup':
+		    {
+		      from: 'itemdetails',
+		      localField: 'itemDetail',
+		      foreignField: 'itemId',
+		      as: 'itemDetailInfo'
+		    }
+		},
+		{
+		    '$unwind': '$itemDetailInfo'
+		},
+		{
+		    '$lookup':
+		    {
+		      from: 'lands',
+		      localField: 'landId',
+		      foreignField: '_id',
+		      as: 'landInfo'
+		    }
+		},
+		{
+		    '$unwind': '$landInfo'
+		},
+		{
+		    '$lookup':
+		    {
+		      from: 'wcs',
+		      localField: 'item',
+		      foreignField: 'wCode',
+		      as: 'wcsInfo'
+		    }
+		},
+		{
+		    '$unwind': '$wcsInfo'
+		},
+		{
+		    '$match' : {
+		            	'$and' : searchArray      
+		               }
+		},
+		{ '$sort' : { 'date': 1 } }
+    ], function (err, result) {
+        if (err) {
+            next(err);
+        } else {
+            res.send(result);
+        }
+    });
+})
+
+// Fetch items lookup by year, month, userId
+app.get('/itmesLookupByYMUserIdLandId/:userId/:ym/:landId', (req, res) => {
+  // console.log(req.params)
+  var searchArray = []
+  var tmpArrayItem = { "userId" : req.params.userId }
+  searchArray.push(tmpArrayItem)
+  tmpArrayItem = { "date" : { "$regex": req.params.ym } }
+  searchArray.push(tmpArrayItem)
+
+  if (req.params.landId === "0") {		  	
+  } else {	  	
+	landIdVal = mongoose.Types.ObjectId(req.params.landId)
+	tmpArrayItem = { "landId" : landIdVal }
+  	searchArray.push(tmpArrayItem)
+  }
+
+  Item.aggregate([
+		{
+			"$unwind" : "$itemDetail"
+		},
+		{
+		    '$lookup':
+		    {
+		      from: 'itemdetails',
+		      localField: 'itemDetail',
+		      foreignField: 'itemId',
+		      as: 'itemDetailInfo'
+		    }
+		},
+		{
+		    '$unwind': '$itemDetailInfo'
+		},
+		{
+		    '$lookup':
+		    {
+		      from: 'lands',
+		      localField: 'landId',
+		      foreignField: '_id',
+		      as: 'landInfo'
+		    }
+		},
+		{
+		    '$unwind': '$landInfo'
+		},
+		{
+		    '$lookup':
+		    {
+		      from: 'wcs',
+		      localField: 'item',
+		      foreignField: 'wCode',
+		      as: 'wcsInfo'
+		    }
+		},
+		{
+		    '$unwind': '$wcsInfo'
+		},
+		{
+		    '$match' : {
+		            	'$and' : searchArray      
+		               }
+		},
+		{ '$sort' : { 'date': 1 } }
+    ], function (err, result) {
+        if (err) {
+            next(err);
+        } else {
+            res.send(result);
+        }
+    });
+})
+
+// Fetch items by date, userId, landId
+app.get('/items/searchBy5/:startDate/:endDate/:userId/:landId/', (req, res) => { 	
+	// console.log(req.params)
+	var startDate = req.params.startDate.replace(/-/gi, "")
+	startDate += '000000000'
+	// console.log(startDate)
+
+	var endDate = req.params.endDate.replace(/-/gi, "")
+	endDate += '235959999'
+	// console.log(endDate)
+
+	var itemDetails = []
+	ItemDetail.find({}, '', function (error, ids) {
+	 	if (error) { console.error(error); }
+	 
+	 	var idArray = []
+	 	for (var i = 0; i < ids.length; i++) {
+	 		idArray.push(ids[i].parentId)
+	 	}
+	 	var itemResult = getItemByLandId(idArray, req.params.landId)
+	 	itemResult.then(function(result) {
+ 			// console.log(result)
+ 			for (var j = 0; j < ids.length; j++) {
+ 				for (var k = 0; k < result.length; k++) {
+ 					// console.log(ids[j].parentId + '//' + result[k]._id)
+ 					if (ids[j].parentId == result[k]._id) {
+ 						var tmpIds = {}			
+ 						tmpIds.landId = result[k].landId
+ 						tmpIds.date = result[k].date
+ 						tmpIds.item = result[k].item
+ 						tmpIds._id = result[k]._id
+ 						tmpIds.userId = result[k].userId
+ 						tmpIds.itemId = ids[j].itemId
+ 						tmpIds.itemName = ids[j].itemName
+ 						tmpIds.itemAmount = ids[j].itemAmount
+ 						tmpIds.itemUsage = ids[j].itemUsage
+ 						tmpIds.journalUsage = ids[j].journalUsage
+ 						tmpIds.itemPrice = ids[j].itemPrice 						 						
+ 						itemDetails.push(tmpIds) 
+ 					} 					
+ 				}
+ 			}
+ 			// console.log(itemDetails)
+ 			res.send(itemDetails)						
+ 		})
+
+
+	})
+	.where('userId').equals(req.params.userId)
+	.where('itemId').gte(startDate).lte(endDate)
+})
+
+async function getItemByLandId(idArray, landId) {
+	// const itemResult = []
+	if ('0' == landId) {
+		const itemResult = await Item.find({ _id: { $in: idArray } }, '', function (error2, items) {
+	 		if (error2) { console.error(error2); }
+	 	})
+	 	return itemResult
+	} else {
+		const itemResult = await Item.find({ _id: { $in: idArray } }, '', function (error2, items) {
+	 		if (error2) { console.error(error2); }
+	 	})
+	 	.where('landId').equals(landId)
+	 	return itemResult
+	} 	
+}
+
 // Fetch items by year, month, userId
 app.get('/items/searchByYMUserId/:ym/:userId', (req, res) => {
   console.log(req.params)
@@ -2632,53 +3997,44 @@ app.get('/items/:startDate/:endDate/:userId', (req, res) => {
 // Fetch items by date & userId & itemDetail
 app.get('/itemsByYMNUserIdAndDetail/:startDate/:endDate/:userId', (req, res) => {
   console.log(req.params)
+  Item.aggregate([
+		{
+		    '$lookup':
+		    {
+		      from: 'itemdetails',
+		      localField: 'itemDetail',
+		      foreignField: 'itemId',
+		      as: 'item_details'
+		    }
+		},
+        {
+            "$match" : {
+            	"$and" : [
+            		{ "date" : { "$gte" : req.params.startDate + '-01 00:00:00', "$lte" : req.params.endDate + '-31 23:59:59'} },
+                	{ "userId" : req.params.userId }
+            	]                
+            }
+        },
+        { "$sort" : { "date": 1 } }
+    ], function (err, result) {
+        if (err) {
+            next(err);
+        } else {
+            res.send(result);
+        }
+    });
+  /*
   Item.find({}, '', function (error, items) {
     if (error) { console.error(error); }
     res.send(items)
   })
-  // .where('date').gte(req.params.startDate).lte(req.params.endDate)
   .where('date').gte(req.params.startDate + '-01 00:00:00').lte(req.params.endDate + '-31 23:59:59')
   .where('userId').equals(req.params.userId)
   .where('itemDetail.itemPrice').ne('')
   .where('itemDetail.itemPrice').ne(null)
   .sort({'date' : 1})
+  */
 })
-
-/*
-// Update item usage
-app.put('/itemUpdateUsage', (req, res) => { 
-  // console.log(req.body)  
-  Item.find({}, '', function (error, item) {
-    if (error) { console.error(error); }
-
-    // console.log(item[0].itemDetail)
-
-    for(var i = 0; i < item[0].itemDetail.length; i++) {
-    	if(item[0].itemDetail[i].itemName === req.body.itemName) {
-    		var itemUsage = item[0].itemDetail[i].itemUsage * 1
-    		var journalUsage = req.body.usage * 1    		
-    		var totalUsage = itemUsage + journalUsage
-    		console.log('totalUsage=' + totalUsage)
-
-    		item[0].itemDetail[i].itemUsage = totalUsage
-
-    		item[0].save(function (error) {
-    			if (error) {
-			       console.log(error)
-			    }
-			    res.send({
-			        success: true
-			    })			
-    		})
-    	}
-    }
-  })
-  .where('userId').equals(req.body.userId)
-  .where('landId').equals(req.body.landId)
-  .where('item').equals(req.body.item)
-  .where('itemDetail.itemName').equals(req.body.itemName)
-})
-*/
 
 // Fetch items by userId, landId, item, itemName
 app.get('/items/getByUserLandItemName/:userId/:landId/:item/:itemName', (req, res) => {
@@ -2686,10 +4042,14 @@ app.get('/items/getByUserLandItemName/:userId/:landId/:item/:itemName', (req, re
   Item.find({}, '', function (error, items) {
     if (error) { console.error(error); }
 
-    for(var i = 0; i < items[0].itemDetail.length; i++) {
-    	if(items[0].itemDetail[i].itemName === req.params.itemName) {
-    		res.send(items[0].itemDetail[i])
-    	}
+    if (0 < items.length) {
+    	for(var i = 0; i < items[0].itemDetail.length; i++) {
+	    	if(items[0].itemDetail[i].itemName === req.params.itemName) {
+	    		res.send(items[0].itemDetail[i])
+	    	}
+	    }
+    } else {
+    	res.send({nodata: true})
     }
     // console.log(items)
     // res.send(items)
@@ -2701,15 +4061,24 @@ app.get('/items/getByUserLandItemName/:userId/:landId/:item/:itemName', (req, re
 })
 
 // Fetch item with aggregate
-app.get('/itemsGetAggData/:userId/:startDate/:endDate', (req, res) => {	
+app.get('/itemsGetAggData/:userId/:startDate/:endDate', (req, res) => {
 	Item.aggregate([
 		{
-			"$unwind" : "$itemDetail"
+		    '$lookup':
+		    {
+		      from: 'itemdetails',
+		      localField: 'itemDetail',
+		      foreignField: 'itemId',
+		      as: 'item_details'
+		    }
+		},
+		{
+			"$unwind" : "$item_details"
 		},
         {
             "$group" : {
                 "_id" : { "date" : { "$substr" : [ "$date", 0, 7 ] }, "userId" : "$userId" },
-                "totalExpenditure" : { "$sum" : "$itemDetail.itemPrice" },
+                "totalExpenditure" : { "$sum" : "$item_details.itemPrice" },
                 "count" : { "$sum" : 1 }
             }
         },
@@ -2847,4 +4216,162 @@ app.put('/leaveUser/:userId', (req, res) => {
     		})			
     	})
     })
+})
+
+// Add new itemDetail
+app.post('/itemDetail', (req, res) => {
+  console.log(req.body);
+  var itemDetail = req.body.itemDetail;
+  var itemId = itemDetail.createDate + moment().format("HHmmssSSS")	
+  // var itemId = moment().format("YYYYMMDDHHmmssSSS")	
+  console.log(itemId)
+
+  var new_itemDetail = new ItemDetail({
+  	itemId: itemId,
+    userId: itemDetail.userId,
+    itemName: itemDetail.itemName,
+    itemAmount: itemDetail.itemAmount,
+    itemPrice: itemDetail.itemPrice,
+    journalUsage: itemDetail.journalUsage,
+    itemUsage: itemDetail.itemUsage
+  })
+
+  new_itemDetail.save(function (error, result) {
+    if (error) {
+      console.log(error)
+    }
+    res.send({
+      success: true,
+      message: 'ItemDetail saved successfully!',
+      result: result
+    })
+  }) 
+})
+
+// Fetch itemDetail by userId, itemId
+app.get('/itemDetailByItemId/:userId/:itemId', (req, res) => {
+  ItemDetail.find({}, '', function (error, items) {
+    if (error) { console.error(error); }
+    res.send(items)
+  })
+  .where('userId').equals(req.params.userId)
+  .where('itemId').equals(req.params.itemId)
+})
+
+// Update item usage
+app.put('/itemDetailUpdateItemUsage', (req, res) => { 
+  console.log(req.body.itemDetail)  
+  ItemDetail.find({}, '', function (error, item) {
+    if (error) { console.error(error); }
+
+    if (0 < item.length) {	// item이 있을 경우 save
+    	item[0].itemUsage = req.body.itemDetail.itemUsage - item[0].journalUsage
+	    item[0].itemName = req.body.itemDetail.itemName
+	    item[0].itemAmount = req.body.itemDetail.itemAmount
+	    item[0].itemPrice = req.body.itemDetail.itemPrice
+	    
+	    item[0].save(function (error, result) {
+	    	if (error) { console.log(error) }
+			res.send({ 
+				success: true,
+				result: result
+			})
+	    })
+    } else {	// item이 없을 경우 새로 생성
+    	var itemId = moment().format("YYYYMMDDHHmmssSSS")
+    	var new_itemDetail = new ItemDetail({
+    		parentId: req.body.itemDetail.parentId,
+    		itemId: itemId,
+		    userId: req.body.itemDetail.userId,
+		    itemName: req.body.itemDetail.itemName,
+		    itemAmount: req.body.itemDetail.itemAmount,
+		    itemPrice: req.body.itemDetail.itemPrice,
+		    journalUsage: 0,
+		    itemUsage: 0
+		})
+
+		new_itemDetail.save(function (error, result) {
+		    if (error) {
+		      console.log(error)
+		    }
+		    res.send({
+		      success: true,
+		      message: 'ItemDetail saved successfully!',
+		      result: result
+		    })
+	  	}) 
+    }
+  })
+  .where('userId').equals(req.body.itemDetail.userId)
+  .where('itemId').equals(req.body.itemDetail.itemId)
+})
+
+// Update journal usage
+app.put('/itemDetailUpdateJournalUsage', (req, res) => { 
+  console.log(req.body.itemDetail)  
+  ItemDetail.find({}, '', function (error, item) {
+    if (error) { console.error(error); }
+
+    item[0].journalUsage = item[0].journalUsage + (req.body.itemDetail.journalUsage - req.body.itemDetail.originalJournalUsage)
+    // item[0].journalUsage = req.body.itemDetail.journalUsage * 1
+    item[0].save(function (error, result) {
+    	if (error) { console.log(error) }
+		res.send({ 
+			success: true,
+			result: result
+		})
+    })
+  })
+  .where('userId').equals(req.body.itemDetail.userId)
+  .where('itemId').equals(req.body.itemDetail.itemId)
+})
+
+// Update itemdeails with parentId by itemId
+app.put('/updateItemDetailWithParentId/:itemId/:parentId', (req, res) => {
+	ItemDetail.find({}, '', function (error, ids) {
+		if (error) { console.error(error); }
+	    ids[0].parentId = req.params.parentId
+	    ids[0].save(function (error) {
+	      if (error) {
+	        console.log(error)
+	      }
+	      res.send({
+	        success: true
+	      })
+	    })
+	})
+	.where('itemId').equals(req.params.itemId)
+})
+
+// Delete journal usage
+app.put('/itemDetailDeleteJournalUsage', (req, res) => { 
+  console.log(req.body.itemDetail)  
+  ItemDetail.find({}, '', function (error, item) {
+    if (error) { console.error(error); }
+
+    item[0].journalUsage = item[0].journalUsage - (req.body.itemDetail.journalUsage * 1)
+    item[0].save(function (error, result) {
+    	if (error) { console.log(error) }
+		res.send({ 
+			success: true,
+			result: result
+		})
+    })
+  })
+  .where('userId').equals(req.body.itemDetail.userId)
+  .where('itemId').equals(req.body.itemDetail.itemId)
+})
+
+// Delete itemdetail by itemid
+app.delete('/deleteItemDetailByItemId/:itemId', (req, res) => {
+	ItemDetail.remove({
+		itemId: req.params.itemId
+	}, function(err, lands) {
+		if (err) {
+			res.send(err)
+		}
+		res.send({
+			success: true
+		})
+	})
 })

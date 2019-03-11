@@ -2,6 +2,7 @@ var mongoose = require("mongoose")
 var Schema = mongoose.Schema
 
 var ItemDetailSchema = new Schema({
+	parentId: String,
 	itemId: String,
 	userId: String,
 	itemName: String,

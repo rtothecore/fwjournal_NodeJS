@@ -250,6 +250,9 @@ export default {
         var tmpJournals = response.data
         for (var i = 0; i < response.data.length; i++) {
           tmpJournals[i].landName = response.data[i].landInfo.name
+          if (this.userId !== tmpJournals[i].userId) {
+            tmpJournals[i].landName = '👻)' + tmpJournals[i].landName
+          }
           tmpJournals[i].cropName = response.data[i].dcsInfo.text
           tmpJournals[i].workType = response.data[i].wcsInfo.text
           tmpJournals[i].sky = tmpJournals[i].weather.sky
@@ -287,6 +290,9 @@ export default {
 
         for (var j = 0; j < response4.data.length; j++) {
           tmpJournals2[j].landName = response4.data[j].landInfo.name
+          if (this.userId !== tmpJournals2[j].userId) {
+            tmpJournals2[j].landName = '👻)' + tmpJournals2[j].landName
+          }
           tmpJournals2[j].cropName = response4.data[j].dcsInfo.text
           tmpJournals2[j].workType = response4.data[j].wcsInfo.text
           tmpJournals2[j].sky = tmpJournals2[j].weather.sky
@@ -304,13 +310,13 @@ export default {
               tmpJournals2[j].sky = '눈'
               break
           }
-          if (tmpJournals2[i].sky === 'No data') {
-            tmpJournals2[i].sky = '-'
+          if (tmpJournals2[j].sky === 'No data') {
+            tmpJournals2[j].sky = '-'
           }
-          if (!tmpJournals2[i].t1h) {
-            tmpJournals2[i].t1h = '-'
+          if (!tmpJournals2[j].t1h) {
+            tmpJournals2[j].t1h = '-'
           } else {
-            tmpJournals2[i].t1h = Math.round(tmpJournals2[i].weather.avgT1H) + '℃'
+            tmpJournals2[j].t1h = Math.round(tmpJournals2[j].weather.avgT1H) + '℃'
           }
         }
         this.journals = tmpJournals2

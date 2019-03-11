@@ -30,7 +30,7 @@ var ItemDetailSchema = Schema({
 var JournalSchema = new Schema({
 	userId: String,
 	date: String,
-	landId: String,
+	landId: Schema.Types.ObjectId,
 	workCode: String,
 	workContent: String,
 	workTime: String,

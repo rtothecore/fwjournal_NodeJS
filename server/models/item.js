@@ -4,7 +4,7 @@ var Schema = mongoose.Schema
 var ItemSchema = new Schema({
 	userId: String,
 	date: String,
-	landId: String,
+	landId: Schema.Types.ObjectId,
 	item: String,
 	itemDetail: [String],
 	purpose: String,

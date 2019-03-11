@@ -5,6 +5,7 @@ var LandSchema = new Schema({
 	userId: String,
 	name: String,
 	address: String,
+	addressDetail: String,
 	size: String,
 	sizeDetail: String,
 	cropCode: String

@@ -110,13 +110,18 @@
             <b-form-input v-model="phoneNo" id="basicInputPhoneNo" type="number" :disabled="true" placeholder="예)01012345678"></b-form-input>
           </b-form-group>
           </h4>
-
+<!--
           <v-switch
             :label="`작업일지 공유: ${switch1.toString()}`"
             v-model="switch1"
             v-on:change="onChangeShareFlag"
           ></v-switch>
-     
+-->
+          <v-switch
+            :label="`작업일지 공유: ${switch1Label.toString()}`"
+            v-model="switch1"
+            v-on:change="onChangeShareFlag"
+          ></v-switch>
           
           <!-- <v-btn @click="clear2">지우기</v-btn> -->
         </v-form>
@@ -165,6 +170,7 @@ import UserService from '@/services/UserService'
 export default {
   data: () => ({
     switch1: true,
+    switch1Label: '공유함',
     phoneNo: '',
     name: '',
     id: '',
@@ -214,8 +220,10 @@ export default {
       this.phoneNo = response.data[0].phone_no
       if (response.data[0].share_flag === '0') {
         this.switch1 = false
+        this.switch1Label = '공유안함'
       } else {
         this.switch1 = true
+        this.switch1Label = '공유함'
       }
     },
     async updateUserAgeSex () {
@@ -237,13 +245,24 @@ export default {
     async updateUserShareFlag () {
       if (this.switch1) {
         this.shareFlag = 1
+        this.switch1Label = '공유함'
       } else {
         this.shareFlag = 0
+        this.switch1Label = '공유안함'
       }
-      await UserService.updateUserShareFlag({
+      const response = await UserService.updateUserShareFlag({
         id: this.userId,
         share_flag: this.shareFlag
       })
+      if (this.shareFlag === 1 && response.data.success) {
+        this.$swal({
+          type: 'success',
+          title: '자신의 일지가 공유되고\n타인의 공유정보를 볼 수 있습니다.',
+          showConfirmButton: false,
+          timer: 2000
+        }).then((result) => {
+        })
+      }
     },
     submit2 () {
       if (this.$refs.form2.validate()) {

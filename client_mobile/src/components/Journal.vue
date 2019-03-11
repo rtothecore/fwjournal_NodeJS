@@ -462,15 +462,11 @@
   },
   created () {
         this.userId = this.$session.get('userId')
-        // this.$refs.calendar.fireMethod('changeView', view)
         this.getJournal()
         this.getItem()
-        // this.getLocation()
         this.getMyCrop()
         this.getLastYearJournal()
         this.getLands()
-        // media query
-        // this.calendarWidth = '900px'
         this.calendarWidth = '49%'
         this.calendarHeight = '900px'
         this.config.aspectRatio = 1
@@ -576,13 +572,13 @@
           }
         },
         async getJournal () {
-            const response = await JournalService.fetchJournalLookupByUserId({
+          const response = await JournalService.fetchJournalLookupByUserId({
             userId: this.userId
           })
           for (var i = 0; i < response.data.length; i++) {
             var tmpEvent = {}
 
-            tmpEvent.title = workTypeVal
+            tmpEvent.title = response.data[i].wcsInfo.text
 
             var tmpTime = response.data[i].date
             tmpEvent.start = tmpTime
@@ -590,7 +586,7 @@
             tmpEvent.journalId = response.data[i]._id
             tmpEvent.textColor = 'white'
             this.events.push(tmpEvent)
-            tmpEvent.eventIndex = this.events.indexOf(tmpEvent)          
+            tmpEvent.eventIndex = this.events.indexOf(tmpEvent)
           }
         },
         async getItem () {
@@ -600,7 +596,7 @@
 
           for (var i = 0; i < response.data.length; i++) {
             var tmpEvent = {}
-            tmpEvent.title = workTypeVal
+            tmpEvent.title = response.data[i].wcsInfo.text
             var tmpTime = response.data[i].date
             tmpEvent.start = tmpTime
             tmpEvent.end = tmpTime
@@ -884,7 +880,7 @@
             }
             this.journals = tmpJournals2
           }
-          
+
           if (this.journals.length === 0) {
             this.showPredictTable = false
           }
