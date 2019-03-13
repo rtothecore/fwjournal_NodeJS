@@ -109,6 +109,7 @@
       </v-flex>     
 
       <journalModalForEdit></journalModalForEdit>
+      <predictModalForShow></predictModalForShow>
       <addWorkTypeModal></addWorkTypeModal>
                      
     </v-layout>
@@ -382,7 +383,8 @@ export default {
       for (var i = 0; i < tmpJournals.length; i++) {
         tmpJournals[i].farmName = tmpJournals[i].landInfo.name
         if (this.userId !== tmpJournals[i].userId) {
-          tmpJournals[i].farmName = '👻)' + tmpJournals[i].farmName
+          // <v-icon>fas fa-share-alt-square</v-icon>
+          tmpJournals[i].farmName = '👥' + tmpJournals[i].farmName
         }
         tmpJournals[i].cropName = tmpJournals[i].dcsInfo.text
         tmpJournals[i].workType = tmpJournals[i].wcsInfo.text
@@ -390,6 +392,7 @@ export default {
       this.journals = tmpJournals
     },
     async getJournalsBy5 () {
+      console.log('getJournalsBy5')
       var tmpStartDate = this.startDate
       if (!tmpStartDate) {
         tmpStartDate = 0
@@ -416,12 +419,13 @@ export default {
         searchWord: tmpSearchWord,
         landId: this.selectLand
       })
+      // console.log(response.data)
       var tmpJournals = response.data
 
       for (var i = 0; i < tmpJournals.length; i++) {
         tmpJournals[i].farmName = tmpJournals[i].landInfo.name
         if (this.userId !== tmpJournals[i].userId) {
-          tmpJournals[i].farmName = '👻)' + tmpJournals[i].farmName
+          tmpJournals[i].farmName = '👥' + tmpJournals[i].farmName
         }
         tmpJournals[i].cropName = tmpJournals[i].dcsInfo.text
         tmpJournals[i].workType = tmpJournals[i].wcsInfo.text
@@ -500,8 +504,12 @@ export default {
     },
     editItem (item) {
       // console.log(item)
-      var emitParams = {'journalId': item._id, 'origin': 'fromSearch'}
-      bus.$emit('dialogForEdit', emitParams)
+      var emitParams = {'journalId': item._id, 'userId': item.userId, 'origin': 'fromSearch'}
+      if (item.userId === this.$session.get('userId')) {
+        bus.$emit('dialogForEdit', emitParams)
+      } else {
+        bus.$emit('dialogForShow', emitParams)
+      }
     },
     deleteItem (item) {
       const index = this.journals.indexOf(item)

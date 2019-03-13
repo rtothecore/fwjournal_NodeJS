@@ -535,7 +535,13 @@ export default {
       vm.eventIndex = value.eventIndex
       vm.origin = value.origin  // 어디서 호출했는지?
       vm.dialog = true
-      vm.userId = this.$session.get('userId')
+
+      if (vm.origin === 'fromPredict' || vm.origin === 'fromSearch') {
+        vm.userId = value.userId
+      } else {
+        vm.userId = this.$session.get('userId')
+      }
+
       if (vm.itemId) {
         // console.log('i am item')
         vm.active = 1
@@ -600,6 +606,20 @@ export default {
       const response = await JournalService.fetchJournal({
         id: this.journalId
       })
+
+      // 해당 journalId로 된 일지가 없을경우
+      if (response.data.length === 0) {
+        this.$swal({
+          type: 'error',
+          title: '존재하지 않는 일지입니다',
+          showConfirmButton: false,
+          timer: 777
+        }).then((result) => {
+          this.dialog = false
+        })
+        return
+      }
+
       this.User_Profile = response.data[0].date
 
       // console.log(response.data)  //

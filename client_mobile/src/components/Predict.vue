@@ -256,7 +256,7 @@ export default {
         for (var i = 0; i < response.data.length; i++) {
           tmpJournals[i].landName = response.data[i].landInfo.name
           if (this.userId !== tmpJournals[i].userId) {
-            tmpJournals[i].landName = '👻)' + tmpJournals[i].landName
+            tmpJournals[i].landName = '👥' + tmpJournals[i].landName
           }
           tmpJournals[i].cropName = response.data[i].dcsInfo.text
           tmpJournals[i].workType = response.data[i].wcsInfo.text
@@ -296,7 +296,7 @@ export default {
         for (var j = 0; j < response4.data.length; j++) {
           tmpJournals2[j].landName = response4.data[j].landInfo.name
           if (this.userId !== tmpJournals2[j].userId) {
-            tmpJournals2[j].landName = '👻)' + tmpJournals2[j].landName
+            tmpJournals2[j].landName = '👥' + tmpJournals2[j].landName
           }
           tmpJournals2[j].cropName = response4.data[j].dcsInfo.text
           tmpJournals2[j].workType = response4.data[j].wcsInfo.text
@@ -346,7 +346,7 @@ export default {
     },
     showItem (item) {
       // console.log(item)
-      var emitParams = {'journalId': item._id, 'origin': 'fromPredict'}
+      var emitParams = {'journalId': item._id, 'userId': item.userId, 'origin': 'fromPredict'}
       bus.$emit('dialogForShow', emitParams)
     },
     searchJournals () {

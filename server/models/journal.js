@@ -8,7 +8,7 @@ var WeatherSchema = new Schema({
 	minREH: String,
 	maxREH: String,
 	avgREH: String,
-	avgRN1: String,
+	pty: String,
 	sky: String
 })
 

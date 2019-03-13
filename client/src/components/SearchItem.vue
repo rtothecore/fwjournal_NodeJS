@@ -533,7 +533,7 @@ export default {
       this.selectedWorkType = event
     },
     onChangeEditItemWorkType: function (event) {
-      console.log(event)
+      // console.log(event)
     },
     onChangeItemCost: function (event) {
       this.CooTotal = Number('0')
@@ -543,7 +543,7 @@ export default {
       }
     },
     editItem (item) {
-      console.log(item)
+      // console.log(item)
       var emitParams = {'itemId': item._id, 'origin': 'fromSearchItem'}
       bus.$emit('dialogForEdit', emitParams)
     },

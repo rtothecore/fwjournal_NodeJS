@@ -120,6 +120,7 @@
       </v-flex>
     <!-- R O W 3 -->
       <journalModalForEdit></journalModalForEdit>
+      <predictModalForShow></predictModalForShow>
       <addWorkTypeModal></addWorkTypeModal>
                      
     </v-layout>
@@ -385,7 +386,7 @@ export default {
       for (var i = 0; i < tmpJournals.length; i++) {
         tmpJournals[i].farmName = tmpJournals[i].landInfo.name
         if (this.userId !== tmpJournals[i].userId) {
-          tmpJournals[i].farmName = '👻)' + tmpJournals[i].farmName
+          tmpJournals[i].farmName = '👥' + tmpJournals[i].farmName
         }
         tmpJournals[i].cropName = tmpJournals[i].dcsInfo.text
         tmpJournals[i].workType = tmpJournals[i].wcsInfo.text
@@ -424,60 +425,12 @@ export default {
       for (var i = 0; i < tmpJournals.length; i++) {
         tmpJournals[i].farmName = tmpJournals[i].landInfo.name
         if (this.userId !== tmpJournals[i].userId) {
-          tmpJournals[i].farmName = '👻)' + tmpJournals[i].farmName
+          tmpJournals[i].farmName = '👥' + tmpJournals[i].farmName
         }
         tmpJournals[i].cropName = tmpJournals[i].dcsInfo.text
         tmpJournals[i].workType = tmpJournals[i].wcsInfo.text
       }
       this.journals = tmpJournals
-      /* ORIGINAL
-      var tmpStartDate = this.startDate
-      if (!tmpStartDate) {
-        tmpStartDate = 0
-      }
-
-      var tmpEndDate = this.endDate
-      if (!tmpEndDate) {
-        tmpEndDate = 0
-      }
-
-      var tmpSearchWord = this.searchWord
-      if (!tmpSearchWord) {
-        tmpSearchWord = 0
-      }
-
-      if (!this.selectLand) {
-        this.selectLand = 0
-      }
-
-      const response = await JournalService.fetchJournalsBy5LandId({
-        userId: this.userId,
-        startDate: tmpStartDate,
-        endDate: tmpEndDate,
-        searchWord: tmpSearchWord,
-        landId: this.selectLand
-      })
-      var tmpJournals = response.data
-
-      for (var i = 0; i < response.data.length; i++) {
-        // 농장명
-        const response4 = await LandService.fetchNameByLandId({
-          landId: response.data[i].landId
-        })
-        tmpJournals[i].farmName = response4.data[0].name
-        // 작물명
-        const response2 = await LandService.fetchCropNameByLandId({
-          landId: response.data[i].landId
-        })
-        tmpJournals[i].cropName = response2.data[0].text
-
-        const response3 = await WcService.fetchOneTextByCcode({
-          code: response.data[i].workCode
-        })
-        tmpJournals[i].workType = response3.data[0].text
-      }
-      this.journals = tmpJournals
-      */
     },
     async deleteJournal (id) {
       await JournalService.deleteJournal(id)
@@ -551,8 +504,12 @@ export default {
     },
     editItem (item) {
       // console.log(item)
-      var emitParams = {'journalId': item._id, 'origin': 'fromSearch'}
-      bus.$emit('dialogForEdit', emitParams)
+      var emitParams = {'journalId': item._id, 'userId': item.userId, 'origin': 'fromSearch'}
+      if (item.userId === this.$session.get('userId')) {
+        bus.$emit('dialogForEdit', emitParams)
+      } else {
+        bus.$emit('dialogForShow', emitParams)
+      }
     },
     deleteItem (item) {
       const index = this.journals.indexOf(item)

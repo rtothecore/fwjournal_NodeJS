@@ -57,9 +57,9 @@
                   </v-flex>
                   <v-flex xs3>
                     <v-text-field
-                      v-model="RN1"
-                      label="강수량"
-                      placeholder="강수량"
+                      v-model="ptyText"
+                      label="강수형태"
+                      placeholder="강수형태"
                       hint="자동입력"
                       readonly
                     ></v-text-field>
@@ -653,7 +653,9 @@ export default {
       minT1H: '',
       maxT1H: '',
       avgT1H: '',
-      RN1: '',
+      // RN1: '',
+      ptyText: '',
+      pty: '',
       skyStatusText: '',
       skyStatus: '',
       selectedWorkTypeText: '',
@@ -788,23 +790,44 @@ export default {
       // console.log(response.data)
 
       if (response.data.length >= 1) {
-        this.skyStatus = response.data[0].pty
+        this.skyStatus = response.data[0].sky
         switch (this.skyStatus) {
-          case 0 :
+          case 1 :
             this.skyStatusText = '맑음'
             break
-          case 1 :
-            this.skyStatusText = '비'
-            break
           case 2 :
-            this.skyStatusText = '비/눈'
+            this.skyStatusText = '구름조금'
             break
           case 3 :
-            this.skyStatusText = '눈'
+            this.skyStatusText = '구름많음'
+            break
+          case 4 :
+            this.skyStatusText = '흐림'
+            break
+          default :
+            this.skyStatusText = '-'
             break
         }
 
-        this.RN1 = response.data[0].rn1
+        this.pty = response.data[0].pty
+        switch (this.pty) {
+          case 0 :
+            this.ptyText = '없음'
+            break
+          case 1 :
+            this.ptyText = '비'
+            break
+          case 2 :
+            this.ptyText = '비/눈'
+            break
+          case 3 :
+            this.ptyText = '눈'
+            break
+          default :
+            this.ptyText = '-'
+            break
+        }
+
         this.avgT1H = response.data[0].t1hAvg
         this.avgT1HText = Math.round(this.avgT1H) + '℃'
         this.maxT1H = response.data[0].t1hMax
@@ -819,7 +842,7 @@ export default {
         this.minREHText = this.minREH + '%'
       } else {
         this.skyStatusText = '-'
-        this.RN1 = '-'
+        this.ptyText = '-'
         this.avgT1HText = '-'
         this.maxT1HText = '-'
         this.minT1HText = '-'
@@ -1081,7 +1104,7 @@ export default {
       })
       */
       // 날씨 데이터
-      var weatherData = {'minT1H': this.minT1H, 'maxT1H': this.maxT1H, 'avgT1H': this.avgT1H, 'minREH': this.minREH, 'maxREH': this.maxREH, 'avgREH': this.avgREH, 'avgRN1': this.RN1, 'sky': this.skyStatus}
+      var weatherData = {'minT1H': this.minT1H, 'maxT1H': this.maxT1H, 'avgT1H': this.avgT1H, 'minREH': this.minREH, 'maxREH': this.maxREH, 'avgREH': this.avgREH, 'pty': this.pty, 'sky': this.skyStatus}
 
       // 발생비용 입력되지 않은 것들 필터링
       // https://stackoverflow.com/questions/281264/remove-empty-elements-from-an-array-in-javascript

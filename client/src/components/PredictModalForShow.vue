@@ -9,7 +9,7 @@
         <b-row>
           <b-col md="12">
             <b-card header="작업일지" header-tag="header">
-              <h3 slot="header" class="mb-0"><strong>작업일지</strong></h3>
+              <h3 slot="header" class="mb-0"><strong>{{ emoji }}작업일지</strong></h3>
               <b-row>
                 <b-col sm="12" lg="6">
                   <div style="width:1150px; margin:0 auto;">
@@ -38,9 +38,9 @@
                   </v-flex>
                   <v-flex xs6 sm6 md3>
                     <v-text-field
-                      v-model="RN1"
-                      label="강수량"
-                      placeholder="강수량"
+                      v-model="pty"
+                      label="강수형태"
+                      placeholder="강수형태"
                       hint="자동입력"
                       readonly
                     ></v-text-field>
@@ -407,6 +407,7 @@ export default {
   },
   data () {
     return {
+      emoji: '',
       imgCommonPreview: {},
       selectedItem: '',
       iavatar3: {},
@@ -443,7 +444,8 @@ export default {
       minT1H: '',
       maxT1H: '',
       avgT1H: '',
-      RN1: '',
+      // RN1: '',
+      pty: '',
       skyStatus: '',
       selectedWorkTypeText: '',
       itemNames: [],
@@ -526,7 +528,14 @@ export default {
       vm.eventIndex = value.eventIndex
       vm.origin = value.origin  // 어디서 호출했는지?
       vm.dialog = true
-      vm.userId = this.$session.get('userId')
+
+      if (vm.origin === 'fromPredict' || vm.origin === 'fromSearch') {
+        vm.userId = value.userId
+        vm.emoji = '👥'
+      } else {
+        vm.userId = this.$session.get('userId')
+      }
+
       if (vm.itemId) {
         // console.log('i am item')
         vm.active = 1
@@ -591,31 +600,62 @@ export default {
       const response = await JournalService.fetchJournal({
         id: this.journalId
       })
+
+      // 해당 journalId로 된 일지가 없을경우
+      if (response.data.length === 0) {
+        this.$swal({
+          type: 'error',
+          title: '존재하지 않는 일지입니다',
+          showConfirmButton: false,
+          timer: 777
+        }).then((result) => {
+          this.dialog = false
+        })
+        return
+      }
+
       this.User_Profile = response.data[0].date
 
-      // console.log(response.data)  //
+      // console.log(response.data)
+
       this.skyStatus = response.data[0].weather.sky
       switch (this.skyStatus) {
-        case '0' :
+        case '1' :
           this.skyStatus = '맑음'
           break
-        case '1' :
-          this.skyStatus = '비'
-          break
         case '2' :
-          this.skyStatus = '비/눈'
+          this.skyStatus = '구름조금'
           break
         case '3' :
-          this.skyStatus = '눈'
+          this.skyStatus = '구름많음'
+          break
+        case '4' :
+          this.skyStatus = '흐림'
+          break
+        default :
+          this.skyStatus = '-'
           break
       }
-      if (this.skyStatus === 'No data') {
-        this.skyStatus = '-'
+
+      this.pty = response.data[0].weather.pty
+      switch (this.pty) {
+        case 0 :
+          this.pty = '없음'
+          break
+        case 1 :
+          this.pty = '비'
+          break
+        case 2 :
+          this.pty = '비/눈'
+          break
+        case 3 :
+          this.pty = '눈'
+          break
+        default :
+          this.pty = '-'
+          break
       }
-      this.RN1 = response.data[0].weather.avgRN1
-      if (this.RN1 === 'No data') {
-        this.RN1 = '-'
-      }
+
       if (response.data[0].weather.minT1H === 'No data') {
         this.minT1H = '-'
       } else {

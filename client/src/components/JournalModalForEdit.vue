@@ -64,9 +64,9 @@
                   </v-flex>
                   <v-flex xs6 sm6 md3>
                     <v-text-field
-                      v-model="RN1"
-                      label="강수량"
-                      placeholder="강수량"
+                      v-model="pty"
+                      label="강수형태"
+                      placeholder="강수형태"
                       hint="자동입력"
                       readonly
                     ></v-text-field>
@@ -691,6 +691,8 @@ export default {
   },
   data () {
     return {
+      // thisIsMyJournal: true,
+      //
       readonlyVal: true,
       // isBackupUsageItems: false,
       // usageItemsBackup: [],
@@ -738,7 +740,8 @@ export default {
       minT1H: '',
       maxT1H: '',
       avgT1H: '',
-      RN1: '',
+      // RN1: '',
+      pty: '',
       skyStatus: '',
       selectedWorkTypeText: '',
       itemNames: [],
@@ -817,6 +820,20 @@ export default {
       vm.origin = value.origin  // 어디서 호출했는지?
       vm.dialog = true
       vm.userId = this.$session.get('userId')
+/*
+      if (vm.origin === 'fromSearch') {
+        vm.userId = value.userId
+      } else {
+        vm.userId = this.$session.get('userId')
+      }
+
+      // 접속한 userId와 일지의 userId가 같은 경우 '수정', '삭제' 가능
+      if (this.$session.get('userId') === vm.userId) {
+        vm.thisIsMyJournal = true
+      } else {
+        vm.thisIsMyJournal = false
+      }
+*/
       if (vm.itemId) {
         // console.log('i am item')
         vm.showWorkJournal = false
@@ -940,28 +957,46 @@ export default {
       // this.User_Profile = '영농일지 수정 - ' + response.data[0].date
       this.User_Profile = response.data[0].date
 
+      // console.log(response.data)
+
       this.skyStatus = response.data[0].weather.sky
       switch (this.skyStatus) {
-        case '0' :
+        case '1' :
           this.skyStatus = '맑음'
           break
-        case '1' :
-          this.skyStatus = '비'
-          break
         case '2' :
-          this.skyStatus = '비/눈'
+          this.skyStatus = '구름조금'
           break
         case '3' :
-          this.skyStatus = '눈'
+          this.skyStatus = '구름많음'
+          break
+        case '4' :
+          this.skyStatus = '흐림'
+          break
+        default :
+          this.skyStatus = '-'
           break
       }
-      if (this.skyStatus === 'No data') {
-        this.skyStatus = '-'
+
+      this.pty = response.data[0].weather.pty
+      switch (this.pty) {
+        case 0 :
+          this.pty = '없음'
+          break
+        case 1 :
+          this.pty = '비'
+          break
+        case 2 :
+          this.pty = '비/눈'
+          break
+        case 3 :
+          this.pty = '눈'
+          break
+        default :
+          this.pty = '-'
+          break
       }
-      this.RN1 = response.data[0].weather.avgRN1
-      if (this.RN1 === 'No data') {
-        this.RN1 = '-'
-      }
+
       if (response.data[0].weather.minT1H === 'No data') {
         this.minT1H = '-'
       } else {
@@ -1054,6 +1089,9 @@ export default {
           // 현재 사용량 저장
           // this.originalJournalUsages[k] = tmpUsageItem.usage
         }
+
+        // 선택가능한 itemNames 초기화
+        this.initItemNames()
 
         this.showOutput = false
       } else if (this.selectedWorkTypeText === '생산') {
@@ -1148,44 +1186,67 @@ export default {
       // console.log(response.data)
 
       if (response.data.length >= 1) {
-        this.skyStatus = response.data[0].pty
+        this.skyStatus = response.data[0].sky
         switch (this.skyStatus) {
-          case 0 :
-            this.skyStatusText = '맑음'
-            break
           case 1 :
-            this.skyStatusText = '비'
+            this.skyStatus = '맑음'
             break
           case 2 :
-            this.skyStatusText = '비/눈'
+            this.skyStatus = '구름조금'
             break
           case 3 :
-            this.skyStatusText = '눈'
+            this.skyStatus = '구름많음'
+            break
+          case 4 :
+            this.skyStatus = '흐림'
+            break
+          default :
+            this.skyStatus = '-'
             break
         }
 
-        this.RN1 = response.data[0].rn1
+        this.pty = response.data[0].pty
+        switch (this.pty) {
+          case 0 :
+            this.pty = '없음'
+            break
+          case 1 :
+            this.pty = '비'
+            break
+          case 2 :
+            this.pty = '비/눈'
+            break
+          case 3 :
+            this.pty = '눈'
+            break
+          default :
+            this.pty = '-'
+            break
+        }
+
+        // this.RN1 = response.data[0].rn1
         this.avgT1H = response.data[0].t1hAvg
-        this.avgT1HText = Math.round(this.avgT1H) + '℃'
+        this.avgT1H = Math.round(this.avgT1H) + '℃'
         this.maxT1H = response.data[0].t1hMax
-        this.maxT1HText = this.maxT1H + '℃'
+        this.maxT1H = this.maxT1H + '℃'
         this.minT1H = response.data[0].t1hMin
-        this.minT1HText = this.minT1H + '℃'
+        this.minT1H = this.minT1H + '℃'
         this.avgREH = response.data[0].rehAvg
-        this.avgREHText = Math.round(this.avgREH) + '%'
+        this.avgREH = Math.round(this.avgREH) + '%'
         this.maxREH = response.data[0].rehMax
-        this.maxREHText = this.maxREH + '%'
+        this.maxREH = this.maxREH + '%'
         this.minREH = response.data[0].rehMin
-        this.minREHText = this.minREH + '%'
+        this.minREH = this.minREH + '%'
       } else {
-        this.skyStatusText = '-'
-        this.RN1 = '-'
-        this.avgT1HText = '-'
-        this.maxT1HText = '-'
-        this.minT1HText = '-'
-        this.avgREHText = '-'
-        this.maxREHText = '-'
-        this.minREHText = '-'
+        this.skyStatus = '-'
+        // this.RN1 = '-'
+        this.pty = '-'
+        this.avgT1H = '-'
+        this.maxT1H = '-'
+        this.minT1H = '-'
+        this.avgREH = '-'
+        this.maxREH = '-'
+        this.minREH = '-'
       }
     },
     async getWorkTypeByCropCode (cropCode) {
