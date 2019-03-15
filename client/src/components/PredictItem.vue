@@ -110,19 +110,21 @@
             </v-tooltip>
           </template>
           <template slot="items" slot-scope="props">
-            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ getDateWithKorean(props.item.date) }}</h4></td>
-            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.landName }}</h4></td>
-            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.item }}</h4></td>
-            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.itemName }}</h4></td>
-            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.itemAmount }}</h4></td>
-            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.itemUsage }}</h4></td>
-            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.itemStock }}</h4></td>
-            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ getStrWithComma(props.item.itemPrice) }}</h4></td>
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" @click="showItem(props.item)"><h4>{{ getDateWithKorean(props.item.date) }}</h4></td>
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" @click="showItem(props.item)"><h4>{{ props.item.landName }}</h4></td>
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" @click="showItem(props.item)"><h4>{{ props.item.item }}</h4></td>
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" @click="showItem(props.item)"><h4>{{ props.item.itemName }}</h4></td>
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" @click="showItem(props.item)"><h4>{{ props.item.itemAmount }}</h4></td>
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" @click="showItem(props.item)"><h4>{{ props.item.itemUsage }}</h4></td>
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" @click="showItem(props.item)"><h4>{{ props.item.itemStock }}</h4></td>
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" @click="showItem(props.item)"><h4>{{ getStrWithComma(props.item.itemPrice) }}</h4></td>
+            <!--
             <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="justify-center layout px-0">
               <v-btn icon class="mx-0" @click="showItem(props.item)">
                 <v-icon color="teal">remove_red_eye</v-icon>
               </v-btn>
             </td>
+            -->
           </template>
         </v-data-table>
         <div class="text-xs-center pt-2">
@@ -187,8 +189,8 @@ export default {
         { text: '구입량', sortable: false, value: 'itemAmount' },
         { text: '사용량', sortable: false, value: 'itemUsage' },
         { text: '재고량', sortable: false, value: 'itemStock' },
-        { text: '구입가격', sortable: false, value: 'itemPrice' },
-        { text: '관리', value: 'name', sortable: false, align: 'left', width: '5%' }
+        { text: '구입가격', sortable: false, value: 'itemPrice' }
+        // { text: '관리', value: 'name', sortable: false, align: 'left', width: '5%' }
       ],
       items: [],
       dictionary: {

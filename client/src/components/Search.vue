@@ -548,6 +548,7 @@ export default {
         if (!result) {
           return
         }
+        /*
         // 선택한 농장명이 전체일 경우 검색어를 지우고 검색
         if (this.selectLand === '0') {
           this.searchWord = ''
@@ -556,6 +557,8 @@ export default {
           // 선택한 농장명이 전체가 아닐 경우
           this.getJournalsBy5()
         }
+        */
+        this.getJournalsBy5()
       }).catch(() => {})
     },
     searchReset () {

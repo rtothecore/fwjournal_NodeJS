@@ -505,36 +505,25 @@
                   </v-flex>
                   
                   <template v-for="(item, index) in itemItems">
-                    <v-flex xs1 sm1 md1 :key="'H' + index">
+                    <v-flex xs1 sm1 md1 :key="'L' + index">
                       <v-checkbox v-model="item.checkBox"></v-checkbox>
                     </v-flex>
-                    <v-flex xs3 sm3 md3 :key="'C' + index">
+                    <v-flex xs3 sm3 md3 :key="'M' + index">
                       <v-text-field
                         label="품목명"                      
                         v-model="item.itemName"
                       ></v-text-field>
                     </v-flex>
-                    <!--
-                      <v-flex xs2 sm2 md2 :key="'D' + index">
+                    <v-flex xs2 sm2 md2 :key="'H' + index">
                       <v-text-field
                         label="수량"
                         v-model="item.itemAmount"  
-                        v-on:input="onChangeItemAmount(item.itemAmount, index)" 
+                        v-on:change="onChangeItemAmount(item.itemAmount, index)"
                         type="number"   
                         min="0"                  
                       ></v-text-field>
                     </v-flex>
-                      -->
-                    <v-flex xs2 sm2 md2 :key="'D' + index">
-                      <v-text-field
-                        label="수량"
-                        v-model="item.itemAmount"  
-                        v-on:change="onChangeItemAmount(item.itemAmount, index)" 
-                        type="number"   
-                        min="item.itemUsage"                  
-                      ></v-text-field>
-                    </v-flex>
-                    <v-flex xs2 sm2 md2 :key="'E' + index">
+                    <v-flex xs2 sm2 md2 :key="'I' + index">
                       <v-text-field
                         label="가격"
                         v-model="item.itemPrice"
@@ -554,17 +543,16 @@
                       ></v-text-field>
                     </v-flex>  
                     -->
-                    <v-flex xs2 sm2 md2 :key="'F' + index">
+                    <v-flex xs2 sm2 md2 :key="'J' + index">
                       <v-text-field
                         label="사용량"
-                        v-model="item.itemUsage"
-                        v-on:input="onChangeItemUsage(item.itemUsage, index)"                        
+                        v-model="item.itemUsage"                                                
                         type="number"
                         min="0"
                         readonly
                       ></v-text-field>
                     </v-flex>  
-                    <v-flex xs2 sm2 md2 :key="'G' + index">
+                    <v-flex xs2 sm2 md2 :key="'K' + index">
                       <v-text-field
                         label="재고량"
                         v-model="item.itemStock"                        
@@ -804,6 +792,19 @@ export default {
       handler: function () {
         this.saved = false
         // console.log(this.avatar.uploadedFilename)
+      },
+      deep: true
+    },
+    itemItems: {
+      handler: function () {
+        // console.log('i am changed!')
+        for (var index = 0; index < this.itemItems.length; index++) {
+          if (this.itemItems[index].itemAmount < this.itemItems[index].itemStock + this.itemItems[index].journalUsage) {
+            // this.itemItems[index].itemAmount = this.itemItems[index].itemStock + this.itemItems[index].journalUsage
+          } else if (this.itemItems[index].itemAmount >= this.itemItems[index].itemStock + this.itemItems[index].journalUsage) {
+            this.itemItems[index].itemStock = this.itemItems[index].itemAmount - this.itemItems[index].journalUsage
+          }
+        }
       },
       deep: true
     }
@@ -1640,25 +1641,19 @@ export default {
       this.selectedWETime = tmpStr.replace(':', '')
       console.log(this.selectedWETime)
     },
+    /*
     onChangeItemUsage: async function (event, index) {
       // 재고량 계산
       // this.itemItems[index].itemStock = this.itemItems[index].itemAmount - this.itemItems[index].journalUsage - ((event * 1) - this.itemItems[index].journalUsage + this.itemItems[index].itemRealUsage) + this.itemItems[index].itemRealUsage
     },
-    onChangeItemAmount: async function (event, index) {
-      console.log(event + '/' + index)
+    */
+    onChangeItemAmount: function (event, index) {
+      // console.log(event + '/' + index)
       // 구입수량이 사용량 + 재고량보다 작아지면 안됨
       if (event < this.itemItems[index].itemStock + this.itemItems[index].journalUsage) {
         this.itemItems[index].itemAmount = this.itemItems[index].itemStock + this.itemItems[index].journalUsage
       } else {
-        this.itemItems[index].itemStock = event - this.itemItems[index].journalUsage
-        /*
-        if (event >= this.itemItems[index].journalUsage) {
-          // 재고량 계산
-          this.itemItems[index].itemStock = event - this.itemItems[index].journalUsage
-        } else {
-          this.itemItems[index].itemAmount = this.itemItems[index].journalUsage
-        }
-        */
+        // this.itemItems[index].itemStock = event - this.itemItems[index].journalUsage
       }
     },
     initItemNames () {

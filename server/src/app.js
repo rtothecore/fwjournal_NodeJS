@@ -1434,17 +1434,23 @@ app.get('/journalsLookupByYMUserId/:ym/:userId', (req, res) => {
 // Fetch journals lookup by year, month, userId
 app.get('/journalsLookupByYMUserIdLandId/:ym/:userId/:landId', (req, res) => {
   // console.log(req.params)
+  var matchArray = []
   var searchArray = []
+  var searchArray2 = []
   var tmpArrayItem = { "userId" : req.params.userId }
+  matchArray.push(tmpArrayItem)
   searchArray.push(tmpArrayItem)
   tmpArrayItem = { "date" : { "$regex": req.params.ym } }
   searchArray.push(tmpArrayItem)
+  searchArray2.push(tmpArrayItem)
 
   if (req.params.landId === "0") {		  	
   } else {	  	
 	landIdVal = mongoose.Types.ObjectId(req.params.landId)
 	tmpArrayItem = { "landId" : landIdVal }
   	searchArray.push(tmpArrayItem)
+  	var tmpMatchArray = { "_id" : landIdVal }
+  	matchArray.push(tmpMatchArray)
   }
 
   // var userIdForSearch = []
@@ -1457,7 +1463,7 @@ app.get('/journalsLookupByYMUserIdLandId/:ym/:userId/:landId', (req, res) => {
 			// 2. lands 콜렉션에서 나의 cropCode를 조회하여 dcs 콜렉션에서 소분류 코드를 얻음
 			Land.aggregate([
 				{
-				    '$match' : { 'userId' : user[0].id }       				              	
+				    '$match' : { '$and' : matchArray }       				              	
 			    },
 			    {
 			        '$lookup':
@@ -1508,9 +1514,16 @@ app.get('/journalsLookupByYMUserIdLandId/:ym/:userId/:landId', (req, res) => {
 							User.find({ "id": { "$in": sameScsUsers }, "share_flag": "1" }, '', function (error2, user2) {
 								if (error2) { console.error(error2); }
 								var userIdForSearch = []
+								var userIdForSearch2 = []
 								for (var k = 0; k < user2.length; k++) {
 									userIdForSearch.push(user2[k].id)
+									userIdForSearch2.push(user2[k].id)
 								}
+
+								// 자신의 Id를 뺀 타인의 userId를 searchArray2에 push
+								var tempUserIds2 = {"$in" : userIdForSearch2}
+								searchArray2.push({"userId": tempUserIds2})								
+
 								userIdForSearch.push(user[0].id)
 								var tempUserIds = {"$in" : userIdForSearch}																
 								searchArray[0] = {"userId": tempUserIds}								
@@ -1564,7 +1577,66 @@ app.get('/journalsLookupByYMUserIdLandId/:ym/:userId/:landId', (req, res) => {
 							        if (err) {
 							            next(err);
 							        } else {
-							            res.send(result);
+							            // 5-2 농장명 검색조건을 입력하지 않았을경우 
+						        		if (req.params.landId === "0") {
+						        			res.send(result);						            	
+						        		} else {	// 5-3 농장명 검색조건을 입력한 경우
+						        			Journal.aggregate([
+											{
+											    '$lookup':
+											    {
+											      from: 'lands',
+											      localField: 'landId',
+											      foreignField: '_id',
+											      as: 'landInfo'
+											    }
+											},
+											{
+												"$unwind" : "$landInfo"
+											},
+									        {
+											    '$lookup':
+											    {
+											      from: 'dcs',
+											      localField: 'landInfo.cropCode',
+											      foreignField: 'dCode',
+											      as: 'dcsInfo'
+											    }
+											},
+											{
+												"$unwind" : "$dcsInfo"
+											},
+											{
+											    "$match" : { "dcsInfo.sCode" : { "$in": sCodeArray } }
+											},
+											{
+											    '$lookup':
+											    {
+											      from: 'wcs',
+											      localField: 'workCode',
+											      foreignField: 'wCode',
+											      as: 'wcsInfo'
+											    }
+											},
+											{
+												"$unwind" : "$wcsInfo"
+											},
+									        {
+									            "$match" : { "$and" : searchArray2
+									       				   }            	
+									        },
+									        { "$sort" : { "_id.date": 1 } }
+									    	], function (err2, result2) {
+									        	if (err2) {
+									            	next(err2);
+									        	} else {								        		
+									            	for (var l = 0; l < result2.length; l++) {
+									            		result.push(result2[l])
+									            	}								            	
+									            	res.send(result)
+									        	}
+									    	});
+						        		}
 							        }
 							    });				
 							});				    	
@@ -1624,46 +1696,6 @@ app.get('/journalsLookupByYMUserIdLandId/:ym/:userId/:landId', (req, res) => {
 		    });
 		}
 	})
-
-/*
-  Journal.aggregate([
-		{
-		    '$lookup':
-		    {
-		      from: 'lands',
-		      localField: 'landId',
-		      foreignField: '_id',
-		      as: 'landInfo'
-		    }
-		},
-		{
-			"$unwind" : "$landInfo"
-		},
-		{
-		    '$lookup':
-		    {
-		      from: 'wcs',
-		      localField: 'workCode',
-		      foreignField: 'wCode',
-		      as: 'wcsInfo'
-		    }
-		},
-		{
-			"$unwind" : "$wcsInfo"
-		},
-        {
-            "$match" : { "$and" : searchArray
-       				   }            	
-        },
-        { "$sort" : { "date": 1 } }
-    ], function (err, result) {
-        if (err) {
-            next(err);
-        } else {
-            res.send(result);
-        }
-    });
-*/
 })
 
 // Fetch journals by year, month, userId, landId
@@ -1792,8 +1824,6 @@ app.get('/journalsLookupBy4/:startDate/:endDate/:userId/:landId', (req, res) => 
 								// 자신의 Id를 뺀 타인의 userId를 searchArray2에 push
 								var tempUserIds2 = {"$in" : userIdForSearch2}
 								searchArray2.push({"userId": tempUserIds2})
-								console.log(userIdForSearch2)
-								console.log(searchArray2)	
 
 								userIdForSearch.push(user[0].id)
 								var tempUserIds = {"$in" : userIdForSearch}																
@@ -1967,58 +1997,6 @@ app.get('/journalsLookupBy4/:startDate/:endDate/:userId/:landId', (req, res) => 
 		    });
 		}
 	})
-
-/*
-	Journal.aggregate([
-		{
-		    '$lookup':
-		    {
-		      from: 'lands',
-		      localField: 'landId',
-		      foreignField: '_id',
-		      as: 'landInfo'
-		    }
-		},
-		{
-			"$unwind" : "$landInfo"
-		},
-        {
-		    '$lookup':
-		    {
-		      from: 'dcs',
-		      localField: 'landInfo.cropCode',
-		      foreignField: 'dCode',
-		      as: 'dcsInfo'
-		    }
-		},
-		{
-			"$unwind" : "$dcsInfo"
-		},
-		{
-		    '$lookup':
-		    {
-		      from: 'wcs',
-		      localField: 'workCode',
-		      foreignField: 'wCode',
-		      as: 'wcsInfo'
-		    }
-		},
-		{
-			"$unwind" : "$wcsInfo"
-		},
-        {
-            "$match" : { "$and" : searchArray
-       				   }            	
-        },
-        { "$sort" : { "_id.date": 1 } }
-    ], function (err, result) {
-        if (err) {
-            next(err);
-        } else {
-            res.send(result);
-        }
-    });
-*/
 })
 
 // Fetch lookup journals by date & userId

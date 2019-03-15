@@ -609,6 +609,7 @@ export default {
 
       // 해당 journalId로 된 일지가 없을경우
       if (response.data.length === 0) {
+        /*
         this.$swal({
           type: 'error',
           title: '존재하지 않는 일지입니다',
@@ -617,6 +618,10 @@ export default {
         }).then((result) => {
           this.dialog = false
         })
+        return
+        */
+        alert('존재하지 않는 일지입니다')
+        this.dialog = false
         return
       }
 

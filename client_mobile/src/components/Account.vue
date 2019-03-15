@@ -273,11 +273,11 @@
               </template>
 
               <template slot="items" slot-scope="props">
-                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h5>{{ getDateWithSimple(props.item.date) }}</h5></td>
+                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" @click="showItem(props.item)"><h5>{{ getDateWithSimple(props.item.date) }}</h5></td>
                 <!-- <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.landName }}</h4></td> -->
-                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h5>{{ props.item.cropName }}</h5></td>
+                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" @click="showItem(props.item)"><h5>{{ props.item.cropName }}</h5></td>
                 <!-- <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.income.detail }}</h4></td> -->
-                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h5>{{ getStrWithComma(props.item.income.amount) }}</h5></td>                                
+                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" @click="showItem(props.item)"><h5>{{ getStrWithComma(props.item.income.amount) }}</h5></td>                                
                 <!-- <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="justify-center layout px-0">
                   <v-btn icon class="mx-0" @click="showItem(props.item)">
                     <v-icon color="teal">remove_red_eye</v-icon>
@@ -423,10 +423,10 @@
               </template>
 
               <template slot="items" slot-scope="props">
-                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h5>{{ getDateWithSimple(props.item.date) }}</h5></td>
+                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" @click="showItem(props.item)"><h5>{{ getDateWithSimple(props.item.date) }}</h5></td>
                 <!-- <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.landName }}</h4></td> -->
-                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h5>{{ props.item.category }}</h5></td>
-                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h5>{{ getStrWithComma(props.item.cost) }}</h5></td>
+                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" @click="showItem(props.item)"><h5>{{ props.item.category }}</h5></td>
+                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" @click="showItem(props.item)"><h5>{{ getStrWithComma(props.item.cost) }}</h5></td>
                 <!--
                 <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="justify-center layout px-0">
                   <v-btn icon class="mx-0" @click="showItem(props.item)">
@@ -476,10 +476,10 @@
               </template>
 
               <template slot="items" slot-scope="props">
-                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h5>{{ getDateWithSimple(props.item.date) }}</h5></td>                
-                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h5>{{ props.item.itemName }}</h5></td>
+                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" @click="showItemForItem(props.item)"><h5>{{ getDateWithSimple(props.item.date) }}</h5></td>                
+                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" @click="showItemForItem(props.item)"><h5>{{ props.item.itemName }}</h5></td>
                 <!-- <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.amount }}</h4></td>  -->
-                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h5>{{ getStrWithComma(props.item.cost) }}</h5></td> 
+                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" @click="showItemForItem(props.item)"><h5>{{ getStrWithComma(props.item.cost) }}</h5></td> 
                 <!--
                 <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="justify-center layout px-0">
                   <v-btn icon class="mx-0" @click="showItemForItem(props.item)">

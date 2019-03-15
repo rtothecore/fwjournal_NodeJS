@@ -275,16 +275,18 @@
               </template>
 
               <template slot="items" slot-scope="props">
-                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ getDateWithKorean(props.item.date) }}</h4></td>
-                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.landName }}</h4></td>
-                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.cropName }}</h4></td>
-                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.income.detail }}</h4></td>
-                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ getStrWithComma(props.item.income.amount) }}</h4></td>                                
+                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" @click="showItem(props.item)"><h4>{{ getDateWithKorean(props.item.date) }}</h4></td>
+                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" @click="showItem(props.item)"><h4>{{ props.item.landName }}</h4></td>
+                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" @click="showItem(props.item)"><h4>{{ props.item.cropName }}</h4></td>
+                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" @click="showItem(props.item)"><h4>{{ props.item.income.detail }}</h4></td>
+                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" @click="showItem(props.item)"><h4>{{ getStrWithComma(props.item.income.amount) }}</h4></td>                                
+                <!--
                 <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="justify-center layout px-0">
                   <v-btn icon class="mx-0" @click="showItem(props.item)">
                     <v-icon color="teal">remove_red_eye</v-icon>
                   </v-btn>                  
                 </td>
+                -->
 
               </template>
               <template slot="footer">
@@ -436,17 +438,17 @@
               </template>
 
               <template slot="items" slot-scope="props">
-                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ getDateWithKorean(props.item.date) }}</h4></td>
-                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.landName }}</h4></td>
-                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.category }}</h4></td>
-                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ getStrWithComma(props.item.cost) }}</h4></td>
-
+                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" @click="showItem(props.item)"><h4>{{ getDateWithKorean(props.item.date) }}</h4></td>
+                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" @click="showItem(props.item)"><h4>{{ props.item.landName }}</h4></td>
+                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" @click="showItem(props.item)"><h4>{{ props.item.category }}</h4></td>
+                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" @click="showItem(props.item)"><h4>{{ getStrWithComma(props.item.cost) }}</h4></td>
+<!--
                 <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="justify-center layout px-0">
                   <v-btn icon class="mx-0" @click="showItem(props.item)">
                     <v-icon color="teal">remove_red_eye</v-icon>
                   </v-btn>                  
                 </td>
-
+-->
               </template>
               <template slot="footer">                                
                 <td></td>
@@ -489,17 +491,17 @@
               </template>
 
               <template slot="items" slot-scope="props">
-                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ getDateWithKorean(props.item.date) }}</h4></td>                
-                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.itemName }}</h4></td>
-                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.amount }}</h4></td>
-                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ getStrWithComma(props.item.cost) }}</h4></td> 
-
+                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" @click="showItemForItem(props.item)"><h4>{{ getDateWithKorean(props.item.date) }}</h4></td>                
+                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" @click="showItemForItem(props.item)"><h4>{{ props.item.itemName }}</h4></td>
+                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" @click="showItemForItem(props.item)"><h4>{{ props.item.amount }}</h4></td>
+                <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" @click="showItemForItem(props.item)"><h4>{{ getStrWithComma(props.item.cost) }}</h4></td> 
+<!--
                 <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="justify-center layout px-0">
                   <v-btn icon class="mx-0" @click="showItemForItem(props.item)">
                     <v-icon color="teal">remove_red_eye</v-icon>
                   </v-btn>                  
                 </td>
-
+-->
               </template>
               <template slot="footer">                
                 <td></td>
@@ -563,8 +565,8 @@ export default {
         },
         { text: '품목명', sortable: false, value: 'itemName' },
         { text: '수량', sortable: false, value: 'amount' },
-        { text: '금액', sortable: false, value: 'cost' },
-        { text: '상세', value: 'name', sortable: false, align: 'left', width: '5%' }
+        { text: '금액', sortable: false, value: 'cost' }
+        // { text: '상세', value: 'name', sortable: false, align: 'left', width: '5%' }
       ],
       //
       cooTotal: 0,
@@ -578,8 +580,8 @@ export default {
         },
         { text: '농장명', sortable: false, value: 'landName' },
         { text: '발생품목', sortable: false, value: 'category' },
-        { text: '금액', sortable: false, value: 'cost' },
-        { text: '상세', value: 'name', sortable: false, align: 'left', width: '5%' }
+        { text: '금액', sortable: false, value: 'cost' }
+        // { text: '상세', value: 'name', sortable: false, align: 'left', width: '5%' }
       ],
       row: 'radio-total',
       //
@@ -595,8 +597,8 @@ export default {
         { text: '농장명', sortable: false, value: 'landName' },
         { text: '항목', sortable: false, value: 'cropName' },
         { text: '내역', sortable: false, value: 'income.detail' },
-        { text: '금액', sortable: false, value: 'income.amount' },
-        { text: '상세', value: 'name', sortable: false, align: 'left', width: '5%' }
+        { text: '금액', sortable: false, value: 'income.amount' }
+        // { text: '상세', value: 'name', sortable: false, align: 'left', width: '5%' }
       ],
       //
       totalIncMinusExp: 0,

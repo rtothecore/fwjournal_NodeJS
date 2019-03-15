@@ -105,18 +105,20 @@
             </v-tooltip>
           </template>
           <template slot="items" slot-scope="props">
-            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ getDateWithKorean(props.item.date) }}</h4></td>
-            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.landName }}</h4></td>
-            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.cropName }}</h4></td>
-            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.workType }}</h4></td>
-            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.workContent }}</h4></td>
-            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.sky }}</h4></td>
-            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.t1h }}</h4></td>
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" @click="showItem(props.item)"><h4>{{ getDateWithKorean(props.item.date) }}</h4></td>
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" @click="showItem(props.item)"><h4>{{ props.item.landName }}</h4></td>
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" @click="showItem(props.item)"><h4>{{ props.item.cropName }}</h4></td>
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" @click="showItem(props.item)"><h4>{{ props.item.workType }}</h4></td>
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" @click="showItem(props.item)"><h4>{{ props.item.workContent }}</h4></td>
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" @click="showItem(props.item)"><h4>{{ props.item.sky }}</h4></td>
+            <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" @click="showItem(props.item)"><h4>{{ props.item.t1h }}</h4></td>
+            <!--
             <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="justify-center layout px-0">
               <v-btn icon class="mx-0" @click="showItem(props.item)">
                 <v-icon color="teal">remove_red_eye</v-icon>
               </v-btn>
             </td>
+            -->
           </template>
         </v-data-table>
         <div class="text-xs-center pt-2">
@@ -182,8 +184,8 @@ export default {
         { text: '작업분류', sortable: false, value: 'workType' },
         { text: '작업내용', sortable: false, value: 'workContent' },
         { text: '날씨', sortable: false, value: 'sky' },
-        { text: '온도', sortable: false, value: 't1h' },
-        { text: '관리', value: 'name', sortable: false, align: 'left', width: '5%' }
+        { text: '온도', sortable: false, value: 't1h' }
+        // { text: '관리', value: 'name', sortable: false, align: 'left', width: '5%' }
       ],
       journals: [],
       dictionary: {
@@ -257,23 +259,24 @@ export default {
           tmpJournals[i].workType = response.data[i].wcsInfo.text
           tmpJournals[i].sky = tmpJournals[i].weather.sky
           switch (tmpJournals[i].sky) {
-            case '0' :
+            case '1' :
               tmpJournals[i].sky = '맑음'
               break
-            case '1' :
-              tmpJournals[i].sky = '비'
-              break
             case '2' :
-              tmpJournals[i].sky = '비/눈'
+              tmpJournals[i].sky = '구름조금'
               break
             case '3' :
-              tmpJournals[i].sky = '눈'
+              tmpJournals[i].sky = '구름많음'
+              break
+            case '4' :
+              tmpJournals[i].sky = '흐림'
+              break
+            default :
+              tmpJournals[i].sky = '-'
               break
           }
-          if (tmpJournals[i].sky === 'No data') {
-            tmpJournals[i].sky = '-'
-          }
-          if (!tmpJournals[i].t1h) {
+
+          if (!tmpJournals[i].weather.avgT1H) {
             tmpJournals[i].t1h = '-'
           } else {
             tmpJournals[i].t1h = Math.round(tmpJournals[i].weather.avgT1H) + '℃'
@@ -287,6 +290,7 @@ export default {
           landId: this.selectLand
         })
         var tmpJournals2 = response4.data
+        console.log(response4.data)
 
         for (var j = 0; j < response4.data.length; j++) {
           tmpJournals2[j].landName = response4.data[j].landInfo.name
@@ -297,23 +301,24 @@ export default {
           tmpJournals2[j].workType = response4.data[j].wcsInfo.text
           tmpJournals2[j].sky = tmpJournals2[j].weather.sky
           switch (tmpJournals2[j].sky) {
-            case '0' :
+            case '1' :
               tmpJournals2[j].sky = '맑음'
               break
-            case '1' :
-              tmpJournals2[j].sky = '비'
-              break
             case '2' :
-              tmpJournals2[j].sky = '비/눈'
+              tmpJournals2[j].sky = '구름조금'
               break
             case '3' :
-              tmpJournals2[j].sky = '눈'
+              tmpJournals2[j].sky = '구름많음'
+              break
+            case '4' :
+              tmpJournals2[j].sky = '흐림'
+              break
+            default :
+              tmpJournals2[j].sky = '-'
               break
           }
-          if (tmpJournals2[j].sky === 'No data') {
-            tmpJournals2[j].sky = '-'
-          }
-          if (!tmpJournals2[j].t1h) {
+
+          if (!tmpJournals2[j].weather.avgT1H) {
             tmpJournals2[j].t1h = '-'
           } else {
             tmpJournals2[j].t1h = Math.round(tmpJournals2[j].weather.avgT1H) + '℃'

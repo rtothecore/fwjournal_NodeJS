@@ -262,23 +262,24 @@ export default {
           tmpJournals[i].workType = response.data[i].wcsInfo.text
           tmpJournals[i].sky = tmpJournals[i].weather.sky
           switch (tmpJournals[i].sky) {
-            case '0' :
+            case '1' :
               tmpJournals[i].sky = '맑음'
               break
-            case '1' :
-              tmpJournals[i].sky = '비'
-              break
             case '2' :
-              tmpJournals[i].sky = '비/눈'
+              tmpJournals[i].sky = '구름조금'
               break
             case '3' :
-              tmpJournals[i].sky = '눈'
+              tmpJournals[i].sky = '구름많음'
+              break
+            case '4' :
+              tmpJournals[i].sky = '흐림'
+              break
+            default :
+              tmpJournals[i].sky = '-'
               break
           }
-          if (tmpJournals[i].sky === 'No data') {
-            tmpJournals[i].sky = '-'
-          }
-          if (!tmpJournals[i].t1h) {
+
+          if (!tmpJournals[i].weather.avgT1H) {
             tmpJournals[i].t1h = '-'
           } else {
             tmpJournals[i].t1h = Math.round(tmpJournals[i].weather.avgT1H) + '℃'
@@ -302,23 +303,24 @@ export default {
           tmpJournals2[j].workType = response4.data[j].wcsInfo.text
           tmpJournals2[j].sky = tmpJournals2[j].weather.sky
           switch (tmpJournals2[j].sky) {
-            case '0' :
+            case '1' :
               tmpJournals2[j].sky = '맑음'
               break
-            case '1' :
-              tmpJournals2[j].sky = '비'
-              break
             case '2' :
-              tmpJournals2[j].sky = '비/눈'
+              tmpJournals2[j].sky = '구름조금'
               break
             case '3' :
-              tmpJournals2[j].sky = '눈'
+              tmpJournals2[j].sky = '구름많음'
+              break
+            case '4' :
+              tmpJournals2[j].sky = '흐림'
+              break
+            default :
+              tmpJournals2[i].sky = '-'
               break
           }
-          if (tmpJournals2[i].sky === 'No data') {
-            tmpJournals2[i].sky = '-'
-          }
-          if (!tmpJournals2[i].t1h) {
+
+          if (!tmpJournals2[i].weather.avgT1H) {
             tmpJournals2[i].t1h = '-'
           } else {
             tmpJournals2[i].t1h = Math.round(tmpJournals2[i].weather.avgT1H) + '℃'
