@@ -419,7 +419,6 @@ export default {
         searchWord: tmpSearchWord,
         landId: this.selectLand
       })
-      // console.log(response.data)
       var tmpJournals = response.data
 
       for (var i = 0; i < tmpJournals.length; i++) {

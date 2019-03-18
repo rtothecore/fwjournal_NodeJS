@@ -296,10 +296,11 @@ export default {
   mounted () {
     this.$validator.localize('ko', this.dictionary)
     var vm = this
-    bus.$on('toJournalForUpdate', function (value) {
+    bus.$on('toItemForUpdate', function (value) {
       vm.getItemsBy5()
     })
-    bus.$on('toJournalForDel', function (value) {
+    bus.$on('toItemForDel', function (value) {
+      console.log('test!')
       vm.getItemsBy5()
     })
   },
@@ -388,7 +389,7 @@ export default {
       }
     },
     async getItemsBy5 () {
-      this.items = []
+      console.log('getItemsBy5')
 
       var tmpStartDate = this.startDate
       if (!tmpStartDate) {
@@ -416,49 +417,17 @@ export default {
         itemName: tmpSearchWord,
         landId: this.selectLand
       })
+      var tmpItems = response.data
 
-      for (var i = 0; i < response.data.length; i++) {
-        this.items.push(response.data[i])
-        this.items[i].itemName = response.data[i].itemDetailInfo.itemName
-        this.items[i].landName = response.data[i].landInfo.name
-        this.items[i].item = response.data[i].wcsInfo.text
-        this.items[i].itemAmount = response.data[i].itemDetailInfo.itemAmount
-        this.items[i].itemUsage = response.data[i].itemDetailInfo.journalUsage + response.data[i].itemDetailInfo.itemUsage
-        this.items[i].itemStock = this.items[i].itemAmount - this.items[i].itemUsage
+      for (var i = 0; i < tmpItems.length; i++) {
+        tmpItems[i].itemName = tmpItems[i].itemDetailInfo.itemName
+        tmpItems[i].landName = tmpItems[i].landInfo.name
+        tmpItems[i].item = tmpItems[i].wcsInfo.text
+        tmpItems[i].itemAmount = tmpItems[i].itemDetailInfo.itemAmount
+        tmpItems[i].itemUsage = tmpItems[i].itemDetailInfo.journalUsage + tmpItems[i].itemDetailInfo.itemUsage
+        tmpItems[i].itemStock = tmpItems[i].itemAmount - tmpItems[i].itemUsage
       }
-/* ORIGINAL
-      const response = await ItemService.fetchItemSearchBy5({
-        userId: this.userId,
-        startDate: tmpStartDate,
-        endDate: tmpEndDate,
-        itemName: tmpSearchWord,
-        landId: this.selectLand
-      })
-
-      for (var k = 0; k < response.data.length; k++) {
-        this.items.push(response.data[k])
-      }
-
-      for (var i = 0; i < this.items.length; i++) {
-        // 농장명
-        const response3 = await LandService.fetchNameByLandId({
-          landId: this.items[i].landId
-        })
-        this.items[i].landName = response3.data[0].name
-
-        // 구입품목
-        const response2 = await WcService.fetchOneTextByCcode({
-          code: this.items[i].item
-        })
-        this.items[i].item = response2.data[0].text
-
-        // 총 사용량
-        this.items[i].itemUsage = this.items[i].itemUsage + this.items[i].journalUsage
-
-        // 재고수량
-        this.items[i].itemStock = this.items[i].itemAmount - this.items[i].itemUsage
-      }
-*/
+      this.items = tmpItems
     },
     async deleteItemData (id) {
       await ItemService.deleteItem(id)

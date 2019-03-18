@@ -296,6 +296,7 @@ app.get('/wcData/getWeatherAggDataByAddr/:startDate/:endDate/:address', (req, re
         if (err) {
             next(err);
         } else {
+        	console.log(result)
             res.send(result);
         }
     });
@@ -937,17 +938,46 @@ app.put('/journals/:id', (req, res) => {
 
 // Delete journal
 app.delete('/journals/:id', (req, res) => {
-	var db = req.db
-	Journal.remove({
+	Journal.find({
 		_id: req.params.id
-	}, function(err, lands) {
-		if (err) {
-			res.send(err)
+	}, function(error, journal) {
+		// 1. 서버상에 업로드한 사진 파일들을 모두 삭제한다.		
+		if (journal[0].pictureA !== "") {
+			var uploadedImgPath = 'journalImgs/' + journal[0].userId + '/' + journal[0].pictureA
+			if (fs.existsSync(uploadedImgPath)) {
+				fs.unlinkSync(uploadedImgPath)
+				console.log('successfully deleted ' + uploadedImgPath);
+			}
 		}
-		res.send({
-			success: true
+
+		if (journal[0].pictureB !== "") {
+			var uploadedImgPath = 'journalImgs/' + journal[0].userId + '/' + journal[0].pictureB
+			if (fs.existsSync(uploadedImgPath)) {
+				fs.unlinkSync(uploadedImgPath)
+				console.log('successfully deleted ' + uploadedImgPath);
+			}
+		}
+
+		if (journal[0].pictureC !== "") {
+			var uploadedImgPath = 'journalImgs/' + journal[0].userId + '/' + journal[0].pictureC
+			if (fs.existsSync(uploadedImgPath)) {
+				fs.unlinkSync(uploadedImgPath)
+				console.log('successfully deleted ' + uploadedImgPath);
+			}
+		}
+
+		// 2. 해당 일지를 삭제한다.
+		Journal.remove({
+			_id: req.params.id
+		}, function(err, lands) {
+			if (err) {
+				res.send(err)
+			}
+			res.send({
+				success: true
+			})
 		})
-	})
+	})	
 })
 
 // Delete journal by itemId
@@ -3645,7 +3675,48 @@ app.get('/item/:id', (req, res) => {
 
 // Delete item
 app.delete('/item/:id', (req, res) => {
+/*
+Journal.find({
+		_id: req.params.id
+	}, function(error, journal) {
+		// 1. 서버상에 업로드한 사진 파일들을 모두 삭제한다.		
+		if (journal[0].pictureA !== "") {
+			var uploadedImgPath = 'journalImgs/' + journal[0].userId + '/' + journal[0].pictureA
+			if (fs.existsSync(uploadedImgPath)) {
+				fs.unlinkSync(uploadedImgPath)
+				console.log('successfully deleted ' + uploadedImgPath);
+			}
+		}
 
+		if (journal[0].pictureB !== "") {
+			var uploadedImgPath = 'journalImgs/' + journal[0].userId + '/' + journal[0].pictureB
+			if (fs.existsSync(uploadedImgPath)) {
+				fs.unlinkSync(uploadedImgPath)
+				console.log('successfully deleted ' + uploadedImgPath);
+			}
+		}
+
+		if (journal[0].pictureC !== "") {
+			var uploadedImgPath = 'journalImgs/' + journal[0].userId + '/' + journal[0].pictureC
+			if (fs.existsSync(uploadedImgPath)) {
+				fs.unlinkSync(uploadedImgPath)
+				console.log('successfully deleted ' + uploadedImgPath);
+			}
+		}
+
+		// 2. 해당 일지를 삭제한다.
+		Journal.remove({
+			_id: req.params.id
+		}, function(err, lands) {
+			if (err) {
+				res.send(err)
+			}
+			res.send({
+				success: true
+			})
+		})
+	})
+*/
   ItemDetail.find({}, '', function (error, ids) {
     if (error) { console.error(error); }
     
@@ -3662,20 +3733,49 @@ app.delete('/item/:id', (req, res) => {
 		{ multi: true },
 		function(err, doc) {
 	        if(err) { console.log(err); }
-	        else {	     
-	          // item 삭제
-	          Item.remove({
-				_id: req.params.id
-			  }, function(err, lands) {
-				if (err) {
-					res.send(err)
-				}
-				// itemdetails 컬렉션에서 parentId에 해당하는 도큐먼트 삭제
-				ItemDetail.remove({parentId: req.params.id}, function(err2, ids2) {
-					if (err2) { res.send(err2) }
-					res.send({success: true})							
-				})
-			 })
+	        else {
+	          Item.find({
+					_id: req.params.id
+				}, function(error, item) {
+					// 서버상에 업로드한 사진 파일들을 모두 삭제한다.		
+					if (item[0].pictureA !== "") {
+						var uploadedImgPath = 'journalImgs/' + item[0].userId + '/' + item[0].pictureA
+						if (fs.existsSync(uploadedImgPath)) {
+							fs.unlinkSync(uploadedImgPath)
+							console.log('successfully deleted ' + uploadedImgPath);
+						}
+					}
+
+					if (item[0].pictureB !== "") {
+						var uploadedImgPath = 'journalImgs/' + item[0].userId + '/' + item[0].pictureB
+						if (fs.existsSync(uploadedImgPath)) {
+							fs.unlinkSync(uploadedImgPath)
+							console.log('successfully deleted ' + uploadedImgPath);
+						}
+					}
+
+					if (item[0].pictureC !== "") {
+						var uploadedImgPath = 'journalImgs/' + item[0].userId + '/' + item[0].pictureC
+						if (fs.existsSync(uploadedImgPath)) {
+							fs.unlinkSync(uploadedImgPath)
+							console.log('successfully deleted ' + uploadedImgPath);
+						}
+					}
+
+					// item 삭제
+		            Item.remove({
+						_id: req.params.id
+				    }, function(err, lands) {
+						if (err) {
+							res.send(err)
+						}
+						// itemdetails 컬렉션에서 parentId에 해당하는 도큐먼트 삭제
+						ItemDetail.remove({parentId: req.params.id}, function(err2, ids2) {
+							if (err2) { res.send(err2) }
+							res.send({success: true})							
+						})
+				 	})
+			  })
 	        }
 	    }
 	)

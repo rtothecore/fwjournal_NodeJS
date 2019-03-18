@@ -174,6 +174,7 @@
                       label="작업시간"
                       type="number"
                       min="0"
+                      max="24"
                       hint="1시간 단위"
                       persistent-hint 
                     ></v-text-field>
@@ -184,6 +185,7 @@
                       label="작업인원"
                       type="number"
                       min="0"
+                      max="20"
                     ></v-text-field>
                   </v-flex>                  
 
@@ -790,6 +792,7 @@ export default {
         if (value.from === 'work') {
           vm.onChangeLand(vm.selectedLandId)
           vm.selectWorkType = value.addedWTC
+          vm.selectedWorkTypeCode = value.addedWTC
         } else {
           vm.onChangeILand(vm.selectedLandId)
           vm.selectItem = value.addedWTC
@@ -895,6 +898,7 @@ export default {
       const response = await LandService.fetchCropCodeByLandId({
         landId: landId
       })
+      // console.log(response.data)
       this.selectedCropCode = response.data[0].cropCode
       this.getCropNameByCropCode(this.selectedCropCode)
       this.getWorkTypeByCropCode(this.selectedCropCode)
@@ -902,6 +906,7 @@ export default {
       // 주소 얻어서 날씨 통계 데이터 가져오기
       var addressSplit = response.data[0].address.split(' ')
       var tmpAddress = addressSplit[0] + ' ' + addressSplit[1] + ' ' + addressSplit[2]
+      // console.log(tmpAddress)
       this.getWeatherCrawlerDataAggByAddress(this.User_Profile, this.User_Profile, tmpAddress)
     },
     async getCropCodeByILandId (landId) {
@@ -945,9 +950,11 @@ export default {
       this.newEvent.title += ' - ' + response.data[0].text
     },
     async fetchTextByCode (workCode) {
+      console.log(workCode)
       const response = await WcService.fetchOneTextByCcode({
         code: workCode
       })
+      console.log(response.data)
       this.newEvent.title += ' - ' + response.data[0].text
     },
     async fetchTextByCcode (workCode) {
@@ -1613,6 +1620,7 @@ export default {
       tmpStr += '일'
       return tmpStr
     }
+    // https://jsfiddle.net/gastongr/uujd2exu/5/ -> 숫자 제한 예제
   }
 }
 </script>

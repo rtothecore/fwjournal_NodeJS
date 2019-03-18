@@ -293,6 +293,7 @@ export default {
           landId: this.selectLand
         })
         var tmpJournals2 = response4.data
+        console.log(response4.data)
 
         for (var j = 0; j < response4.data.length; j++) {
           tmpJournals2[j].landName = response4.data[j].landInfo.name
@@ -316,14 +317,14 @@ export default {
               tmpJournals2[j].sky = '흐림'
               break
             default :
-              tmpJournals2[i].sky = '-'
+              tmpJournals2[j].sky = '-'
               break
           }
 
-          if (!tmpJournals2[i].weather.avgT1H) {
-            tmpJournals2[i].t1h = '-'
+          if (!tmpJournals2[j].weather.avgT1H) {
+            tmpJournals2[j].t1h = '-'
           } else {
-            tmpJournals2[i].t1h = Math.round(tmpJournals2[i].weather.avgT1H) + '℃'
+            tmpJournals2[j].t1h = Math.round(tmpJournals2[j].weather.avgT1H) + '℃'
           }
         }
         this.journals = tmpJournals2

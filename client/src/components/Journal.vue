@@ -1057,7 +1057,7 @@
         },
         showItem (item) {
           // console.log(item)
-          var emitParams = {'journalId': item._id, 'origin': 'fromPredict'}
+          var emitParams = {'journalId': item._id, 'userId': item.userId, 'origin': 'fromPredict'}
           bus.$emit('dialogForShow', emitParams)
         }
   }

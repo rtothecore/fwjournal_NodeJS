@@ -757,6 +757,7 @@ export default {
         if (value.from === 'work') {
           vm.onChangeLand(vm.selectedLandId)
           vm.selectWorkType = value.addedWTC
+          vm.selectedWorkTypeCode = value.addedWTC
         } else {
           vm.onChangeILand(vm.selectedLandId)
           vm.selectItem = value.addedWTC

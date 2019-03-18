@@ -507,16 +507,16 @@
                         v-model="item.itemName"
                       ></v-text-field>
                     </v-flex>
-                    <v-flex xs1 :key="'D' + index">
+                    <v-flex xs2 :key="'D' + index">
                       <v-text-field
                         label="수량"
                         v-model="item.itemAmount"
-                        v-on:input="onChangeItemAmount(item.itemAmount, index)"  
+                        @blur="onChangeItemAmount(item.itemAmount, index)"  
                         type="number"
-                        min="item.itemUsage"                      
+                        min="0"                      
                       ></v-text-field>
                     </v-flex>
-                    <v-flex xs3 :key="'E' + index">
+                    <v-flex xs2 :key="'E' + index">
                       <v-text-field
                         label="가격"
                         v-model="item.itemPrice"
@@ -773,6 +773,19 @@ export default {
       handler: function () {
         this.saved = false
         // console.log(this.avatar.uploadedFilename)
+      },
+      deep: true
+    },
+    itemItems: {
+      handler: function () {
+        // console.log('i am changed!')
+        for (var index = 0; index < this.itemItems.length; index++) {
+          if (this.itemItems[index].itemAmount < this.itemItems[index].itemStock + this.itemItems[index].journalUsage) {
+            // this.itemItems[index].itemAmount = this.itemItems[index].itemStock + this.itemItems[index].journalUsage
+          } else if (this.itemItems[index].itemAmount >= this.itemItems[index].itemStock + this.itemItems[index].journalUsage) {
+            this.itemItems[index].itemStock = this.itemItems[index].itemAmount - this.itemItems[index].journalUsage
+          }
+        }
       },
       deep: true
     }
@@ -1591,15 +1604,7 @@ export default {
       if (event < this.itemItems[index].itemStock + this.itemItems[index].journalUsage) {
         this.itemItems[index].itemAmount = this.itemItems[index].itemStock + this.itemItems[index].journalUsage
       } else {
-        this.itemItems[index].itemStock = event - this.itemItems[index].journalUsage
-        /*
-        if (event >= this.itemItems[index].journalUsage) {
-          // 재고량 계산
-          this.itemItems[index].itemStock = event - this.itemItems[index].journalUsage
-        } else {
-          this.itemItems[index].itemAmount = this.itemItems[index].journalUsage
-        }
-        */
+        // this.itemItems[index].itemStock = event - this.itemItems[index].journalUsage
       }
     },
     initItemNames () {
@@ -1625,7 +1630,7 @@ export default {
         showConfirmButton: false,
         timer: 777
       }).then((result) => {
-        bus.$emit('toJournalForUpdate', this.updatedEvent)
+        bus.$emit('toItemForUpdate', this.updatedEvent)
         this.dialog = false
       })
     },
@@ -1666,7 +1671,7 @@ export default {
             '자재가 삭제되었습니다',
             'success'
           )
-          bus.$emit('toJournalForDel', this.eventIndex)
+          bus.$emit('toItemForDel', this.eventIndex)
           this.dialog = false
         }
       })

@@ -1679,7 +1679,8 @@ export default {
         showConfirmButton: false,
         timer: 777
       }).then((result) => {
-        bus.$emit('toJournalForUpdate', this.updatedEvent)
+        // bus.$emit('toJournalForUpdate', this.updatedEvent)
+        bus.$emit('toItemForUpdate', this.updatedEvent)
         this.dialog = false
       })
     },
@@ -1720,12 +1721,11 @@ export default {
             '자재가 삭제되었습니다',
             'success'
           )
-          bus.$emit('toJournalForDel', this.eventIndex)
+          console.log('자재삭제완료!')
+          bus.$emit('toItemForDel', this.eventIndex)
           this.dialog = false
         }
       })
-      // bus.$emit('toJournal', 'test')
-      // this.dialog = false
     },
     deleteJ () {
       // confirm('이 일지를 지우시겠습니까?') && this.deleteJournal(this.journalId)
@@ -1755,8 +1755,6 @@ export default {
           this.dialog = false
         }
       })
-      // bus.$emit('toJournal', 'test')
-      // this.dialog = false
     },
     addWorkType (workOrItem) {
       var paramForAWT = {}
