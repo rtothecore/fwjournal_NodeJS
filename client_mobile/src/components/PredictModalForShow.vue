@@ -153,7 +153,7 @@
                     <v-text-field
                       v-model="workTime"
                       label="작업시간"
-                      placeholder="Placeholder"
+                      placeholder="작업시간"
                       readonly
                     ></v-text-field>
                   </v-flex>
@@ -161,7 +161,7 @@
                     <v-text-field
                       v-model="workerNumber"
                       label="작업인원"
-                      placeholder="Placeholder"
+                      placeholder="작업인원"
                       readonly
                     ></v-text-field>
                   </v-flex>
@@ -204,7 +204,7 @@
                     <v-text-field
                       v-model="CooTotal"
                       label="총 발생비용"
-                      placeholder="Placeholder"
+                      placeholder="총 발생비용"
                       readonly
                     ></v-text-field>
                   </v-flex>    
@@ -214,7 +214,7 @@
                       <v-text-field
                         v-model="shipmentAmount"
                         label="출하량"
-                        placeholder="Placeholder"
+                        placeholder="출하량"
                         readonly
                       ></v-text-field>
                     </v-flex>
@@ -222,7 +222,7 @@
                       <v-text-field
                         v-model="shipmentDetail"
                         label="출하량 상세"
-                        placeholder="Placeholder"
+                        placeholder="출하량 상세"
                         readonly
                       ></v-text-field>
                     </v-flex>
@@ -233,7 +233,7 @@
                       <v-text-field
                         v-model="incomeAmount"
                         label="수입량"
-                        placeholder="Placeholder"
+                        placeholder="수입량"
                         readonly
                       ></v-text-field>
                     </v-flex>
@@ -241,7 +241,7 @@
                       <v-text-field
                         v-model="incomeDetail"
                         label="수입량 상세"
-                        placeholder="Placeholder"
+                        placeholder="수입량 상세"
                         readonly
                       ></v-text-field>
                     </v-flex>
@@ -294,7 +294,7 @@
                       <v-text-field
                         v-model="outputAmount"
                         label="생산량"
-                        placeholder="Placeholder"
+                        placeholder="생산량"
                         readonly
                       ></v-text-field>
                     </v-flex>
@@ -302,7 +302,7 @@
                       <v-text-field
                         v-model="outputDetail"
                         label="생산량 상세"
-                        placeholder="Placeholder"
+                        placeholder="생산량 상세"
                         readonly
                       ></v-text-field>
                     </v-flex>

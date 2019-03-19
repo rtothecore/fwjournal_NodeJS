@@ -271,13 +271,14 @@
                         </v-tooltip>
                       </template>
                       <template slot="items" slot-scope="props">
-                        <td :style="{backgroundColor: (props.index % 2 ? '#E0E4FF' : 'transparent')}"><h4>{{ props.item.PRDLST_NM }}</h4></td>
-                        <td :style="{backgroundColor: (props.index % 2 ? '#E0E4FF' : 'transparent')}"><h4>{{ props.item.PBLMNG_WHSAL_MRKT_NM }}</h4></td>
-                        <td :style="{backgroundColor: (props.index % 2 ? '#E0E4FF' : 'transparent')}"><h4>{{ props.item.GRAD }}</h4></td>
-                        <td :style="{backgroundColor: (props.index % 2 ? '#E0E4FF' : 'transparent')}"><h4>{{ props.item.DELNGBUNDLE_QY }}{{ props.item.STNDRD }}</h4></td>
-                        <td :style="{backgroundColor: (props.index % 2 ? '#E0E4FF' : 'transparent')}"><h4>{{ props.item.MUMM_AMT }}</h4></td>
-                        <td :style="{backgroundColor: (props.index % 2 ? '#E0E4FF' : 'transparent')}"><h4>{{ props.item.AVRG_AMT }}</h4></td>
-                        <td :style="{backgroundColor: (props.index % 2 ? '#E0E4FF' : 'transparent')}"><h4>{{ props.item.MXMM_AMT }}</h4></td>
+                        <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.PRDLST_NM }}</h4></td>
+                        <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.AUCNG_DE }}</h4></td>
+                        <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.PBLMNG_WHSAL_MRKT_NM }}</h4></td>
+                        <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.GRAD }}</h4></td>
+                        <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.DELNGBUNDLE_QY }}{{ props.item.STNDRD }}</h4></td>
+                        <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.MUMM_AMT }}</h4></td>
+                        <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.AVRG_AMT }}</h4></td>
+                        <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}"><h4>{{ props.item.MXMM_AMT }}</h4></td>
                       </template>
                     </v-data-table>
                     <div class="text-xs-center pt-2">
@@ -332,11 +333,11 @@
                         </v-tooltip>
                       </template>
                       <template slot="items" slot-scope="props">                        
-                        <td :style="{backgroundColor: (props.index % 2 ? '#E0E4FF' : 'transparent')}" @click="showItem(props.item)"><h4>{{ props.item.landName }}</h4></td>
-                        <td :style="{backgroundColor: (props.index % 2 ? '#E0E4FF' : 'transparent')}" @click="showItem(props.item)"><h4>{{ getDateWithKorean(props.item.date) }}</h4></td>
-                        <td :style="{backgroundColor: (props.index % 2 ? '#E0E4FF' : 'transparent')}" @click="showItem(props.item)"><h4>{{ props.item.workName }}</h4></td>
-                        <td :style="{backgroundColor: (props.index % 2 ? '#E0E4FF' : 'transparent')}" @click="showItem(props.item)"><h4>{{ props.item.sky }}</h4></td>
-                        <td :style="{backgroundColor: (props.index % 2 ? '#E0E4FF' : 'transparent')}" @click="showItem(props.item)"><h4>{{ props.item.t1h }}</h4></td>  
+                        <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" @click="showItem(props.item)"><h4>{{ props.item.landName }}</h4></td>
+                        <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" @click="showItem(props.item)"><h4>{{ getDateWithKorean(props.item.date) }}</h4></td>
+                        <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" @click="showItem(props.item)"><h4>{{ props.item.workName }}</h4></td>
+                        <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" @click="showItem(props.item)"><h4>{{ props.item.sky }}</h4></td>
+                        <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" @click="showItem(props.item)"><h4>{{ props.item.t1h }}</h4></td>  
                         <!--
                         <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" class="justify-center layout px-0">
                           <v-btn icon class="mx-0" @click="showItem(props.item)">
@@ -366,7 +367,7 @@
     import {bus} from '../main'
     import JournalService from '@/services/JournalService'
     // import WcService from '@/services/WcService'
-    // import ScService from '@/services/ScService'
+    import ScService from '@/services/ScService'
     import LandService from '@/services/LandService'
     import WeatherService from '@/services/WeatherService'
     import ItemService from '@/services/ItemService'
@@ -418,6 +419,7 @@
               sortable: false,
               value: 'PRDLST_NM'
             },
+            { text: '일자', sortable: false, value: 'AUCNG_DE' },
             { text: '도매시장명', sortable: false, value: 'PBLMNG_WHSAL_MRKT_NM' },
             { text: '등급', sortable: false, value: 'GRAD' },
             { text: '거래단량', sortable: false, value: 'DELNGBUNDLE_QY' },
@@ -509,6 +511,7 @@
           vm.events = []
           vm.getJournal()
           vm.getItem()
+          vm.getLastYearJournal()
           vm.getLands()
         })
         bus.$on('toJournalForUpdate', function (value) {
@@ -581,7 +584,14 @@
             const response2 = await DcService.fetchCropNameByCropCode({
               cropCode: response.data.lands[i].cropCode
             })
-            this.myCrops.push(response2.data[0].text)
+            // console.log(response2.data)
+
+            const response4 = await ScService.fetchTextBySCode({
+              sCode: response2.data[0].sCode
+            })
+            // console.log(response4.data)
+
+            this.myCrops.push(response4.data.scs[0].text)
           }
           // console.log(this.myCrops)
           for (var j = 0; j < this.myCrops.length; j++) {

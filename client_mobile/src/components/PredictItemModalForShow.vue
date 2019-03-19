@@ -99,7 +99,7 @@
                     <v-text-field
                       v-model="itemPriceTotal"
                       label="총 가격"
-                      placeholder="Placeholder"
+                      placeholder="총 가격"
                       readonly
                     ></v-text-field>
                   </v-flex>                      

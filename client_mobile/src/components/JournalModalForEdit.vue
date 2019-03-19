@@ -234,7 +234,7 @@
                     <v-text-field
                       v-model="CooTotal"
                       label="총 발생비용"
-                      placeholder="Placeholder"
+                      placeholder="총 발생비용"
                       readonly
                     ></v-text-field>
                   </v-flex>    

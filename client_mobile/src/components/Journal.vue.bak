@@ -30,15 +30,8 @@
                                       item-value="_id"
                                       v-on:change="onChangeLand"
                                     ></v-select>
-                                    
-                                    <div>
-                                        <v-img
-                                          :src="todaySkyImg"
-                                          height="35px"
-                                          contain
-                                        >오늘 </v-img>
-                                    </div>
-
+                                    <br/>
+                                    <br/>
                                   </div>
                                 </div>
                                 </v-flex>                                                                                          
@@ -53,62 +46,115 @@
                           <b-card-body class="pb-0">
                             <!-- <v-container fluid grid-list-lg> -->
                               <v-layout row>
-                                <v-flex xs12>
-                                  <div style="overflow: hidden; display: flex; justify-content:space-around;"> 
-                                      &nbsp;&nbsp;&nbsp;&nbsp;
-                                      오전
-                                      &nbsp;&nbsp;&nbsp;&nbsp;
-                                      오후
+                                <v-flex xs7>
+                                  <div>
+                                    <div class="subheading">&nbsp;&nbsp;&nbsp;&nbsp;오늘</div>
+                                    <div class="title">&nbsp;&nbsp;&nbsp;{{ todayT1h }}</div>
                                   </div>
+                                </v-flex>
+                                <v-flex xs5>
+                                  <v-img
+                                    :src="todaySkyImg"
+                                    height="65px"
+                                    contain
+                                  ></v-img>
+                                </v-flex>
+                              </v-layout>
+
+                              <v-layout>
+                                <div>
+                                  <div class="caption">{{ todayPm10 }}</div>   
+                                  <div class="caption">&nbsp;</div> 
+                                </div>
+                              </v-layout>
+                            <!-- </v-container> -->
+                          </b-card-body>                          
+                        </b-card>
+                      </b-col>
+
+                      <b-col cols="6">
+                        <b-card no-body>
+                          <b-card-body class="pb-0">                            
+                            <!-- <v-container fluid grid-list-lg> -->
+                              <v-layout row>
+                                <v-flex xs7>
+                                  <div>
+                                    <div class="subheading">&nbsp;&nbsp;&nbsp;내일 오전</div>
+                                    <div class="title">&nbsp;&nbsp;&nbsp;{{ tomorrowAmT1h }}</div>
+                                  </div>
+                                </v-flex>
+                                <v-flex xs5>
+                                  <v-img
+                                    :src="tomAmSkyImg"
+                                    height="100px"
+                                    contain
+                                  ></v-img>
+                                </v-flex>
+                              </v-layout>     
+
+                              <v-layout row>
+                                <v-flex xs7>
+                                  <div>
+                                    <div class="subheading">&nbsp;&nbsp;&nbsp;내일 오후</div>
+                                    <div class="title">&nbsp;&nbsp;&nbsp;{{ tomorrowPmT1h }}</div>
+                                  </div>
+                                </v-flex>
+                                <v-flex xs5>
+                                  <v-img
+                                    :src="tomPmSkyImg"
+                                    height="100px"
+                                    contain
+                                  ></v-img>
+                                </v-flex>
+                              </v-layout>                         
+                            <!-- </v-container> -->                            
+                          </b-card-body>                          
+                        </b-card>
+                      </b-col>                     
+
+                      <b-col cols="6">
+                        <b-card no-body>
+                          <b-card-body class="pb-0">
+                            
+                            <!-- <v-container fluid grid-list-lg> -->
+                              <v-layout row>
+                                <v-flex xs7>
+                                  <div>
+                                    <div class="subheading">&nbsp;&nbsp;&nbsp;모레 오전</div>
+                                    <div class="title">&nbsp;&nbsp;&nbsp;{{ afterTomorrowAmT1h }}</div>
+                                  </div>
+                                </v-flex>
+                                <v-flex xs5>
+                                  <v-img
+                                    :src="afTomAmSkyImg"
+                                    height="100px"
+                                    contain
+                                  ></v-img>
                                 </v-flex>
                               </v-layout>
 
                               <v-layout row>
-                                <v-flex xs12>
-                                  <div style="overflow: hidden; display: flex; justify-content:space-around;"> 
-                                      내일&nbsp;                                
-                                      <v-img
-                                        :src="tomAmSkyImg"
-                                        height="25px"                                        
-                                      ></v-img>
-                                      &nbsp;
-                                      <v-img
-                                        :src="tomPmSkyImg"
-                                        height="25px"                                        
-                                      ></v-img>                                    
+                                <v-flex xs7>
+                                  <div>
+                                    <div class="subheading">&nbsp;&nbsp;&nbsp;모레 오후</div>
+                                    <div class="title">&nbsp;&nbsp;&nbsp;{{ afterTomorrowPmT1h }}</div>
                                   </div>
                                 </v-flex>
-                              </v-layout>
-
-                              <br/>
-
-                              <v-layout>
-                                <v-flex xs12>
-                                  <div style="overflow: hidden; display: flex; justify-content:space-around;"> 
-                                      모레&nbsp;                                  
-                                      <v-img
-                                        :src="afTomAmSkyImg"
-                                        height="25px"                                        
-                                      ></v-img>
-                                      &nbsp;
-                                      <v-img
-                                        :src="afTomPmSkyImg"
-                                        height="25px"                                        
-                                      ></v-img>                                    
-                                  </div>
-                                </v-flex>
-                              </v-layout>
-
-                              <v-layout>
-                                <v-flex xs12>
-                                  <div style="height:16px"/>
+                                <v-flex xs5>
+                                  <v-img
+                                    :src="afTomPmSkyImg"
+                                    height="100px"
+                                    contain
+                                  ></v-img>
                                 </v-flex>
                               </v-layout>
 
                             <!-- </v-container> -->
-                          </b-card-body>                          
+                            
+                          </b-card-body>
+                          
                         </b-card>
-                      </b-col>                    
+                      </b-col>                      
 
                     </b-row>
 
@@ -251,9 +297,9 @@
                         </v-tooltip>
                       </template>
                       <template slot="items" slot-scope="props">                        
-                        <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" @click="showItem(props.item)"><h5>{{ props.item.landName }}</h5></td>
-                        <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" @click="showItem(props.item)"><h5>{{ props.item.date }}</h5></td>
-                        <td :style="{backgroundColor: (props.index % 2 ? '#F6F7FE' : 'transparent')}" @click="showItem(props.item)"><h5>{{ props.item.workName }}</h5></td>                                                     
+                        <td :style="{backgroundColor: (props.index % 2 ? '#E0E4FF' : 'transparent')}" @click="showItem(props.item)"><h5>{{ props.item.landName }}</h5></td>
+                        <td :style="{backgroundColor: (props.index % 2 ? '#E0E4FF' : 'transparent')}" @click="showItem(props.item)"><h5>{{ props.item.date }}</h5></td>
+                        <td :style="{backgroundColor: (props.index % 2 ? '#E0E4FF' : 'transparent')}" @click="showItem(props.item)"><h5>{{ props.item.workName }}</h5></td>                                                     
                       </template>
                     </v-data-table>
                     <div class="text-xs-center pt-2">
@@ -276,7 +322,7 @@
     import {bus} from '../main'
     import JournalService from '@/services/JournalService'
     // import WcService from '@/services/WcService'
-    import ScService from '@/services/ScService'
+    // import ScService from '@/services/ScService'
     import LandService from '@/services/LandService'
     import WeatherService from '@/services/WeatherService'
     import ItemService from '@/services/ItemService'
@@ -506,13 +552,7 @@
             const response2 = await DcService.fetchCropNameByCropCode({
               cropCode: response.data.lands[i].cropCode
             })
-
-            const response4 = await ScService.fetchTextBySCode({
-              sCode: response2.data[0].sCode
-            })
-            // console.log(response4.data)
-
-            this.myCrops.push(response4.data.scs[0].text)
+            this.myCrops.push(response2.data[0].text)
           }
           // console.log(this.myCrops)
           for (var j = 0; j < this.myCrops.length; j++) {

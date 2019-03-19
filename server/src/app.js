@@ -371,6 +371,12 @@ function getTodayDate() {
 	return todayDateValue
 }
 
+function getDateSubtract(subVal) {
+	var subDay = moment().subtract(subVal, 'day').format("YYYYMMDD")
+	// console.log(subDay)
+	return subDay
+}
+
 // Fetch agriculture product price
 // https://data.mafra.go.kr
 // http://211.237.50.150:7080/openapi/8d8857fa9186167880dafee9a8c55dda0d2711b96cd4ae893983f7d870941d2e/xml/Grid_20141221000000000120_1/1/5?PRDLST_NM=%EB%94%B8%EA%B8%B0
@@ -398,8 +404,93 @@ app.get('/getProductPrice/:productName', (req, res) => {
   			// console.log(response.data)
   			if (0 == response.data.Grid_20150401000000000216_1.totalCnt) {
 	  			// console.log('totalCnt is 0')
-	  			res.send(false)
-	  			return
+	  			// res.send(false)	
+	  			/////////////////////////////////////////////////////////////////////////////////  			
+	  			axios.get('http://211.237.50.150:7080/openapi/' + serviceKeyForPrice +
+		  			'/json/Grid_20150401000000000216_1/1/5?AUCNG_DE=' + getDateSubtract(1) + 
+		  			'&PRDLST_CD=' + productCode)
+		  		.then(function (response2) {
+		  			// console.log(response.data)
+		  			if (0 == response2.data.Grid_20150401000000000216_1.totalCnt) {
+			  			// console.log('totalCnt is 0')
+			  			// res.send(false)
+			  			/////////////////////////////////////////////////////////////////////////////////  			
+			  			axios.get('http://211.237.50.150:7080/openapi/' + serviceKeyForPrice +
+				  			'/json/Grid_20150401000000000216_1/1/5?AUCNG_DE=' + getDateSubtract(2) + 
+				  			'&PRDLST_CD=' + productCode)
+				  		.then(function (response3) {
+				  			// console.log(response.data)
+				  			if (0 == response3.data.Grid_20150401000000000216_1.totalCnt) {
+					  			// console.log('totalCnt is 0')
+					  			// res.send(false)
+					  			/////////////////////////////////////////////////////////////////////////////////  			
+					  			axios.get('http://211.237.50.150:7080/openapi/' + serviceKeyForPrice +
+						  			'/json/Grid_20150401000000000216_1/1/5?AUCNG_DE=' + getDateSubtract(3) + 
+						  			'&PRDLST_CD=' + productCode)
+						  		.then(function (response4) {
+						  			// console.log(response.data)
+						  			if (0 == response4.data.Grid_20150401000000000216_1.totalCnt) {
+							  			// console.log('totalCnt is 0')
+							  			// res.send(false)
+							  			/////////////////////////////////////////////////////////////////////////////////  			
+							  			axios.get('http://211.237.50.150:7080/openapi/' + serviceKeyForPrice +
+								  			'/json/Grid_20150401000000000216_1/1/5?AUCNG_DE=' + getDateSubtract(4) + 
+								  			'&PRDLST_CD=' + productCode)
+								  		.then(function (response5) {
+								  			// console.log(response.data)
+								  			if (0 == response5.data.Grid_20150401000000000216_1.totalCnt) {
+									  			// console.log('totalCnt is 0')
+									  			// res.send(false)
+									  			/////////////////////////////////////////////////////////////////////////////////  			
+									  			axios.get('http://211.237.50.150:7080/openapi/' + serviceKeyForPrice +
+										  			'/json/Grid_20150401000000000216_1/1/5?AUCNG_DE=' + getDateSubtract(5) + 
+										  			'&PRDLST_CD=' + productCode)
+										  		.then(function (response6) {
+										  			// console.log(response.data)
+										  			if (0 == response6.data.Grid_20150401000000000216_1.totalCnt) {
+											  			// console.log('totalCnt is 0')
+											  			res.send(false)
+											  			return		  			
+											  		}
+
+										  			res.send(response6.data)
+										  		}).catch(function (error) {
+										  			console.log(error)
+										  		})
+										  		/////////////////////////////////////////////////////////////////////////////////	
+										  		return		  			
+									  		}
+
+								  			res.send(response5.data)
+								  		}).catch(function (error) {
+								  			console.log(error)
+								  		})
+								  		/////////////////////////////////////////////////////////////////////////////////
+								  		return			  			
+							  		}
+
+						  			res.send(response4.data)
+						  		}).catch(function (error) {
+						  			console.log(error)
+						  		})
+						  		/////////////////////////////////////////////////////////////////////////////////
+						  		return			  			
+					  		}
+
+				  			res.send(response3.data)
+				  		}).catch(function (error) {
+				  			console.log(error)
+				  		})
+				  		/////////////////////////////////////////////////////////////////////////////////
+				  		return			  			
+			  		}
+
+		  			res.send(response2.data)
+		  		}).catch(function (error) {
+		  			console.log(error)
+		  		})
+		  		/////////////////////////////////////////////////////////////////////////////////
+		  		return
 	  		}
 
   			res.send(response.data)
