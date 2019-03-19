@@ -544,12 +544,6 @@ export default {
       })
       this.workType = response.data
     },
-    async getWorkCodeById (id) {
-      const response = await WcService.fetchWorkCodeById({
-        id: id
-      })
-      this.selectedWorkTypeCode = response.data
-    },
     async updateItem () {
       var pictureAData = ''
       var pictureBData = ''
@@ -692,9 +686,6 @@ export default {
     onChangeLand: function (event) {
       this.selectedLandId = event
       this.getCropCodeByLandId(this.selectedLandId)
-    },
-    onChangeWorkType: function (event) {
-      this.getWorkCodeById(event)
     },
     onChangeWSTime: function (event) {
       var tmpStr = event

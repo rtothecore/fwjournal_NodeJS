@@ -454,18 +454,6 @@ export default {
       })
       this.editeWorkTypeItems = response.data
     },
-    async getIdByWorkCode (workCode) {
-      const response = await WcService.fetchIdByWorkCode({
-        code: workCode
-      })
-      this.editedItem.workType = response.data[0]._id
-    },
-    async getWorkCodeById (workId) {
-      const response = await WcService.fetchWorkCodeById({
-        id: workId
-      })
-      this.editedWorkTypeCode = response.data
-    },
     onChangeWSTime: function (event) {
       var tmpStr = event
       this.editedItem.workSTime = tmpStr.replace(':', '')
@@ -475,9 +463,6 @@ export default {
       var tmpStr = event
       this.editedItem.workETime = tmpStr.replace(':', '')
       // console.log(this.editedItem.workETime)
-    },
-    onChangeEditWorkType: function (event) {
-      this.getWorkCodeById(event)
     },
     onChangeLand: function (event) {
       if (event === '0') {

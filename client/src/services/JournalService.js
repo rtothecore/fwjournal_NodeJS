@@ -17,36 +17,8 @@ export default {
     return Api().get('journals/searchWorktime/' + params.userId + '/' + params.startDate + '/' + params.endDate + '/' + params.landId, params)
   },
 
-  fetchJournalsBy3 (params) {
-    return Api().get('journals/searchBy3/' + params.startDate + '/' + params.endDate + '/' + params.searchWord, params)
-  },
-
   fetchJournalsBy5LandId (params) {
     return Api().get('journals/searchBy5LandId/' + params.userId + '/' + params.startDate + '/' + params.endDate + '/' + params.searchWord + '/' + params.landId, params)
-  },
-
-  fetchJournalsBy4 (params) {
-    return Api().get('journals/searchBy4/' + params.startDate + '/' + params.endDate + '/' + params.workType + '/' + params.workContent, params)
-  },
-
-  fetchJournalsByYM (params) {
-    return Api().get('journals/searchByYM/' + params.ym, params)
-  },
-
-  fetchJournalsByYMUserId (params) {
-    return Api().get('journals/searchByYMUserId/' + params.ym + '/' + params.userId, params)
-  },
-
-  fetchJournalsByYMUserIdLandId (params) {
-    return Api().get('journals/searchByYMUserIdLandId/' + params.ym + '/' + params.userId + '/' + params.landId, params)
-  },
-
-  fetchJournalsByDate (params) {
-    return Api().get('journals/' + params.startDate + '/' + params.endDate, params)
-  },
-
-  fetchJournalsByDateNUserId (params) {
-    return Api().get('journals/' + params.startDate + '/' + params.endDate + '/' + params.userId, params)
   },
 
   fetchJournalsByYMNUserId (params) {
@@ -55,14 +27,6 @@ export default {
 
   fetchJournalsByYMNUserIdAndCoo (params) {
     return Api().get('journalsByYMNUserIdAndCoo/' + params.startDate + '/' + params.endDate + '/' + params.userId, params)
-  },
-
-  fetchJournalsByDateNUserIdNLandId (params) {
-    return Api().get('journals/searchBy4_2/' + params.startDate + '/' + params.endDate + '/' + params.userId + '/' + params.landId, params)
-  },
-
-  fetchJournals (params) {
-    return Api().get('journals/' + params.userId, params)
   },
 
   fetchJournal (params) {

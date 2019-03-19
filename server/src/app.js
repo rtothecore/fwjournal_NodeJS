@@ -138,14 +138,6 @@ var ItemDetail = require("../models/itemDetail")
 const serviceKey = '73Jjl5lZRvBRKkGsPnGmZ7EL9JtwsWNi3hhCIN8cpVJzMdRRgyzntwz2lHmTKeR1tp7NWzoihNGGazcDEFgh8w%3D%3D'
 const serviceKeyForPrice = '8d8857fa9186167880dafee9a8c55dda0d2711b96cd4ae893983f7d870941d2e'
 
-// https://www.zerocho.com/category/NodeJS/post/5950a6c4f7934c001894ea83
-/*
-app.post('/journalImg/upload', upload.single('file'), (req, res) => {
-	// console.log(req.file);
-	// console.log(req.body);
-	res.status(200).json([{error: "uploaded successfully", imgName: req.file.filename}]);	
-});
-*/
 // https://stackoverflow.com/questions/35847293/uploading-a-file-and-passing-a-additional-parameter-with-multer
 app.post('/journalImg/upload', function(req, res) {
 	// console.log(req.body)
@@ -719,58 +711,6 @@ app.get('/Airdata/:tmX/:tmY', (req, res) => {
   	})
 })
 
-// Fetch workCode by _id
-app.get('/wc/getWCById/:id', (req, res) => {
-  Wc.find({}, '_id text bCode mCode sCode wCode', function (error, wcs) {
-    if (error) { console.error(error); }
-    res.send(wcs[0].bCode + wcs[0].mCode + wcs[0].sCode + wcs[0].wCode)
-  })
-  .where('_id').equals(req.params.id)
-})
-
-// Fetch _id by workCode 
-app.get('/wc/getIdByWC/:code', (req, res) => {
-  var db = req.db
-  var code = req.params.code
-  var bc = code.substring(0, 3)
-  var mc = code.substring(3, 7)
-  var sc = code.substring(7, 11)
-  var wc = code.substring(11, 15)
-  Wc.find({}, '_id text bCode mCode sCode wCode', function (error, wcs) {
-    if (error) { console.error(error); }
-    res.send(wcs)
-  })
-  .where('bCode').equals(bc)
-  .where('mCode').equals(mc)
-  .where('sCode').equals(sc)
-  .where('wCode').equals(wc)
-})
-
-// Fetch _id by workCode 
-app.get('/wc/getIdByWC2/:code', (req, res) => {  
-  var code = req.params.code  
-  Wc.find({}, '', function (error, wcs) {
-    if (error) { console.error(error); }
-    res.send(wcs)
-  })  
-  .where('wCode').equals(code)
-})
-
-// Fetch workcalss text by cropCode
-app.get('/wc/getWCsByWc/:code', (req, res) => {  
-  var wCode = req.params.code
-  Wc.find({}, '', function (error4, wcs) {
-	if (error4) { console.error(error4); }
-	Wc.find({}, 'wCode text', function (error3, wcs2) {
-		if (error3) { console.error(error3); }
-		res.send(wcs2)
-	})
-	.where('bCode').equals(wcs[0].bCode)
-	// res.send(wcs)
-  })
-  .where('wCode').equals(wCode)
-})
-
 // Fetch work codes as item
 app.get('/wc/getWCsAsItem', (req, res) => {  
   // var wCode = req.params.code
@@ -828,40 +768,6 @@ app.get('/wc/getTxtByCC2/:code', (req, res) => {
   .where('dCode').equals(dCode)
 })
 
-// Fetch workcalss text by cropCode
-app.get('/wc/getTxtByCC/:code', (req, res) => {
-  var db = req.db
-  var code = req.params.code
-  var bc = code.substring(0, 3)
-  var mc = code.substring(3, 7)
-  var sc = code.substring(7, 11)
-  Wc.find({}, 'text bCode mCode sCode wCode', function (error, wcs) {
-    if (error) { console.error(error); }
-    res.send(wcs)
-  })
-  .where('bCode').equals(bc)
-  .where('mCode').equals(mc)
-  .where('sCode').equals(sc)
-})
-
-// Fetch workclass text by code
-app.get('/wc/getText/:code', (req, res) => {
-  var db = req.db
-  var code = req.params.code
-  var bc = code.substring(0, 3)
-  var mc = code.substring(3, 7)
-  var sc = code.substring(7, 11)
-  var wc = code.substring(11, 15)
-  Wc.find({}, 'text', function (error, wcs) {
-    if (error) { console.error(error); }
-    res.send(wcs)
-  })
-  .where('bCode').equals(bc)
-  .where('mCode').equals(mc)
-  .where('sCode').equals(sc)
-  .where('wCode').equals(wc)
-})
-
 // Fetch workclass text by code
 app.get('/wc/getTextByCcode/:code', (req, res) => {  
   var code = req.params.code
@@ -886,29 +792,6 @@ app.get('/wc/getOneTextByCcode/:code', (req, res) => {
     res.send(wcs)
   })  
   .where('wCode').equals(code)
-})
-
-// Fetch workClass by bCode, mCode, sCode
-app.get('/wc/:bCode/:mCode/:sCode', (req, res) => {
-  Wc.find({}, '', function (error, wcs) {
-    if (error) { console.error(error); }
-    if (0 == wcs.length) {
-    	console.log('wcs is zero')
-    	Wc.find({}, '', function (error2, wcs2) {
-    		if (error2) { console.error(error2); }
-    		res.send(wcs2)
-    	})
-    	.where('bCode').equals(req.params.bCode)
-    	.sort({wCode:-1})
-    } else {
-    	console.log('wcs is not zero')
-    	res.send(wcs)
-    }    
-  })
-  .where('bCode').equals(req.params.bCode)
-  .where('mCode').equals(req.params.mCode)
-  .where('sCode').equals(req.params.sCode)
-  .sort({wCode:-1})
 })
 
 // Fetch max workClass
@@ -1110,55 +993,6 @@ app.get('/journals/searchWorktime/:userId/:startDate/:endDate/:landId', (req, re
   }
 
   query.sort( { 'date': 1 } )
-
-  query.exec().then(result => {
-  	res.send(result)
-  })
-})
-
-// Fetch journals by date, workType
-app.get('/journals/searchBy3/:startDate/:endDate/:searchWord', (req, res) => {  
-  // console.log(req.params)
-  var query = Journal.find({})
-  if(0 != req.params.startDate) {
-  	query.where('date').gte(req.params.startDate)
-  }
-  if(0 != req.params.endDate) {
-  	query.where('date').lte(req.params.endDate)
-  }
-
-  var searchWord = req.params.searchWord  
-  if(0 != req.params.searchWord) {
-  	query.where('workContent').regex(searchWord)  	
-  }
-
-  query.exec().then(result => {
-  	res.send(result)
-  })
-})
-
-// Fetch journals by date, workType, workContent
-app.get('/journals/searchBy4/:startDate/:endDate/:workType/:workContent', (req, res) => {
-  var db = req.db
-  // console.log(req.params)
-  var query = Journal.find({})
-  if(0 != req.params.startDate) {
-  	query.where('date').gte(req.params.startDate)
-  }
-  if(0 != req.params.endDate) {
-  	query.where('date').lte(req.params.endDate)
-  }
-
-  var tmpWorkTypePrefix = req.params.workType.substring(0, 3)
-  var tmpWorkTypeSuffix = req.params.workType.substring(3, 8)
- 
-  if(0 != req.params.workType) {
-  	query.where('workCode').regex(tmpWorkTypePrefix)
-  	query.where('workCode').regex(tmpWorkTypeSuffix)
-  }
-  if(0 != req.params.workContent) {
-  	query.where('workContent').regex(req.params.workContent)
-  }
 
   query.exec().then(result => {
   	res.send(result)
@@ -1433,79 +1267,6 @@ app.get('/journals/searchBy5LandId/:userId/:startDate/:endDate/:searchWord/:land
 		    });
 		}
 	})
-
-/*
-  Journal.aggregate([
-		{
-		    '$lookup':
-		    {
-		      from: 'lands',
-		      localField: 'landId',
-		      foreignField: '_id',
-		      as: 'landInfo'
-		    }
-		},
-		{
-			"$unwind" : "$landInfo"
-		},
-        {
-		    '$lookup':
-		    {
-		      from: 'dcs',
-		      localField: 'landInfo.cropCode',
-		      foreignField: 'dCode',
-		      as: 'dcsInfo'
-		    }
-		},
-		{
-			"$unwind" : "$dcsInfo"
-		},
-		{
-		    '$lookup':
-		    {
-		      from: 'wcs',
-		      localField: 'workCode',
-		      foreignField: 'wCode',
-		      as: 'wcsInfo'
-		    }
-		},
-		{
-			"$unwind" : "$wcsInfo"
-		},
-        {
-            "$match" : { "$and" : searchArray
-       				   }            	
-        },
-        { "$sort" : { "date": 1 } }
-    ], function (err, result) {
-        if (err) {
-            next(err);
-        } else {
-            res.send(result);
-        }
-    });
-*/
-})
-
-// Fetch journals by year, month
-app.get('/journals/searchByYM/:ym', (req, res) => {
-  console.log(req.params)
-  Journal.find({}, 'userId date landId workCode workContent workSTime workETime weather remarks', function (error, journals) {
-    if (error) { console.error(error); }
-    res.send(journals)
-  })
-  .where('date').regex(req.params.ym)
-})
-
-// Fetch journals by year, month, userId
-app.get('/journals/searchByYMUserId/:ym/:userId', (req, res) => {
-  // console.log(req.params)
-  Journal.find({}, '', function (error, journals) {
-    if (error) { console.error(error); }
-    res.send(journals)
-  })
-  .where('date').regex(req.params.ym)
-  .where('userId').equals(req.params.userId)
 })
 
 // Fetch journals lookup by year, month, userId
@@ -1817,41 +1578,6 @@ app.get('/journalsLookupByYMUserIdLandId/:ym/:userId/:landId', (req, res) => {
 		    });
 		}
 	})
-})
-
-// Fetch journals by year, month, userId, landId
-app.get('/journals/searchByYMUserIdLandId/:ym/:userId/:landId', (req, res) => {
-  var query = Journal.find({})
-  query.where('date').regex(req.params.ym)
-  query.where('userId').equals(req.params.userId)
-  if(0 != req.params.landId) {
-  	query.where('landId').equals(req.params.landId)
-  }
-  query.exec().then(result => {
-  	res.send(result)
-  })
-})
-
-// Fetch journals by date
-app.get('/journals/:startDate/:endDate', (req, res) => {
-  var db = req.db
-  console.log(req.params)
-  Journal.find({}, 'userId date landId workCode workContent workSTime workETime weather remarks', function (error, journals) {
-    if (error) { console.error(error); }
-    res.send(journals)
-  })
-  .where('date').gte(req.params.startDate).lte(req.params.endDate)
-})
-
-// Fetch journals by date & userId
-app.get('/journals/:startDate/:endDate/:userId', (req, res) => {
-  console.log(req.params)
-  Journal.find({}, '', function (error, journals) {
-    if (error) { console.error(error); }
-    res.send(journals)
-  })
-  .where('date').gte(req.params.startDate).lte(req.params.endDate)
-  .where('userId').equals(req.params.userId)
 })
 
 // Fetch lookup journals by date & userId & landId
@@ -2329,37 +2055,6 @@ app.get('/journalsByYMNUserIdAndCoo/:startYM/:endYM/:userId', (req, res) => {
   .sort({'date': 1})
 })
 
-// Fetch journals by date, userId, landId
-app.get('/journals/searchBy4_2/:startDate/:endDate/:userId/:landId', (req, res) => {  
-  console.log(req.params)
-  var query = Journal.find({})
-  if(0 != req.params.startDate) {
-  	query.where('date').gte(req.params.startDate)
-  }
-  if(0 != req.params.endDate) {
-  	query.where('date').lte(req.params.endDate)
-  }  
-  if(0 != req.params.userId) {
-  	query.where('userId').equals(req.params.userId)
-  }
-  if(0 != req.params.landId) {
-  	query.where('landId').regex(req.params.landId)
-  }
-
-  query.exec().then(result => {
-  	res.send(result)
-  })
-})
-
-// Fetch journals by userId
-app.get('/journals/:userId', (req, res) => {
-  Journal.find({}, '', function (error, journals) {
-    if (error) { console.error(error); }
-    res.send(journals)
-  })
-  .where('userId').equals(req.params.userId)
-})
-
 // Fetch journals lookup by userId
 app.get('/journalsLookupByUserId/:userId', (req, res) => {
 	Journal.aggregate([
@@ -2409,54 +2104,6 @@ app.get('/journal/:id', (req, res) => {
   })
   .where('_id').equals(req.params.id)
 })
-
-/*
-// Add new journal
-app.post('/journals', (req, res) => {
-  // console.log(req.body);
-  var db = req.db;
-  var userId = req.body.userId;
-  var date = req.body.date;
-  var landId = req.body.landId;
-  var workCode = req.body.workCode;
-  var workContent = req.body.workContent;
-  var workSTime = req.body.workSTime;
-  var workETime = req.body.workETime;
-  var weather = [];
-  for(var i = 0; i < req.body.weather.length; i++) {
-  	weather[i] = new Object();
-  	weather[i].baseTime = req.body.weather[i].baseTime;
-  	weather[i].sky = req.body.weather[i].sky;
-  	weather[i].t1h = req.body.weather[i].t1h;
-  	weather[i].reh = req.body.weather[i].reh;
-  	weather[i].rn1 = req.body.weather[i].rn1;
-  }
-  var remarks = req.body.remarks
-
-  var new_journal = new Journal({
-    userId: userId,
-    date: date,
-    landId: landId,
-    workCode: workCode,
-    workContent: workContent,
-    workSTime: workSTime,
-    workETime: workETime,
-    weather: weather,
-    remarks: remarks
-  })
-
-  new_journal.save(function (error, result) {
-    if (error) {
-      console.log(error)
-    }
-    res.send({
-      success: true,
-      message: 'Journal saved successfully!',
-      result: result
-    })
-  })
-})
-*/
 
 // Add new journal
 app.post('/journal', (req, res) => {
@@ -2601,40 +2248,6 @@ app.get('/sc/getCN/:cropCode', (req, res) => {
   .where('sCode').equals(sc)
 })
 
-// Fetch single smallClass
-app.get('/sc/:cropName', (req, res) => {
-  var db = req.db
-  Sc.find({}, 'bCode mCode sCode text', function (error, scs) {
-    if (error) { console.error(error); }
-    res.send(scs)
-  })
-  .where('text').equals(req.params.cropName)
-})
-
-// Fetch smallClass by bCode, mCode
-app.get('/sc/:bCode/:mCode', (req, res) => {
-  Sc.find({}, 'bCode mCode sCode text', function (error, scs) {
-    if (error) { console.error(error); }
-    res.send({
-      scs: scs
-    })
-  })
-  .where('bCode').equals(req.params.bCode)
-  .where('mCode').equals(req.params.mCode)
-  .sort({text:1})
-})
-
-// Fetch all smallClass
-app.get('/sc', (req, res) => {
-  Sc.find({}, 'bCode mCode sCode text', function (error, scs) {
-    if (error) { console.error(error); }
-    res.send({
-      scs: scs
-    })
-  })
-  .sort({text:1})
-})
-
 // Fetch mediumClass by mCode
 app.get('/mcByMcode/:mCode', (req, res) => {
   Mc.find({}, 'bCode mCode text', function (error, mcs) {
@@ -2671,30 +2284,6 @@ app.get('/mc/:bCode', (req, res) => {
   .sort({text:1})
 })
 
-// Fetch mediumClass text by bCode mCode
-app.get('/mc/:bCode/:mCode', (req, res) => {
-  Mc.find({}, 'bCode mCode text', function (error, mcs) {
-    if (error) { console.error(error); }
-    res.send({
-      mcs: mcs
-    })
-  })
-  .where('bCode').equals(req.params.bCode)
-  .where('mCode').equals(req.params.mCode)
-  .sort({text:1})
-})
-
-// Fetch all mediumClass
-app.get('/mc', (req, res) => {
-  Mc.find({}, 'bCode mCode text', function (error, mcs) {
-    if (error) { console.error(error); }
-    res.send({
-      mcs: mcs
-    })
-  })
-  .sort({text:1})
-})
-
 // Fetch all bigClass
 app.get('/bc', (req, res) => {
   Bc.find({}, 'bCode text', function (error, bcs) {
@@ -2703,18 +2292,6 @@ app.get('/bc', (req, res) => {
       bcs: bcs
     })
   })
-  .sort({text:1})
-})
-
-// Fetch bigClass text by bCode
-app.get('/bc/:bCode', (req, res) => {
-  Bc.find({}, 'bCode text', function (error, bcs) {
-    if (error) { console.error(error); }
-    res.send({
-      bcs: bcs
-    })
-  })
-  .where('bCode').equals(req.params.bCode)
   .sort({text:1})
 })
 
@@ -2850,32 +2427,6 @@ app.delete('/lands/:id', (req, res) => {
 	})
 })
 
-/*
-// Add new user
-app.post('/user', (req, res) => {  
-  var email = req.body.email;
-  var password = req.body.password;
-  var age = req.body.age;
-  var sex = req.body.sex;
-  var new_user = new User({
-    email: email,
-    password: password,
-    age: age,
-    sex: sex
-  })
-
-  new_user.save(function (error) {
-    if (error) {
-      console.log(error)
-    }
-    res.send({
-      success: true,
-      message: 'User saved successfully!'
-    })
-  })
-})
-*/
-
 // Fetch single user
 app.get('/user/:id', (req, res) => {  
   User.find({}, '', function (error, user) {
@@ -2901,42 +2452,7 @@ app.put('/userBirthDateSex/:id', (req, res) => {
 	    })
 	})
 	.where('id').equals(req.params.id)
-/*
-  User.findById(req.params.id, 'birth_date sex', function (error, user) {
-    if (error) { console.error(error); }
-    user.birth_date = req.body.birth_date
-    user.sex = req.body.sex
-    user.save(function (error) {
-      if (error) {
-        console.log(error)
-      }
-      res.send({
-        success: true
-      })
-    })
-  })
-*/
 })
-
-/*
-// Update a user password
-app.put('/userPassword/:id', (req, res) => {
-  var db = req.db;
-  User.findById(req.params.id, 'age sex', function (error, user) {
-    if (error) { console.error(error); }
-    user.password = req.body.password
-
-    user.save(function (error) {
-      if (error) {
-        console.log(error)
-      }
-      res.send({
-        success: true
-      })
-    })
-  })
-})
-*/
 
 // Update a user phone_no
 app.put('/userPhoneNo/:id', (req, res) => {  
@@ -2973,28 +2489,6 @@ app.put('/userShareFlag/:id', (req, res) => {
   })
   .where('id').equals(req.params.id)
 })
-
-// Fetch user by email
-app.get('/user/byEmail/:email', (req, res) => {
-  User.find({}, '_id', function (error, user) {
-    if (error) { console.error(error); }
-    res.send(user)
-  })
-  .where('email').equals(req.params.email)
-})
-
-/*
-// Fetch user by id & pw
-app.get('/user/:id/:pw', (req, res) => {
-  console.log(req.params)
-  User.find({}, '_id', function (error, user) {
-    if (error) { console.error(error); }
-    res.send(user)
-  })
-  .where('id').equals(req.params.id)
-  .where('password').equals(req.params.pw)
-})
-*/
 
 function leadingZeros(n, digits) {
   var zero = '';
@@ -3344,14 +2838,6 @@ app.put('/updateUserPassword', (req, res) => {
 	    })
 	})
 	.where('id').equals(req.body.id)
-})
-
-// Fetch all data of user
-app.get('/getAllUser', (req, res) => {
-	User.find({}, '', function (error, result) {
-		if (error) { console.error(error); }
-	    res.send(result)
-	})
 })
 
 // Fetch users by date, searchType, searchContent
@@ -3766,48 +3252,6 @@ app.get('/item/:id', (req, res) => {
 
 // Delete item
 app.delete('/item/:id', (req, res) => {
-/*
-Journal.find({
-		_id: req.params.id
-	}, function(error, journal) {
-		// 1. 서버상에 업로드한 사진 파일들을 모두 삭제한다.		
-		if (journal[0].pictureA !== "") {
-			var uploadedImgPath = 'journalImgs/' + journal[0].userId + '/' + journal[0].pictureA
-			if (fs.existsSync(uploadedImgPath)) {
-				fs.unlinkSync(uploadedImgPath)
-				console.log('successfully deleted ' + uploadedImgPath);
-			}
-		}
-
-		if (journal[0].pictureB !== "") {
-			var uploadedImgPath = 'journalImgs/' + journal[0].userId + '/' + journal[0].pictureB
-			if (fs.existsSync(uploadedImgPath)) {
-				fs.unlinkSync(uploadedImgPath)
-				console.log('successfully deleted ' + uploadedImgPath);
-			}
-		}
-
-		if (journal[0].pictureC !== "") {
-			var uploadedImgPath = 'journalImgs/' + journal[0].userId + '/' + journal[0].pictureC
-			if (fs.existsSync(uploadedImgPath)) {
-				fs.unlinkSync(uploadedImgPath)
-				console.log('successfully deleted ' + uploadedImgPath);
-			}
-		}
-
-		// 2. 해당 일지를 삭제한다.
-		Journal.remove({
-			_id: req.params.id
-		}, function(err, lands) {
-			if (err) {
-				res.send(err)
-			}
-			res.send({
-				success: true
-			})
-		})
-	})
-*/
   ItemDetail.find({}, '', function (error, ids) {
     if (error) { console.error(error); }
     
@@ -4349,17 +3793,6 @@ app.get('/itemsByYMNUserIdAndDetail/:startDate/:endDate/:userId', (req, res) => 
             res.send(result);
         }
     });
-  /*
-  Item.find({}, '', function (error, items) {
-    if (error) { console.error(error); }
-    res.send(items)
-  })
-  .where('date').gte(req.params.startDate + '-01 00:00:00').lte(req.params.endDate + '-31 23:59:59')
-  .where('userId').equals(req.params.userId)
-  .where('itemDetail.itemPrice').ne('')
-  .where('itemDetail.itemPrice').ne(null)
-  .sort({'date' : 1})
-  */
 })
 
 // Fetch items by userId, landId, item, itemName

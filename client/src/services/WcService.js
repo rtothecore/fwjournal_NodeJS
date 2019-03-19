@@ -1,28 +1,6 @@
 import Api from '@/services/Api'
 
 export default {
-  fetchWorkCodeById (params) {
-    return Api().get('wc/getWCById/' + params.id, params)
-  },
-
-  fetchIdByWorkCode (params) {
-    return Api().get('wc/getIdByWC2/' + params.code, params)
-  },
-
-  fetchTextByCode (params) {
-    return Api().get('wc/getText/' + params.code, params)
-  },
-
-  /*
-  fetchTextByCropCode (params) {
-    return Api().get('wc/getTxtByCC/' + params.cropCode, params)
-  },
-  */
-
-  fetchByBCodeMCodeSCode (params) {
-    return Api().get('wc/' + params.bCode + '/' + params.mCode + '/' + params.sCode, params)
-  },
-
   fetchDistinctBCPText (params) {
     return Api().get('wc/getBCP', params)
   },
@@ -58,10 +36,6 @@ export default {
 
   fetchOneTextByCcode (params) {
     return Api().get('wc/getOneTextByCcode/' + params.code, params)
-  },
-
-  fetchWorkCodesByWorkcode (params) {
-    return Api().get('wc/getWCsByWc/' + params.code, params)
   },
 
   fetchWorkCodesAsItem (params) {

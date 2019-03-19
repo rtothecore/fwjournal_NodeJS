@@ -17,10 +17,6 @@ export default {
     return Api().put('userShareFlag/' + params.id, params)
   },
 
-  fetchUserByEmail (params) {
-    return Api().get('user/byEmail/' + params.email, params)
-  },
-
   createNewUser (params) {
     return Api().post('addNewUser', params)
   },

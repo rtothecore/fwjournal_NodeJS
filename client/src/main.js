@@ -9,7 +9,6 @@ import 'vuetify/dist/vuetify_mod.css'
 import FullCalendar from 'vue-full-calendar'
 // import 'fullcalendar/dist/fullcalendar.min.css'
 import 'fullcalendar/dist/fullcalendar_mod.css'
-import RegisterModal from './components/RegisterModal.vue'
 import JournalModal from './components/JournalModal.vue'
 import JournalModalForEdit from './components/JournalModalForEdit.vue'
 import AddWorkTypeModal from './components/AddWorkTypeModal.vue'
@@ -29,7 +28,6 @@ import VueSession from 'vue-session'
 import axios from 'axios'
 import BootstrapVue from 'bootstrap-vue'
 
-Vue.component('registerModal', RegisterModal)
 Vue.component('journalModal', JournalModal)
 Vue.component('journalModalForEdit', JournalModalForEdit)
 Vue.component('addWorkTypeModal', AddWorkTypeModal)

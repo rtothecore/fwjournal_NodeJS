@@ -135,7 +135,6 @@
                       label="작업분류"
                       data-vv-name="selectWorkType"
                       required
-                      v-on:change="onChangeWorkType"
                       item-text="text"
                       item-value="wCode"                         
                       readonly                                        
@@ -696,7 +695,6 @@ export default {
       this.getCropCodeByLandId(this.selectLand)
       this.selectedWorkTypeCode = response.data[0].workCode
       this.selectWorkType = response.data[0].workCode
-      // this.onChangeWorkType(this.selectWorkType)
 
       this.workTime = response.data[0].workTime
       this.workerNumber = response.data[0].workerNumber
@@ -847,12 +845,6 @@ export default {
       })
       this.workType = response.data
     },
-    async getWorkCodeById (id) {
-      const response = await WcService.fetchWorkCodeById({
-        id: id
-      })
-      this.selectedWorkTypeCode = response.data
-    },
     async updateItem () {
       var pictureAData = ''
       var pictureBData = ''
@@ -998,9 +990,6 @@ export default {
     onChangeLand: function (event) {
       this.selectedLandId = event
       this.getCropCodeByLandId(this.selectedLandId)
-    },
-    onChangeWorkType: function (event) {
-      this.getWorkCodeById(event)
     },
     onChangeWSTime: function (event) {
       var tmpStr = event

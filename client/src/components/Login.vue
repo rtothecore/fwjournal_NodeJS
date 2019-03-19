@@ -59,9 +59,6 @@
           </v-layout>
         </v-container>
       </v-card>
-
-      <registerModal></registerModal>      
-
     </div>
   </v-layout>
 </template>
