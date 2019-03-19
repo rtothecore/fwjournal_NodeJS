@@ -85,6 +85,78 @@ var httpsOptions = {
 }
 */
 
+////////////////////////////////// L O G /////////////////////////////////////////////////
+// https://thisdavej.com/using-winston-a-versatile-logging-library-for-node-js/
+// https://lovemewithoutall.github.io/it/winston-example/
+const { createLogger, format, transports } = require('winston');
+require('winston-daily-rotate-file');
+const logDir = 'log';
+
+// Create the log directory if it does not exist
+if (!fs.existsSync(logDir)) {
+  fs.mkdirSync(logDir);
+}
+
+const dailyRotateFileTransport = new transports.DailyRotateFile({
+  filename: `${logDir}/info_%DATE%.log`,
+  datePattern: 'YYYY-MM-DD',
+  maxSize: "20m",
+  maxFiles: "14d"
+});
+
+const exceptionRotateFileTransport = new transports.DailyRotateFile({
+  filename: `${logDir}/error_%DATE%.log`,
+  datePattern: 'YYYY-MM-DD',
+  maxSize: "20m",
+  maxFiles: "14d"
+});
+
+const logger = createLogger({
+  // change level if in dev environment versus production
+  level: 'info',
+  format: format.combine(
+    format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+    format.printf(info => `${info.timestamp} ${info.level}: ${info.message}`)
+  ),
+  transports: [
+    new transports.Console({
+      level: 'info',
+      format: format.combine(
+        format.colorize(),
+        format.printf(
+          info => `${info.timestamp} ${info.level}: ${info.message}`
+        )
+      )
+    }),
+    dailyRotateFileTransport
+  ]
+});
+
+const loggerEx = createLogger({
+  // change level if in dev environment versus production
+  level: 'error',
+  format: format.combine(
+    format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+    format.printf(error => `${error.timestamp} ${error.level}: ${error.message}`)
+  ),
+  transports: [
+    new transports.Console({
+      level: 'error',
+      format: format.combine(
+        format.colorize(),
+        format.printf(
+          error => `${error.timestamp} ${error.level}: ${error.message}`
+        )
+      )
+    }),
+    exceptionRotateFileTransport
+  ]
+});
+
+// logger.info('Hello world');
+// loggerEx.error('Error info');
+////////////////////////////////// L O G /////////////////////////////////////////////////
+
 var port1 = 8081
 // var port2 = 443
 
@@ -151,7 +223,8 @@ app.post('/journalImg/upload', function(req, res) {
 
     upload(req,res,function(err) {
         if(err) {
-            console.log(err);
+            // console.log(err);
+            loggerEx.error('/journalImg/upload : ' + err.toString());
             return res.end("Error uploading file.");
         } else {
            // console.log(req.body);
@@ -202,7 +275,9 @@ app.get('/wcData/getAllDataOfAggData/:startDate/:endDate', (req, res) => {
         }
     ], function (err, result) {
         if (err) {
-            next(err);
+            // next(err);
+            loggerEx.error('/wcData/getAllDataOfAggData/:startDate/:endDate : ' + err.toString());
+            res.status(500).json({ error: err.toString() });
         } else {
             res.send(result);
         }
@@ -242,7 +317,9 @@ app.get('/wcData/getAggData/:startDate/:endDate', (req, res) => {
         }
     ], function (err, result) {
         if (err) {
-            next(err);
+            // next(err);
+            loggerEx.error('/wcData/getAggData/:startDate/:endDate : ' + err.toString());
+            res.status(500).json({ error: err.toString() });
         } else {
             res.send(result);
         }
@@ -254,7 +331,7 @@ app.get('/wcData/getWeatherAggDataByAddr/:startDate/:endDate/:address', (req, re
 	// http://www.fun-coding.org/mongodb_advanced5.html
 	// https://stackoverflow.com/questions/18785707/mongodb-aggregate-embedded-document-values
 	// https://stackoverflow.com/questions/39158286/mongoose-aggregate-with-unwind-before-group
-	console.log(req.params)
+	// console.log(req.params)
 	WcData.aggregate([
 		{
 			"$unwind" : "$currentData"
@@ -286,9 +363,11 @@ app.get('/wcData/getWeatherAggDataByAddr/:startDate/:endDate/:address', (req, re
         }
     ], function (err, result) {
         if (err) {
-            next(err);
+            // next(err);
+            loggerEx.error('/wcData/getWeatherAggDataByAddr/:startDate/:endDate/:address : ' + err.toString());
+            res.status(500).json({ error: err.toString() });
         } else {
-        	console.log(result)
+        	// console.log(result)
             res.send(result);
         }
     });
@@ -297,7 +376,11 @@ app.get('/wcData/getWeatherAggDataByAddr/:startDate/:endDate/:address', (req, re
 // Fetch all data of sensorData with aggregate
 app.get('/ssData/getAllDataOfAggData/:startDate/:endDate', (req, res) => {
 	SsData.find({}, '', function (error, result) {
-		if (error) { console.error(error); }
+		if (error) { 
+			// console.error(error); 
+			loggerEx.error('/ssData/getAllDataOfAggData/:startDate/:endDate : ' + error.toString());
+            res.status(500).json({ error: error.toString() });
+		}
 	    res.send(result)
 	})
 	.where('date').gte(req.params.startDate + " 00:00:00").lte(req.params.endDate + " 23:59:59")
@@ -335,7 +418,9 @@ app.get('/ssData/getAggData/:startDate/:endDate', (req, res) => {
         }
     ], function (err, result) {
         if (err) {
-            next(err);
+            // next(err);
+            loggerEx.error('/ssData/getAggData/:startDate/:endDate : ' + err.toString());
+            res.status(500).json({ error: err.toString() });
         } else {
             res.send(result);
         }
@@ -348,7 +433,12 @@ app.get('/ssData/lastOne', (req, res) => {
 	// db.getCollection("sensordatas").find().skip(db.getCollection("sensordatas").count() - 1)
 	SsData.count({}, function( err, count){
 	    SsData.find({}, 'index temperature humidity co2 date', function (error, sensorDatas) {
-	    	res.send(sensorDatas)
+	    	if (error) {
+	    		loggerEx.error('/ssData/lastOne : ' + error.toString());
+            	res.status(500).json({ error: error.toString() });
+	    	} else {
+	    		res.send(sensorDatas)
+	    	}	    	
 	    })
 	    .skip(count - 1)
 	})
@@ -364,8 +454,7 @@ function getTodayDate() {
 }
 
 function getDateSubtract(subVal) {
-	var subDay = moment().subtract(subVal, 'day').format("YYYYMMDD")
-	// console.log(subDay)
+	var subDay = moment().subtract(subVal, 'day').format("YYYYMMDD")	
 	return subDay
 }
 
@@ -447,7 +536,9 @@ app.get('/getProductPrice/:productName', (req, res) => {
 
 										  			res.send(response6.data)
 										  		}).catch(function (error) {
-										  			console.log(error)
+										  			// console.log(error)
+										  			loggerEx.error('/getProductPrice/:productName : ' + error.toString());
+        											res.status(500).json({ error: error.toString() });
 										  		})
 										  		/////////////////////////////////////////////////////////////////////////////////	
 										  		return		  			
@@ -455,7 +546,9 @@ app.get('/getProductPrice/:productName', (req, res) => {
 
 								  			res.send(response5.data)
 								  		}).catch(function (error) {
-								  			console.log(error)
+								  			// console.log(error)
+								  			loggerEx.error('/getProductPrice/:productName : ' + error.toString());
+        									res.status(500).json({ error: error.toString() });
 								  		})
 								  		/////////////////////////////////////////////////////////////////////////////////
 								  		return			  			
@@ -463,7 +556,9 @@ app.get('/getProductPrice/:productName', (req, res) => {
 
 						  			res.send(response4.data)
 						  		}).catch(function (error) {
-						  			console.log(error)
+						  			// console.log(error)
+						  			loggerEx.error('/getProductPrice/:productName : ' + error.toString());
+        							res.status(500).json({ error: error.toString() });
 						  		})
 						  		/////////////////////////////////////////////////////////////////////////////////
 						  		return			  			
@@ -471,7 +566,9 @@ app.get('/getProductPrice/:productName', (req, res) => {
 
 				  			res.send(response3.data)
 				  		}).catch(function (error) {
-				  			console.log(error)
+				  			// console.log(error)
+				  			loggerEx.error('/getProductPrice/:productName : ' + error.toString());
+        					res.status(500).json({ error: error.toString() });
 				  		})
 				  		/////////////////////////////////////////////////////////////////////////////////
 				  		return			  			
@@ -479,7 +576,9 @@ app.get('/getProductPrice/:productName', (req, res) => {
 
 		  			res.send(response2.data)
 		  		}).catch(function (error) {
-		  			console.log(error)
+		  			// console.log(error)
+		  			loggerEx.error('/getProductPrice/:productName : ' + error.toString());
+        			res.status(500).json({ error: error.toString() });
 		  		})
 		  		/////////////////////////////////////////////////////////////////////////////////
 		  		return
@@ -487,10 +586,14 @@ app.get('/getProductPrice/:productName', (req, res) => {
 
   			res.send(response.data)
   		}).catch(function (error) {
-  			console.log(error)
+  			// console.log(error)
+  			loggerEx.error('/getProductPrice/:productName : ' + error.toString());
+        	res.status(500).json({ error: error.toString() });
   		})
   	}).catch(function (error) {
-    	console.log(error)
+    	// console.log(error)
+    	loggerEx.error('/getProductPrice/:productName : ' + error.toString());
+        res.status(500).json({ error: error.toString() });
   })
 })
 
@@ -508,9 +611,11 @@ app.get('/getAddress/:searchText', (req, res) => {
   	.then(function (response) {  		
   		res.send(response.data)
   		//res.send(CircularJSON.stringify(response.data))
-  }).catch(function (error) {
-    console.log(error)
-  })
+  	}).catch(function (error) {
+    	// console.log(error)
+    	loggerEx.error('/getAddress/:searchText : ' + error.toString());
+        res.status(500).json({ error: error.toString() });
+  	})
 })
 
 function getTodayBaseTime() {
@@ -548,8 +653,7 @@ function getTodayBaseTime() {
 					   leadingZeros(yesterdayDate.getDate(), 2)
 			baseTime = '2300'
 		}
-	}
-	// console.log(baseDate + ' ' + baseTime)
+	}	
 	return baseDate + '' + baseTime
 }
 
@@ -568,9 +672,11 @@ app.get('/ForecastGrib/:nx/:ny', (req, res) => {
   	.then(function (response) {  		
   		res.send(response.data.response.body.items)
   		// res.send(CircularJSON.stringify(response.data.response.body))
-  }).catch(function (error) {
-    console.log(error)
-  })
+  	}).catch(function (error) {
+    	// console.log(error)
+    	loggerEx.error('/ForecastGrib/:nx/:ny : ' + error.toString());
+        res.status(500).json({ error: error.toString() });
+  	})
 })
 
 // Fetch weather data with date, time, nx, ny
@@ -584,9 +690,11 @@ app.get('/ForecastGrib/:baseDate/:baseTime/:nx/:ny', (req, res) => {
   	.then(function (response) {
   		res.send(response.data)
   		// res.send(CircularJSON.stringify(response.data.response.body))
-  }).catch(function (error) {
-    console.log(error)
-  })
+  	}).catch(function (error) {
+    	// console.log(error)
+    	loggerEx.error('/ForecastGrib/:baseDate/:baseTime/:nx/:ny : ' + error.toString());
+        res.status(500).json({ error: error.toString() });
+  	})
 })
 
 function leadingZeros(n, digits) {
@@ -678,7 +786,9 @@ app.get('/ForecastSpaceData/:nx/:ny', (req, res) => {
   	.then(function (response) {  		
   		res.send(response.data.response.body.items)
   	}).catch(function (error) {
-    	console.log(error)
+    	// console.log(error)
+    	loggerEx.error('/ForecastSpaceData/:nx/:ny : ' + error.toString());
+        res.status(500).json({ error: error.toString() });
   	})
 })
 
@@ -704,10 +814,14 @@ app.get('/Airdata/:tmX/:tmY', (req, res) => {
 		.then(function (response2) {
 			res.send(response2.data.list[0])
 		}).catch(function (error) {
-			console.log(error)
+			// console.log(error)
+			loggerEx.error('/Airdata/:tmX/:tmY : ' + error.toString());
+        	res.status(500).json({ error: error.toString() });
 		})
 	}).catch(function (error) {
-    	console.log(error)
+    	// console.log(error)
+    	loggerEx.error('/Airdata/:tmX/:tmY : ' + error.toString());
+        res.status(500).json({ error: error.toString() });
   	})
 })
 
@@ -715,7 +829,11 @@ app.get('/Airdata/:tmX/:tmY', (req, res) => {
 app.get('/wc/getWCsAsItem', (req, res) => {  
   // var wCode = req.params.code
   Wc.find({}, '', function (error4, wcs) {
-	if (error4) { console.error(error4); }	
+	if (error) { 
+		// console.error(error); 
+		loggerEx.error('/wc/getWCsAsItem : ' + error.toString());
+        res.status(500).json({ error: error.toString() });
+	}	
 	res.send(wcs)
   })
   .where('asItem').equals('1')
@@ -725,16 +843,29 @@ app.get('/wc/getWCsAsItem', (req, res) => {
 app.get('/wc/getTxtByCC3/:code', (req, res) => {  
   var dCode = req.params.code
   Dc.find({}, '', function (error, dcs) {
-  	if (error) { console.error(error); }
-  	// res.send(dcs[0].sCode)  	
+  	if (error) { 
+  		// console.error(error); 
+  		loggerEx.error('/wc/getTxtByCC3/:code : ' + error.toString());
+        res.status(500).json({ error: error.toString() });
+  	}  	
   	Sc.find({}, '', function (error2, scs) {
-  		if (error2) { console.error(error2); }
-  		// res.send(scs[0].mCode)
+  		if (error2) { 
+  			// console.error(error2); 
+  			loggerEx.error('/wc/getTxtByCC3/:code : ' + error2.toString());
+        	res.status(500).json({ error: error2.toString() });
+  		}  	
   		Mc.find({}, '', function (error3, mcs) {
-  			if (error3) { console.error(error3); }
-  			// res.send(mcs[0].bCode)
+  			if (error3) { 
+  				// console.error(error3); 
+  				loggerEx.error('/wc/getTxtByCC3/:code : ' + error3.toString());
+        		res.status(500).json({ error: error3.toString() });
+  			}  			
   			Wc.find({}, '', function (error4, wcs) {
-  				if (error4) { console.error(error4); }
+  				if (error4) { 
+  					// console.error(error4); 
+  					loggerEx.error('/wc/getTxtByCC3/:code : ' + error4.toString());
+        			res.status(500).json({ error: error4.toString() });
+  				}
   				res.send(wcs)
   			}).where('bCode').equals(mcs[0].bCode)
   			  .where('asItem').equals('1')
@@ -749,16 +880,29 @@ app.get('/wc/getTxtByCC3/:code', (req, res) => {
 app.get('/wc/getTxtByCC2/:code', (req, res) => {  
   var dCode = req.params.code
   Dc.find({}, '', function (error, dcs) {
-  	if (error) { console.error(error); }
-  	// res.send(dcs[0].sCode)  	
+  	if (error) { 
+  		// console.error(error); 
+  		loggerEx.error('/wc/getTxtByCC2/:code : ' + error.toString());
+        res.status(500).json({ error: error.toString() });
+  	}
   	Sc.find({}, '', function (error2, scs) {
-  		if (error2) { console.error(error2); }
-  		// res.send(scs[0].mCode)
+  		if (error2) { 
+  			// console.error(error2); 
+  			loggerEx.error('/wc/getTxtByCC2/:code : ' + error2.toString());
+        	res.status(500).json({ error: error2.toString() });
+  		}  		
   		Mc.find({}, '', function (error3, mcs) {
-  			if (error3) { console.error(error3); }
-  			// res.send(mcs[0].bCode)
+  			if (error3) { 
+  				// console.error(error3); 
+  				loggerEx.error('/wc/getTxtByCC2/:code : ' + error3.toString());
+        		res.status(500).json({ error: error3.toString() });
+  			}  			
   			Wc.find({}, '', function (error4, wcs) {
-  				if (error4) { console.error(error4); }
+  				if (error4) { 
+  					// console.error(error4); 
+  					loggerEx.error('/wc/getTxtByCC2/:code : ' + error4.toString());
+        			res.status(500).json({ error: error4.toString() });
+  				}
   				res.send(wcs)
   			}).where('bCode').equals(mcs[0].bCode)
   		}).where('mCode').equals(scs[0].mCode)
@@ -773,12 +917,19 @@ app.get('/wc/getTextByCcode/:code', (req, res) => {
   var code = req.params.code
   
   Wc.find({}, '', function (error, wcs) {
-    if (error) { console.error(error); }
+    if (error) { 
+    	// console.error(error); 
+    	loggerEx.error('/wc/getTextByCcode/:code : ' + error.toString());
+        res.status(500).json({ error: error.toString() });
+    }
     Wc.find({}, '', function (error2, wcs2) {
-    	if (error2) { console.error(error2); }
+    	if (error2) { 
+    		// console.error(error2);
+    		loggerEx.error('/wc/getTextByCcode/:code : ' + error2.toString());
+        	res.status(500).json({ error: error2.toString() });
+    	}
     	res.send(wcs2)
-    }).where('bCode').equals(wcs[0].bCode)
-    // res.send(wcs)
+    }).where('bCode').equals(wcs[0].bCode)    
   })  
   .where('wCode').equals(code)
 })
@@ -788,7 +939,11 @@ app.get('/wc/getOneTextByCcode/:code', (req, res) => {
   var code = req.params.code
   
   Wc.find({}, '', function (error, wcs) {
-    if (error) { console.error(error); }
+    if (error) { 
+    	// console.error(error); 
+    	loggerEx.error('/wc/getOneTextByCcode/:code : ' + error.toString());
+        res.status(500).json({ error: error.toString() });
+    }
     res.send(wcs)
   })  
   .where('wCode').equals(code)
@@ -797,7 +952,11 @@ app.get('/wc/getOneTextByCcode/:code', (req, res) => {
 // Fetch max workClass
 app.get('/wc/getMaxWcs', (req, res) => {
   Wc.find({}, '', function (error, wcs) {
-    if (error) { console.error(error); }
+    if (error) { 
+    	// console.error(error); 
+    	loggerEx.error('/wc/getMaxWcs : ' + error.toString());
+        res.status(500).json({ error: error.toString() });
+    }
     res.send(wcs)
   })
   .where('wCode').regex('W')  
@@ -807,7 +966,11 @@ app.get('/wc/getMaxWcs', (req, res) => {
 // Fetch duplicated workClass
 app.get('/wc/getSameWc/:workTypeText', (req, res) => {
   Wc.find({}, '', function (error, wcs) {
-    if (error) { console.error(error); }
+    if (error) { 
+    	// console.error(error); 
+    	loggerEx.error('/wc/getSameWc/:workTypeText : ' + error.toString());
+        res.status(500).json({ error: error.toString() });
+    }
     res.send(wcs)
   })
   .where('text').equals(req.params.workTypeText)
@@ -816,7 +979,11 @@ app.get('/wc/getSameWc/:workTypeText', (req, res) => {
 // Fetch workClass with BCP
 app.get('/wc/getBCP', (req, res) => {	  
   Wc.distinct('text', {bCode:'BCP'}, function  (error, wcs) {
-  	if (error) { console.error(error); }
+  	if (error) { 
+  		// console.error(error); 
+  		loggerEx.error('/wc/getBCP : ' + error.toString());
+        res.status(500).json({ error: error.toString() });
+  	}
   	res.send(wcs)
   })
 })
@@ -824,7 +991,11 @@ app.get('/wc/getBCP', (req, res) => {
 // Fetch BCP detail
 app.get('/wc/getBCPDetail/:bcpText', (req, res) => {	  
 	Wc.findOne({bCode:'BCP', text: req.params.bcpText}, '', function (error, wcs) {
-		if (error) { console.error(error) }
+		if (error) { 
+			// console.error(error) 
+			loggerEx.error('/wc/getBCPDetail/:bcpText : ' + error.toString());
+        	res.status(500).json({ error: error.toString() });
+		}
 		res.send(wcs)
 	})
 })
@@ -832,7 +1003,11 @@ app.get('/wc/getBCPDetail/:bcpText', (req, res) => {
 // Fetch workClass with BAL
 app.get('/wc/getBAL', (req, res) => {	  
   Wc.distinct('text', {bCode:'BAL'}, function  (error, wcs) {
-  	if (error) { console.error(error); }
+  	if (error) { 
+  		// console.error(error); 
+  		loggerEx.error('/wc/getBAL : ' + error.toString());
+        res.status(500).json({ error: error.toString() });
+  	}
   	res.send(wcs)
   })
 })
@@ -840,7 +1015,11 @@ app.get('/wc/getBAL', (req, res) => {
 // Fetch BAL detail
 app.get('/wc/getBALDetail/:balText', (req, res) => {	  
 	Wc.findOne({bCode:'BAL', text: req.params.balText}, '', function (error, wcs) {
-		if (error) { console.error(error) }
+		if (error) { 
+			// console.error(error) 
+			loggerEx.error('/wc/getBALDetail/:balText : ' + error.toString());
+        	res.status(500).json({ error: error.toString() });
+		}
 		res.send(wcs)
 	})
 })
@@ -866,7 +1045,9 @@ app.post('/wc', (req, res) => {
 
   new_wc.save(function (error, result) {
     if (error) {
-      console.log(error)
+      // console.log(error)
+      loggerEx.error('/wc : ' + error.toString());
+      res.status(500).json({ error: error.toString() });
     }
     res.send({
       success: true,
@@ -878,9 +1059,13 @@ app.post('/wc', (req, res) => {
 
 // Update journal
 app.put('/journals/:id', (req, res) => { 
-  console.log(req.body)  
+  // console.log(req.body)  
   Journal.findById(req.params.id, '', function (error, journals) {
-    if (error) { console.error(error); }
+    if (error) { 
+    	// console.error(error); 
+    	loggerEx.error('/journals/:id : ' + error.toString());
+      	res.status(500).json({ error: error.toString() });
+    }
 
     journals.userId = req.body.userId;
     journals.date = req.body.date;
@@ -901,7 +1086,9 @@ app.put('/journals/:id', (req, res) => {
 
     journals.save(function (error) {
       if (error) {
-        console.log(error)
+        // console.log(error)
+        loggerEx.error('/journals/:id : ' + error.toString());
+      	res.status(500).json({ error: error.toString() });
       }
       res.send({
         success: true
@@ -945,7 +1132,9 @@ app.delete('/journals/:id', (req, res) => {
 			_id: req.params.id
 		}, function(err, lands) {
 			if (err) {
-				res.send(err)
+				// res.send(err)
+				loggerEx.error('/journals/:id : ' + err.toString());
+      			res.status(500).json({ error: err.toString() });
 			}
 			res.send({
 				success: true
@@ -963,9 +1152,12 @@ app.delete('/journalsByItemId/:itemId', (req, res) => {
 		{ $pull: { itemDetail: { itemId : req.params.itemId } } },
 		{ multi: true },
 		function(err, doc) {
-	        if(err) { console.log(err); }
-	        else {
-	          res.send({success: true})
+	        if(err) { 
+	        	// console.log(err); 
+	        	loggerEx.error('/journalsByItemId/:itemId : ' + err.toString());
+      			res.status(500).json({ error: err.toString() });
+	        } else {
+	          	res.send({success: true})
 	        }
 	    }
 	)
@@ -1032,7 +1224,11 @@ app.get('/journals/searchBy5LandId/:userId/:startDate/:endDate/:searchWord/:land
   // userIdForSearch.push(req.params.userId)
 	// 1. 나의 share_flag 조회	
 	User.find({ "id" : req.params.userId }, '', function (error, user) {
-		if (error) { console.error(error); }
+		if (error) { 
+			// console.error(error); 
+			loggerEx.error('/journals/searchBy5LandId/:userId/:startDate/:endDate/:searchWord/:landId : ' + error.toString());
+      		res.status(500).json({ error: error.toString() });
+		}
 		// console.log(user[0])
 		if (user.length > 0 && user[0].share_flag === "1") {	// share_flag가 1인 경우에만 공유 검색
 			// 2. lands 콜렉션에서 나의 cropCode를 조회하여 dcs 콜렉션에서 소분류 코드를 얻음
@@ -1054,7 +1250,9 @@ app.get('/journals/searchBy5LandId/:userId/:startDate/:endDate/:searchWord/:land
 				}
 			], function (err, lands) {
 				if (err) {
-					next(err);
+					// next(err);
+					loggerEx.error('/journals/searchBy5LandId/:userId/:startDate/:endDate/:searchWord/:landId : ' + err.toString());
+      				res.status(500).json({ error: err.toString() });
 			    } else {
 			    	var sCodeArray = []
 			    	for (var i = 0; i < lands.length; i++) {
@@ -1079,7 +1277,9 @@ app.get('/journals/searchBy5LandId/:userId/:startDate/:endDate/:searchWord/:land
 						}
 		    		], function (err2, lands2) {
 						if (err2) {
-							next(err2);
+							// next(err2);
+							loggerEx.error('/journals/searchBy5LandId/:userId/:startDate/:endDate/:searchWord/:landId : ' + err2.toString());
+      						res.status(500).json({ error: err2.toString() });
 					    } else {
 					    	var sameScsUsers = []
 					    	for (var j = 0; j < lands2.length; j++) {
@@ -1087,7 +1287,11 @@ app.get('/journals/searchBy5LandId/:userId/:startDate/:endDate/:searchWord/:land
 					    	}
 					    	// 4. 3에서 얻은 userId들 중 share_flag 가 1 인 userId만 필터링
 							User.find({ "id": { "$in": sameScsUsers }, "share_flag": "1" }, '', function (error2, user2) {
-								if (error2) { console.error(error2); }
+								if (error2) { 
+									// console.error(error2); 
+									loggerEx.error('/journals/searchBy5LandId/:userId/:startDate/:endDate/:searchWord/:landId : ' + error2.toString());
+      								res.status(500).json({ error: error2.toString() });
+								}
 								var userIdForSearch = []
 								var userIdForSearch2 = []
 								for (var k = 0; k < user2.length; k++) {
@@ -1149,7 +1353,9 @@ app.get('/journals/searchBy5LandId/:userId/:startDate/:endDate/:searchWord/:land
 						        { "$sort" : { "date": 1 } }
 							    ], function (err, result) {
 							        if (err) {
-							            next(err);
+							            // next(err);
+							            loggerEx.error('/journals/searchBy5LandId/:userId/:startDate/:endDate/:searchWord/:landId : ' + err.toString());
+      									res.status(500).json({ error: err.toString() });
 							        } else {
 							            // res.send(result);
 							            // 5-2 자신의 Id를 뺀 타인의 userId로만 조회
@@ -1200,7 +1406,9 @@ app.get('/journals/searchBy5LandId/:userId/:startDate/:endDate/:searchWord/:land
 								        { "$sort" : { "date": 1 } }
 									    ], function (err2, result2) {
 									        if (err2) {
-									            next(err2);
+									            // next(err2);
+									            loggerEx.error('/journals/searchBy5LandId/:userId/:startDate/:endDate/:searchWord/:landId : ' + err2.toString());
+      											res.status(500).json({ error: err2.toString() });
 									        } else {
 									        	for (var l = 0; l < result2.length; l++) {
 									        		result.push(result2[l])
@@ -1260,7 +1468,9 @@ app.get('/journals/searchBy5LandId/:userId/:startDate/:endDate/:searchWord/:land
 	        { "$sort" : { "date": 1 } }
 		    ], function (err, result) {
 		        if (err) {
-		            next(err);
+		            // next(err);
+		            loggerEx.error('/journals/searchBy5LandId/:userId/:startDate/:endDate/:searchWord/:landId : ' + err.toString());
+      				res.status(500).json({ error: err.toString() });
 		        } else {
 		            res.send(result);
 		        }
@@ -1306,7 +1516,9 @@ app.get('/journalsLookupByYMUserId/:ym/:userId', (req, res) => {
         { "$sort" : { "date": 1 } }
     ], function (err, result) {
         if (err) {
-            next(err);
+            // next(err);
+            loggerEx.error('/journalsLookupByYMUserId/:ym/:userId : ' + err.toString());
+      		res.status(500).json({ error: err.toString() });
         } else {
             res.send(result);
         }
@@ -1339,7 +1551,11 @@ app.get('/journalsLookupByYMUserIdLandId/:ym/:userId/:landId', (req, res) => {
   	// userIdForSearch.push(req.params.userId)
 	// 1. 나의 share_flag 조회	
 	User.find({ "id" : req.params.userId }, '', function (error, user) {
-		if (error) { console.error(error); }
+		if (error) { 
+			// console.error(error); 
+			loggerEx.error('/journalsLookupByYMUserIdLandId/:ym/:userId/:landId : ' + error.toString());
+      		res.status(500).json({ error: error.toString() });
+		}
 		// console.log(user[0])
 		if (user.length > 0 && user[0].share_flag === "1") {	// share_flag가 1인 경우에만 공유 검색
 			// 2. lands 콜렉션에서 나의 cropCode를 조회하여 dcs 콜렉션에서 소분류 코드를 얻음
@@ -1361,7 +1577,9 @@ app.get('/journalsLookupByYMUserIdLandId/:ym/:userId/:landId', (req, res) => {
 				}
 			], function (err, lands) {
 				if (err) {
-					next(err);
+					// next(err);
+					loggerEx.error('/journalsLookupByYMUserIdLandId/:ym/:userId/:landId : ' + err.toString());
+      				res.status(500).json({ error: err.toString() });
 			    } else {
 			    	var sCodeArray = []
 			    	for (var i = 0; i < lands.length; i++) {
@@ -1386,7 +1604,9 @@ app.get('/journalsLookupByYMUserIdLandId/:ym/:userId/:landId', (req, res) => {
 						}
 		    		], function (err2, lands2) {
 						if (err2) {
-							next(err2);
+							// next(err2);
+							loggerEx.error('/journalsLookupByYMUserIdLandId/:ym/:userId/:landId : ' + err2.toString());
+      						res.status(500).json({ error: err2.toString() });
 					    } else {
 					    	var sameScsUsers = []
 					    	for (var j = 0; j < lands2.length; j++) {
@@ -1394,7 +1614,11 @@ app.get('/journalsLookupByYMUserIdLandId/:ym/:userId/:landId', (req, res) => {
 					    	}
 					    	// 4. 3에서 얻은 userId들 중 share_flag 가 1 인 userId만 필터링
 							User.find({ "id": { "$in": sameScsUsers }, "share_flag": "1" }, '', function (error2, user2) {
-								if (error2) { console.error(error2); }
+								if (error2) { 
+									// console.error(error2); 
+									loggerEx.error('/journalsLookupByYMUserIdLandId/:ym/:userId/:landId : ' + error2.toString());
+      								res.status(500).json({ error: error2.toString() });
+								}
 								var userIdForSearch = []
 								var userIdForSearch2 = []
 								for (var k = 0; k < user2.length; k++) {
@@ -1457,7 +1681,9 @@ app.get('/journalsLookupByYMUserIdLandId/:ym/:userId/:landId', (req, res) => {
 						        { "$sort" : { "date": 1 } }
 							    ], function (err, result) {
 							        if (err) {
-							            next(err);
+							            // next(err);
+							            loggerEx.error('/journalsLookupByYMUserIdLandId/:ym/:userId/:landId : ' + err.toString());
+      									res.status(500).json({ error: err.toString() });
 							        } else {
 							            // 5-2 농장명 검색조건을 입력하지 않았을경우 
 						        		if (req.params.landId === "0") {
@@ -1510,7 +1736,9 @@ app.get('/journalsLookupByYMUserIdLandId/:ym/:userId/:landId', (req, res) => {
 									        { "$sort" : { "_id.date": 1 } }
 									    	], function (err2, result2) {
 									        	if (err2) {
-									            	next(err2);
+									            	// next(err2);
+									            	loggerEx.error('/journalsLookupByYMUserIdLandId/:ym/:userId/:landId : ' + err2.toString());
+      												res.status(500).json({ error: err2.toString() });
 									        	} else {								        		
 									            	for (var l = 0; l < result2.length; l++) {
 									            		result.push(result2[l])
@@ -1571,7 +1799,9 @@ app.get('/journalsLookupByYMUserIdLandId/:ym/:userId/:landId', (req, res) => {
 	        { "$sort" : { "date": 1 } }
 		    ], function (err, result) {
 		        if (err) {
-		            next(err);
+		            // next(err);
+		            loggerEx.error('/journalsLookupByYMUserIdLandId/:ym/:userId/:landId : ' + err.toString());
+      				res.status(500).json({ error: err.toString() });
 		        } else {
 		            res.send(result);
 		        }
@@ -1605,7 +1835,11 @@ app.get('/journalsLookupBy4/:startDate/:endDate/:userId/:landId', (req, res) => 
   	// userIdForSearch.push(req.params.userId)
 	// 1. 나의 share_flag 조회	
 	User.find({ "id" : req.params.userId }, '', function (error, user) {
-		if (error) { console.error(error); }
+		if (error) { 
+			// console.error(error); 
+			loggerEx.error('/journalsLookupBy4/:startDate/:endDate/:userId/:landId : ' + error.toString());
+      		res.status(500).json({ error: error.toString() });
+		}
 		// console.log(user[0])
 		if (user.length > 0 && user[0].share_flag === "1") {	// share_flag가 1인 경우에만 공유 검색
 			// 2. lands 콜렉션에서 나의 cropCode를 조회하여 dcs 콜렉션에서 소분류 코드를 얻음
@@ -1627,7 +1861,9 @@ app.get('/journalsLookupBy4/:startDate/:endDate/:userId/:landId', (req, res) => 
 				}
 			], function (err, lands) {
 				if (err) {
-					next(err);
+					// next(err);
+					loggerEx.error('/journalsLookupBy4/:startDate/:endDate/:userId/:landId : ' + err.toString());
+      				res.status(500).json({ error: err.toString() });
 			    } else {
 			    	var sCodeArray = []
 			    	for (var i = 0; i < lands.length; i++) {
@@ -1652,7 +1888,9 @@ app.get('/journalsLookupBy4/:startDate/:endDate/:userId/:landId', (req, res) => 
 						}
 		    		], function (err2, lands2) {
 						if (err2) {
-							next(err2);
+							// next(err2);
+							loggerEx.error('/journalsLookupBy4/:startDate/:endDate/:userId/:landId : ' + err2.toString());
+      						res.status(500).json({ error: err2.toString() });
 					    } else {
 					    	var sameScsUsers = []
 					    	for (var j = 0; j < lands2.length; j++) {
@@ -1660,7 +1898,11 @@ app.get('/journalsLookupBy4/:startDate/:endDate/:userId/:landId', (req, res) => 
 					    	}
 					    	// 4. 3에서 얻은 userId들 중 share_flag 가 1 인 userId만 필터링
 							User.find({ "id": { "$in": sameScsUsers }, "share_flag": "1" }, '', function (error2, user2) {
-								if (error2) { console.error(error2); }
+								if (error2) { 
+									// console.error(error2); 
+									loggerEx.error('/journalsLookupBy4/:startDate/:endDate/:userId/:landId : ' + error2.toString());
+      								res.status(500).json({ error: error2.toString() });
+								}
 								var userIdForSearch = []
 								var userIdForSearch2 = []
 								for (var k = 0; k < user2.length; k++) {
@@ -1723,7 +1965,9 @@ app.get('/journalsLookupBy4/:startDate/:endDate/:userId/:landId', (req, res) => 
 						        { "$sort" : { "_id.date": 1 } }
 						    	], function (err, result) {
 						        	if (err) {
-						            	next(err);
+						            	// next(err);
+						            	loggerEx.error('/journalsLookupBy4/:startDate/:endDate/:userId/:landId : ' + err.toString());
+      									res.status(500).json({ error: err.toString() });
 						        	} else {
 						        		// 5-2 농장명 검색조건을 입력하지 않았을경우 
 						        		if (req.params.landId === "0") {
@@ -1776,7 +2020,9 @@ app.get('/journalsLookupBy4/:startDate/:endDate/:userId/:landId', (req, res) => 
 									        { "$sort" : { "_id.date": 1 } }
 									    	], function (err2, result2) {
 									        	if (err2) {
-									            	next(err2);
+									            	// next(err2);
+									            	loggerEx.error('/journalsLookupBy4/:startDate/:endDate/:userId/:landId : ' + err2.toString());
+      												res.status(500).json({ error: err2.toString() });
 									        	} else {								        		
 									            	for (var l = 0; l < result2.length; l++) {
 									            		result.push(result2[l])
@@ -1837,7 +2083,9 @@ app.get('/journalsLookupBy4/:startDate/:endDate/:userId/:landId', (req, res) => 
 	        { "$sort" : { "_id.date": 1 } }
 		    ], function (err, result) {
 		        if (err) {
-		            next(err);
+		            // next(err);
+		            loggerEx.error('/journalsLookupBy4/:startDate/:endDate/:userId/:landId : ' + err.toString());
+      				res.status(500).json({ error: err.toString() });
 		        } else {
 		            res.send(result);
 		        }
@@ -1853,7 +2101,11 @@ app.get('/journalsLookup/:startDate/:endDate/:userId', (req, res) => {
 	userIdForSearch.push(req.params.userId)
 	// 1. 나의 share_flag 조회	
 	User.find({ "id" : req.params.userId }, '', function (error, user) {
-		if (error) { console.error(error); }
+		if (error) { 
+			// console.error(error); 
+			loggerEx.error('/journalsLookup/:startDate/:endDate/:userId : ' + error.toString());
+      		res.status(500).json({ error: error.toString() });
+		}
 		// console.log(user[0])
 		if (user.length > 0 && user[0].share_flag === "1") {	// share_flag가 1인 경우에만 공유 검색
 			// 2. lands 콜렉션에서 나의 cropCode를 조회하여 dcs 콜렉션에서 소분류 코드를 얻음
@@ -1875,7 +2127,9 @@ app.get('/journalsLookup/:startDate/:endDate/:userId', (req, res) => {
 				}
 			], function (err, lands) {
 				if (err) {
-					next(err);
+					// next(err);
+					loggerEx.error('/journalsLookup/:startDate/:endDate/:userId : ' + err.toString());
+      				res.status(500).json({ error: err.toString() });
 			    } else {
 			    	var sCodeArray = []
 			    	for (var i = 0; i < lands.length; i++) {
@@ -1900,7 +2154,9 @@ app.get('/journalsLookup/:startDate/:endDate/:userId', (req, res) => {
 						}
 		    		], function (err2, lands2) {
 						if (err2) {
-							next(err2);
+							// next(err2);
+							loggerEx.error('/journalsLookup/:startDate/:endDate/:userId : ' + err2.toString());
+      						res.status(500).json({ error: err2.toString() });
 					    } else {
 					    	var sameScsUsers = []
 					    	for (var j = 0; j < lands2.length; j++) {
@@ -1908,7 +2164,11 @@ app.get('/journalsLookup/:startDate/:endDate/:userId', (req, res) => {
 					    	}
 					    	// 4. 3에서 얻은 userId들 중 share_flag 가 1 인 userId만 필터링
 							User.find({ "id": { "$in": sameScsUsers }, "share_flag": "1" }, '', function (error2, user2) {
-								if (error2) { console.error(error2); }
+								if (error2) { 
+									// console.error(error2); 
+									loggerEx.error('/journalsLookup/:startDate/:endDate/:userId : ' + error2.toString());
+      								res.status(500).json({ error: error2.toString() });
+								}
 								for (var k = 0; k < user2.length; k++) {
 									userIdForSearch.push(user2[k].id)
 								}
@@ -1962,7 +2222,9 @@ app.get('/journalsLookup/:startDate/:endDate/:userId', (req, res) => {
 							        { "$sort" : { "_id.date": 1 } }
 							    ], function (err, result) {
 							        if (err) {
-							            next(err);
+							            // next(err);
+							            loggerEx.error('/journalsLookup/:startDate/:endDate/:userId : ' + err.toString());
+      									res.status(500).json({ error: err.toString() });
 							        } else {
 							            res.send(result);
 							        }
@@ -2019,7 +2281,9 @@ app.get('/journalsLookup/:startDate/:endDate/:userId', (req, res) => {
 	        { "$sort" : { "_id.date": 1 } }
 	    ], function (err, result) {
 	        if (err) {
-	            next(err);
+	            // next(err);
+	            loggerEx.error('/journalsLookup/:startDate/:endDate/:userId : ' + err.toString());
+      			res.status(500).json({ error: err.toString() });
 	        } else {
 	            res.send(result);
 	        }
@@ -2030,9 +2294,13 @@ app.get('/journalsLookup/:startDate/:endDate/:userId', (req, res) => {
 
 // Fetch journals by date & userId
 app.get('/journalsByYMNUserId/:startYM/:endYM/:userId', (req, res) => {
-  console.log(req.params)
+  // console.log(req.params)
   Journal.find({}, '', function (error, journals) {
-    if (error) { console.error(error); }
+    if (error) { 
+    	// console.error(error); 
+    	loggerEx.error('/journalsByYMNUserId/:startYM/:endYM/:userId : ' + error.toString());
+      	res.status(500).json({ error: error.toString() });
+    }
     res.send(journals)
   })
   .where('date').gte(req.params.startYM + '-01 00:00:00').lte(req.params.endYM + '-31 23:59:59')
@@ -2043,9 +2311,13 @@ app.get('/journalsByYMNUserId/:startYM/:endYM/:userId', (req, res) => {
 
 // Fetch journals by date & userId & Coo.cost != null
 app.get('/journalsByYMNUserIdAndCoo/:startYM/:endYM/:userId', (req, res) => {
-  console.log(req.params)
+  // console.log(req.params)
   Journal.find({}, '', function (error, journals) {
-    if (error) { console.error(error); }
+    if (error) { 
+    	// console.error(error); 
+    	loggerEx.error('/journalsByYMNUserIdAndCoo/:startYM/:endYM/:userId : ' + error.toString());
+      	res.status(500).json({ error: error.toString() });
+    }
     res.send(journals)
   })
   .where('date').gte(req.params.startYM + '-01 00:00:00').lte(req.params.endYM + '-31 23:59:59')
@@ -2088,7 +2360,9 @@ app.get('/journalsLookupByUserId/:userId', (req, res) => {
         { "$sort" : { "date": 1 } }
     ], function (err, result) {
         if (err) {
-            next(err);
+            // next(err);
+            loggerEx.error('/journalsLookupByUserId/:userId : ' + err.toString());
+      		res.status(500).json({ error: err.toString() });
         } else {
             res.send(result);
         }
@@ -2096,10 +2370,13 @@ app.get('/journalsLookupByUserId/:userId', (req, res) => {
 })
 
 // Fetch journal by id
-app.get('/journal/:id', (req, res) => {
-  var db = req.db
+app.get('/journal/:id', (req, res) => {  
   Journal.find({}, '', function (error, journals) {
-    if (error) { console.error(error); }
+    if (error) { 
+    	// console.error(error); 
+    	loggerEx.error('/journal/:id : ' + error.toString());
+      	res.status(500).json({ error: error.toString() });
+    }
     res.send(journals)
   })
   .where('_id').equals(req.params.id)
@@ -2107,7 +2384,7 @@ app.get('/journal/:id', (req, res) => {
 
 // Add new journal
 app.post('/journal', (req, res) => {
-  console.log(req.body);  
+  // console.log(req.body);  
   var userId = req.body.userId;
   var date = req.body.date;
   // var landId = req.body.landId;
@@ -2150,7 +2427,9 @@ app.post('/journal', (req, res) => {
 
   new_journal.save(function (error, result) {
     if (error) {
-      console.log(error)
+      // console.log(error)
+      loggerEx.error('/journal : ' + error.toString());
+      res.status(500).json({ error: error.toString() });
     }
     res.send({
       success: true,
@@ -2163,7 +2442,11 @@ app.post('/journal', (req, res) => {
 // Fetch smallClass by dCode
 app.get('/scByDcode/:dCode', (req, res) => {
   Dc.find({}, '', function (error, dcs) {
-    if (error) { console.error(error); }
+    if (error) { 
+    	// console.error(error); 
+    	loggerEx.error('/scByDcode/:dCode : ' + error.toString());
+      	res.status(500).json({ error: error.toString() });
+    }
     res.send({
       dcs: dcs
     })
@@ -2175,7 +2458,11 @@ app.get('/scByDcode/:dCode', (req, res) => {
 // Fetch detailClass by sCode
 app.get('/dcByScode/:sCode', (req, res) => {
   Dc.find({}, 'sCode dCode text', function (error, dcs) {
-    if (error) { console.error(error); }
+    if (error) { 
+    	// console.error(error); 
+    	loggerEx.error('/dcByScode/:sCode : ' + error.toString());
+      	res.status(500).json({ error: error.toString() });
+    }
     res.send({
       dcs: dcs
     })
@@ -2185,12 +2472,15 @@ app.get('/dcByScode/:sCode', (req, res) => {
 })
 
 // Fetch cropName by cropCode
-app.get('/dc/getCN/:cropCode', (req, res) => {
-  var db = req.db
+app.get('/dc/getCN/:cropCode', (req, res) => {  
   var cropCode = req.params.cropCode
   
   Dc.find({}, 'sCode dCode text', function (error, scs) {
-    if (error) { console.error(error); }
+    if (error) { 
+    	// console.error(error); 
+    	loggerEx.error('/dc/getCN/:cropCode : ' + error.toString());
+      	res.status(500).json({ error: error.toString() });
+    }
     res.send(scs)
   })  
   .where('dCode').equals(cropCode)
@@ -2199,7 +2489,11 @@ app.get('/dc/getCN/:cropCode', (req, res) => {
 // Fetch smallClass by sCode
 app.get('/scByScode/:sCode', (req, res) => {
   Sc.find({}, 'mCode sCode text', function (error, scs) {
-    if (error) { console.error(error); }
+    if (error) { 
+    	// console.error(error); 
+    	loggerEx.error('/scByScode/:sCode : ' + error.toString());
+      	res.status(500).json({ error: error.toString() });
+    }
     res.send({
       scs: scs
     })
@@ -2211,7 +2505,11 @@ app.get('/scByScode/:sCode', (req, res) => {
 // Fetch smallClass by mCode
 app.get('/scByMcode/:mCode', (req, res) => {
   Sc.find({}, 'mCode sCode text', function (error, scs) {
-    if (error) { console.error(error); }
+    if (error) { 
+    	// console.error(error); 
+    	loggerEx.error('/scByMcode/:mCode : ' + error.toString());
+      	res.status(500).json({ error: error.toString() });
+    }
     res.send({
       scs: scs
     })
@@ -2223,7 +2521,11 @@ app.get('/scByMcode/:mCode', (req, res) => {
 // Fetch midiumClass by sCode
 app.get('/mcByScode/:sCode', (req, res) => {
   Sc.find({}, '', function (error, scs) {
-    if (error) { console.error(error); }
+    if (error) { 
+    	// console.error(error); 
+    	loggerEx.error('/mcByScode/:sCode : ' + error.toString());
+      	res.status(500).json({ error: error.toString() });
+    }
     res.send({
       scs: scs
     })
@@ -2233,14 +2535,17 @@ app.get('/mcByScode/:sCode', (req, res) => {
 })
 
 // Fetch cropName by cropCode
-app.get('/sc/getCN/:cropCode', (req, res) => {
-  var db = req.db
+app.get('/sc/getCN/:cropCode', (req, res) => {  
   var cropCode = req.params.cropCode
   var bc = cropCode.substring(0, 3)
   var mc = cropCode.substring(3, 7)
   var sc = cropCode.substring(7, 11)
   Sc.find({}, 'bCode mCode sCode text', function (error, scs) {
-    if (error) { console.error(error); }
+    if (error) { 
+    	// console.error(error); 
+    	loggerEx.error('/sc/getCN/:cropCode : ' + error.toString());
+      	res.status(500).json({ error: error.toString() });
+    }
     res.send(scs)
   })
   .where('bCode').equals(bc)
@@ -2251,7 +2556,11 @@ app.get('/sc/getCN/:cropCode', (req, res) => {
 // Fetch mediumClass by mCode
 app.get('/mcByMcode/:mCode', (req, res) => {
   Mc.find({}, 'bCode mCode text', function (error, mcs) {
-    if (error) { console.error(error); }
+    if (error) { 
+    	// console.error(error); 
+    	loggerEx.error('/mcByMcode/:mCode : ' + error.toString());
+      	res.status(500).json({ error: error.toString() });
+    }
     res.send({
       mcs: mcs
     })
@@ -2263,7 +2572,11 @@ app.get('/mcByMcode/:mCode', (req, res) => {
 // Fetch bigClass by mCode
 app.get('/bcByMcode/:mCode', (req, res) => {
   Mc.find({}, '', function (error, mcs) {
-    if (error) { console.error(error); }
+    if (error) { 
+    	// console.error(error); 
+    	loggerEx.error('/bcByMcode/:mCode : ' + error.toString());
+      	res.status(500).json({ error: error.toString() });
+    }
     res.send({
       mcs: mcs
     })
@@ -2275,7 +2588,11 @@ app.get('/bcByMcode/:mCode', (req, res) => {
 // Fetch mediumClass by bCode
 app.get('/mc/:bCode', (req, res) => {
   Mc.find({}, 'bCode mCode text', function (error, mcs) {
-    if (error) { console.error(error); }
+    if (error) { 
+    	// console.error(error); 
+    	loggerEx.error('/mc/:bCode : ' + error.toString());
+      	res.status(500).json({ error: error.toString() });
+    }
     res.send({
       mcs: mcs
     })
@@ -2287,7 +2604,11 @@ app.get('/mc/:bCode', (req, res) => {
 // Fetch all bigClass
 app.get('/bc', (req, res) => {
   Bc.find({}, 'bCode text', function (error, bcs) {
-    if (error) { console.error(error); }
+    if (error) { 
+    	// console.error(error); 
+    	loggerEx.error('/bc : ' + error.toString());
+      	res.status(500).json({ error: error.toString() });
+    }
     res.send({
       bcs: bcs
     })
@@ -2298,7 +2619,11 @@ app.get('/bc', (req, res) => {
 // Fetch name by landId
 app.get('/lands/getName/:id', (req, res) => {
   Land.find({}, '', function (error, lands) {
-    if (error) { console.error(error); }
+    if (error) { 
+    	// console.error(error); 
+    	loggerEx.error('/lands/getName/:id : ' + error.toString());
+      	res.status(500).json({ error: error.toString() });
+    }
     res.send(lands)
   })
   .where('_id').equals(req.params.id)
@@ -2307,10 +2632,17 @@ app.get('/lands/getName/:id', (req, res) => {
 // Fetch name by landId
 app.get('/lands/getCropName/:id', (req, res) => {
   Land.find({}, '', function (error, lands) {
-    if (error) { console.error(error); }
-    // res.send(lands[0].cropCode)    
+    if (error) { 
+    	// console.error(error); 
+    	loggerEx.error('/lands/getCropName/:id : ' + error.toString());
+      	res.status(500).json({ error: error.toString() });
+    }    
     Dc.find({}, '', function (error2, dcs) {
-    	if (error2) { console.error(error2); }
+    	if (error2) { 
+    		// console.error(error2); 
+    		loggerEx.error('/lands/getCropName/:id : ' + error2.toString());
+      		res.status(500).json({ error: error2.toString() });
+    	}
     	res.send(dcs)
     })
     .where('dCode').equals(lands[0].cropCode)    
@@ -2321,7 +2653,11 @@ app.get('/lands/getCropName/:id', (req, res) => {
 // Fetch cropCode by landId
 app.get('/lands/getCC/:id', (req, res) => {
   Land.find({}, '', function (error, lands) {
-    if (error) { console.error(error); }
+    if (error) { 
+    	// console.error(error); 
+    	loggerEx.error('/lands/getCC/:id : ' + error.toString());
+      	res.status(500).json({ error: error.toString() });
+    }
     res.send(lands)
   })
   .where('_id').equals(req.params.id)
@@ -2349,7 +2685,9 @@ app.post('/lands', (req, res) => {
 
   new_land.save(function (error) {
     if (error) {
-      console.log(error)
+      // console.log(error)
+      loggerEx.error('/lands : ' + error.toString());
+      res.status(500).json({ error: error.toString() });
     }
     res.send({
       success: true,
@@ -2360,9 +2698,13 @@ app.post('/lands', (req, res) => {
 
 // Fetch all lands by userId
 app.get('/lands/:id', (req, res) => {
-  console.log(req.params)
+  // console.log(req.params)
   Land.find({}, 'userId name address addressDetail size sizeDetail cropCode', function (error, lands) {
-    if (error) { console.error(error); }
+    if (error) { 
+    	// console.error(error); 
+    	loggerEx.error('/lands/:id : ' + error.toString());
+      	res.status(500).json({ error: error.toString() });
+    }
     res.send({
       lands: lands
     })
@@ -2375,7 +2717,11 @@ app.get('/lands/:id', (req, res) => {
 app.put('/lands/:id', (req, res) => {
   console.log(req.body)
   Land.findById(req.params.id, 'userId name', function (error, lands) {
-    if (error) { console.error(error); }
+    if (error) { 
+    	// console.error(error); 
+    	loggerEx.error('/lands/:id : ' + error.toString());
+      	res.status(500).json({ error: error.toString() });
+    }
     lands.name = req.body.name
     lands.address = req.body.address
     lands.addressDetail = req.body.addressDetail
@@ -2384,7 +2730,9 @@ app.put('/lands/:id', (req, res) => {
     lands.cropCode = req.body.cropCode
     lands.save(function (error) {
       if (error) {
-        console.log(error)
+        // console.log(error)
+        loggerEx.error('/lands/:id : ' + error.toString());
+      	res.status(500).json({ error: error.toString() });
       }
       res.send({
         success: true
@@ -2400,7 +2748,9 @@ app.delete('/lands/:id', (req, res) => {
 		landId: req.params.id
 	}, function(err2, journals) {
 		if (err2) {
-			res.send(err2)
+			// res.send(err2)
+			loggerEx.error('/lands/:id : ' + err2.toString());
+      		res.status(500).json({ error: err2.toString() });
 		}		
 		console.log('journals removed! - ' + journals)
 	})
@@ -2410,7 +2760,9 @@ app.delete('/lands/:id', (req, res) => {
 		landId: req.params.id
 	}, function(err3, items) {
 		if (err3) {
-			res.send(err3)
+			// res.send(err3)
+			loggerEx.error('/lands/:id : ' + err3.toString());
+      		res.status(500).json({ error: err3.toString() });
 		}		
 		console.log('items removed! - ' + items)
 	})
@@ -2419,7 +2771,9 @@ app.delete('/lands/:id', (req, res) => {
 		_id: req.params.id
 	}, function(err, lands) {
 		if (err) {
-			res.send(err)
+			// res.send(err)
+			loggerEx.error('/lands/:id : ' + err.toString());
+      		res.status(500).json({ error: err.toString() });
 		}
 		res.send({
 			success: true
@@ -2430,7 +2784,11 @@ app.delete('/lands/:id', (req, res) => {
 // Fetch single user
 app.get('/user/:id', (req, res) => {  
   User.find({}, '', function (error, user) {
-    if (error) { console.error(error); }
+    if (error) { 
+    	// console.error(error); 
+    	loggerEx.error('/user/:id : ' + error.toString());
+      	res.status(500).json({ error: error.toString() });
+    }
     res.send(user)
   })
   .where('id').equals(req.params.id)
@@ -2439,12 +2797,18 @@ app.get('/user/:id', (req, res) => {
 // Update a user age & sex
 app.put('/userBirthDateSex/:id', (req, res) => {
 	User.find({}, '', function (error, user) {
-		if (error) { console.error(error); }
+		if (error) { 
+			// console.error(error); 
+			loggerEx.error('/userBirthDateSex/:id : ' + error.toString());
+      		res.status(500).json({ error: error.toString() });
+		}
 	    user[0].birth_date = req.body.birth_date
 	    user[0].sex = req.body.sex
 	    user[0].save(function (error) {
 	      if (error) {
-	        console.log(error)
+	        // console.log(error)
+	        loggerEx.error('/userBirthDateSex/:id : ' + error.toString());
+      		res.status(500).json({ error: error.toString() });
 	      }
 	      res.send({
 	        success: true
@@ -2457,12 +2821,18 @@ app.put('/userBirthDateSex/:id', (req, res) => {
 // Update a user phone_no
 app.put('/userPhoneNo/:id', (req, res) => {  
 	User.find({}, '', function (error, user) {
-		if (error) { console.error(error); }
+		if (error) { 
+			// console.error(error); 
+			loggerEx.error('/userPhoneNo/:id : ' + error.toString());
+      		res.status(500).json({ error: error.toString() });
+		}
 		user[0].phone_no = req.body.phone_no
 
 	    user[0].save(function (error) {
 	      if (error) {
-	        console.log(error)
+	        // console.log(error)
+	        loggerEx.error('/userPhoneNo/:id : ' + error.toString());
+      		res.status(500).json({ error: error.toString() });
 	      }
 	      res.send({
 	        success: true
@@ -2475,12 +2845,18 @@ app.put('/userPhoneNo/:id', (req, res) => {
 // Update a user share_flag
 app.put('/userShareFlag/:id', (req, res) => {
   User.find({}, '', function (error, user) {
-    if (error) { console.error(error); }
+    if (error) { 
+    	// console.error(error); 
+    	loggerEx.error('/userShareFlag/:id : ' + error.toString());
+      	res.status(500).json({ error: error.toString() });
+    }
     user[0].share_flag = req.body.share_flag
 
     user[0].save(function (error) {
       if (error) {
-        console.log(error)
+        // console.log(error)
+        loggerEx.error('/userShareFlag/:id : ' + error.toString());
+      	res.status(500).json({ error: error.toString() });
       }
       res.send({
         success: true
@@ -2515,13 +2891,17 @@ function getNowDate() {
 
 // Add new smsauth
 app.post('/addNewSMSAuth', (req, res) => {	
-	console.log(req.body);
+	// console.log(req.body);
   	var phone_no = req.body.phone_no;
 
   	SmsAuth.remove({
 		phone_no: phone_no
 	}, function(err, lands) {
-		if (err) { res.send(err) }		
+		if (err) { 
+			// res.send(err) 
+			loggerEx.error('/addNewSMSAuth : ' + err.toString());
+      		res.status(500).json({ error: err.toString() });
+		}		
 	})
 
   	var auth_code = Math.floor(1000 + Math.random() * 9000);
@@ -2534,7 +2914,11 @@ app.post('/addNewSMSAuth', (req, res) => {
   	})
   
   	new_sms_auth.save(function (error, result) {
-  		if (error) { console.log(error) }
+  		if (error) { 
+  			// console.log(error) 
+  			loggerEx.error('/addNewSMSAuth : ' + error.toString());
+      		res.status(500).json({ error: error.toString() });
+  		}
 /*
   		const smsParams = {  		  
 		  text: '(주)이지정보기술\n[영농일지]본인인증번호입니다.\n인증번호:[' + auth_code + ']',
@@ -2568,7 +2952,11 @@ app.post('/addNewSMSAuth', (req, res) => {
 // Fetch auth_code with phone_no
 app.get('/getAuthCode/:phone_no', (req, res) => {
 	SmsAuth.find({}, '', function (error, result) {
-		if (error) { console.error(error); }
+		if (error) { 
+			// console.error(error); 
+			loggerEx.error('/getAuthCode/:phone_no : ' + error.toString());
+      		res.status(500).json({ error: error.toString() });
+		}
 	    res.send(result)
 	}).where('phone_no').equals(req.params.phone_no)
 })
@@ -2579,7 +2967,9 @@ app.delete('/deleteSMSAuth/:phoneNo', (req, res) => {
 		phone_no: req.params.phoneNo
 	}, function(err, lands) {
 		if (err) {
-			res.send(err)
+			// res.send(err)
+			loggerEx.error('/deleteSMSAuth/:phoneNo : ' + err.toString());
+      		res.status(500).json({ error: err.toString() });
 		}
 		res.send({
 			success: true
@@ -2590,7 +2980,11 @@ app.delete('/deleteSMSAuth/:phoneNo', (req, res) => {
 // Fetch joinuser by id
 app.get('/joinUser/:id', (req, res) => {
   JoinUser.find({}, '_id', function (error, joinuser) {
-    if (error) { console.error(error); }
+    if (error) { 
+    	// console.error(error); 
+    	loggerEx.error('/joinUser/:id : ' + error.toString());
+      	res.status(500).json({ error: error.toString() });
+    }
     res.send(joinuser)
   })
   .where('id').equals(req.params.id)
@@ -2634,12 +3028,16 @@ app.post('/addNewUser', (req, res) => {
 
   new_user.save(function (error, result) {
     if (error) {
-      console.log(error)
+      // console.log(error)
+      loggerEx.error('/addNewUser : ' + error.toString());
+      res.status(500).json({ error: error.toString() });
     }
 
     join_user.save(function (error, result2) {
     	if (error) {
-	      console.log(error)
+	      // console.log(error)
+	      loggerEx.error('/addNewUser : ' + error.toString());
+      	  res.status(500).json({ error: error.toString() });
 	    }
 	    // 가입 축하메일 보내기
 	    // sendMail(email, "[주차왕파킹]회원가입을 축하드립니다.", "주차왕파킹 회원이 되신것을 진심으로 환영합니다.")
@@ -2658,7 +3056,11 @@ app.post('/addNewUser', (req, res) => {
 app.put('/login', (req, res) => {
 	// console.log(req.body)
 	User.find({}, '', function (error, result) {
-		if (error) { console.error(error); }
+		if (error) { 
+			// console.error(error); 
+			loggerEx.error('/login : ' + error.toString());
+      	  	res.status(500).json({ error: error.toString() });
+		}
 
 		if (0 == result.length) {
 			res.status(201).json([{error: "Invalid id"}]);
@@ -2683,7 +3085,7 @@ function createCode(objArr, iLength) {
     var arr = objArr;
     var randomStr = "";
     
-    for (var j=0; j<iLength; j++) {
+    for (var j = 0; j < iLength; j++) {
         randomStr += arr[Math.floor(Math.random()*arr.length)];
     }
     
@@ -2725,19 +3127,29 @@ function getRandomCode() {
 // Find password with id
 app.get('/findPassword/:id', (req, res) => {
 	User.find({}, '', function (error, result) {
-		if (error) { console.error(error); }
+		if (error) { 
+			// console.error(error); 
+			loggerEx.error('/findPassword/:id : ' + error.toString());
+      	  	res.status(500).json({ error: error.toString() });
+		}
 
 		if (0 == result.length) {
 			res.status(201).json([{error: "Invalid id"}]);
 		} else {
 			User.findById(result[0]._id, '', function (error, users) {
-		    	if (error) { console.error(error); }
+		    	if (error) { 
+		    		// console.error(error); 
+		    		loggerEx.error('/findPassword/:id : ' + error.toString());
+      	  			res.status(500).json({ error: error.toString() });
+		    	}
 		    	var newPw = getRandomCode()	// 임시비밀번호 생성
 			    users.password = CryptoJS.AES.encrypt(newPw, cryptoKey)
 			    users.tmp_pw_date = getNowDate()
 			    users.save(function (error) {
 				    if (error) {
-				       	console.log(error)
+				       	// console.log(error)
+				       	loggerEx.error('/findPassword/:id : ' + error.toString());
+      	  				res.status(500).json({ error: error.toString() });
 				    }
 				    // 임시비밀번호 이메일로 전송
 				    // sendMail(req.params.email, "[주차왕파킹]임시비밀번호가 발급되었습니다.", "임시비밀번호 : " + newPw)
@@ -2754,7 +3166,7 @@ app.get('/findPassword/:id', (req, res) => {
 							  from: '0647536677', 
 							  text: '(주)이지정보기술\n[영농일지]임시비밀번호입니다.\n비밀번호:[' + newPw + ']' 
 							})
-				    console.log(newPw)
+				    // console.log(newPw)
 
 				    res.status(200).json([{error: "Password is sent"}]);
 			    })
@@ -2767,7 +3179,11 @@ app.get('/findPassword/:id', (req, res) => {
 // check login process
 app.get('/checkPasswordExpired/:id', (req, res) => {
 	User.find({}, '', function (error, result) {
-		if (error) { console.error(error); }
+		if (error) { 
+			// console.error(error); 
+			loggerEx.error('/checkPasswordExpired/:id : ' + error.toString());
+      	  	res.status(500).json({ error: error.toString() });
+		}
 
 		if (0 == result.length) {
 			res.status(201).json([{error: "Invalid id"}]);
@@ -2806,7 +3222,11 @@ app.get('/checkPasswordExpired/:id', (req, res) => {
 app.put('/updateUserPassword', (req, res) => {
   	console.log(req.body)
   	User.find({}, '', function (error, users) {
-    	if (error) { console.error(error); }
+    	if (error) { 
+    		// console.error(error); 
+    		loggerEx.error('/updateUserPassword : ' + error.toString());
+      	  	res.status(500).json({ error: error.toString() });
+    	}
 
     	// 기존 비밀번호 비교    	
     	var inputNowPw = req.body.nowPassword;
@@ -2830,7 +3250,9 @@ app.put('/updateUserPassword', (req, res) => {
 	    	    
 	    users[0].save(function (error) {
 		    if (error) {
-		       	console.log(error)
+		       	// console.log(error)
+		       	loggerEx.error('/updateUserPassword : ' + error.toString());
+      	  		res.status(500).json({ error: error.toString() });
 		    }
 		    res.send({
 		        success: true
@@ -2842,7 +3264,7 @@ app.put('/updateUserPassword', (req, res) => {
 
 // Fetch users by date, searchType, searchContent
 app.get('/users/searchBy4/:startDate/:endDate/:searchType/:searchContent', (req, res) => {
-  console.log(req.params)
+  // console.log(req.params)
   var query = User.find({})
   
   if('null' == req.params.startDate) {  	  	
@@ -2880,7 +3302,11 @@ app.get('/users/searchBy4/:startDate/:endDate/:searchType/:searchContent', (req,
 // Update user
 app.put('/updateUser/:id', (req, res) => {
   	User.find({}, '', function (error, user) {
-    	if (error) { console.error(error); }
+    	if (error) { 
+    		// console.error(error); 
+    		loggerEx.error('/updateUser/:id : ' + error.toString());
+      	  	res.status(500).json({ error: error.toString() });
+    	}
     	user[0].id = req.body.id;
 	    if (req.body.password == "") {
 	    } else {
@@ -2894,7 +3320,9 @@ app.put('/updateUser/:id', (req, res) => {
 	  	
 	    user[0].save(function (error) {
 		    if (error) {
-		       	console.log(error)
+		       	// console.log(error)
+		       	loggerEx.error('/updateUser/:id : ' + error.toString());
+      	  		res.status(500).json({ error: error.toString() });
 		    }
 		    res.send({
 		        success: true
@@ -2910,7 +3338,9 @@ app.delete('/deleteUser/:id', (req, res) => {
 		id: req.params.id
 	}, function(err, lands) {
 		if (err) {
-			res.send(err)
+			// res.send(err)
+			loggerEx.error('/deleteUser/:id : ' + err.toString());
+      	  	res.status(500).json({ error: err.toString() });
 		}
 		res.send({
 			success: true
@@ -2921,7 +3351,11 @@ app.delete('/deleteUser/:id', (req, res) => {
 // Fetch items by userId, wCode
 app.get('/itemsByWcode/:userId/:wCode', (req, res) => {
   Item.find({}, '', function (error, items) {
-    if (error) { console.error(error); }
+    if (error) { 
+    	// console.error(error); 
+    	loggerEx.error('/itemsByWcode/:userId/:wCode : ' + error.toString());
+      	res.status(500).json({ error: error.toString() });
+    }
     res.send(items)
   })
   .where('userId').equals(req.params.userId)
@@ -2930,9 +3364,13 @@ app.get('/itemsByWcode/:userId/:wCode', (req, res) => {
 
 // Update item
 app.put('/item/:id', (req, res) => { 
-  console.log(req.body)  
+  // console.log(req.body)  
   Item.findById(req.params.id, '', function (error, item) {
-    if (error) { console.error(error); }
+    if (error) { 
+    	// console.error(error); 
+    	loggerEx.error('/item/:id : ' + error.toString());
+      	res.status(500).json({ error: error.toString() });
+    }
 
     item.userId = req.body.userId;
     item.date = req.body.date;
@@ -2946,7 +3384,9 @@ app.put('/item/:id', (req, res) => {
 
     item.save(function (error) {
       if (error) {
-        console.log(error)
+        // console.log(error)
+        loggerEx.error('/item/:id : ' + error.toString());
+      	res.status(500).json({ error: error.toString() });
       }
       res.send({
         success: true
@@ -2959,22 +3399,26 @@ app.put('/item/:id', (req, res) => {
 app.put('/itemUpdateUsage', (req, res) => { 
   // console.log(req.body)  
   Item.find({}, '', function (error, item) {
-    if (error) { console.error(error); }
-
-    // console.log(item[0].itemDetail)
+    if (error) { 
+    	// console.error(error); 
+    	loggerEx.error('/itemUpdateUsage : ' + error.toString());
+      	res.status(500).json({ error: error.toString() });
+    }
 
     for(var i = 0; i < item[0].itemDetail.length; i++) {
     	if(item[0].itemDetail[i].itemName === req.body.itemName) {
     		var itemUsage = item[0].itemDetail[i].itemUsage * 1
     		var journalUsage = req.body.usage * 1    		
     		var totalUsage = itemUsage + journalUsage
-    		console.log('totalUsage=' + totalUsage)
+    		// console.log('totalUsage=' + totalUsage)
 
     		item[0].itemDetail[i].itemUsage = totalUsage
 
     		item[0].save(function (error) {
     			if (error) {
-			       console.log(error)
+			       // console.log(error)
+			       loggerEx.error('/itemUpdateUsage : ' + error.toString());
+      			   res.status(500).json({ error: error.toString() });
 			    }
 			    res.send({
 			        success: true
@@ -2991,7 +3435,7 @@ app.put('/itemUpdateUsage', (req, res) => {
 
 // Add new item
 app.post('/item', (req, res) => {
-  console.log(req.body);
+  // console.log(req.body);
   var userId = req.body.userId;
   var date = req.body.date;
   // var landId = req.body.landId;
@@ -3018,7 +3462,9 @@ app.post('/item', (req, res) => {
 
   new_item.save(function (error, result) {
     if (error) {
-      console.log(error)
+      // console.log(error)
+      loggerEx.error('/item : ' + error.toString());
+      res.status(500).json({ error: error.toString() });
     }
     res.send({
       success: true,
@@ -3031,7 +3477,11 @@ app.post('/item', (req, res) => {
 // Fetch items by userId
 app.get('/items/:userId', (req, res) => {
   Item.find({}, '', function (error, items) {
-    if (error) { console.error(error); }
+    if (error) { 
+    	// console.error(error); 
+    	loggerEx.error('/items/:userId : ' + error.toString());
+      	res.status(500).json({ error: error.toString() });
+    }
     res.send(items)
   })
   .where('userId').equals(req.params.userId)
@@ -3058,7 +3508,9 @@ app.get('/itemsLookupByUserId/:userId', (req, res) => {
         { "$sort" : { "date": 1 } }
     ], function (err, result) {
         if (err) {
-            next(err);
+            // next(err);
+            loggerEx.error('/itemsLookupByUserId/:userId : ' + err.toString());
+      		res.status(500).json({ error: err.toString() });
         } else {
             res.send(result);
         }
@@ -3094,7 +3546,9 @@ app.get('/item/agg/:userId/:startDate/:endDate', (req, res) => {
         { "$sort" : { "_id.date": 1 } }
     ], function (err, result) {
         if (err) {
-            next(err);
+            // next(err);
+            loggerEx.error('/item/agg/:userId/:startDate/:endDate : ' + err.toString());
+      		res.status(500).json({ error: err.toString() });
         } else {
             res.send(result);
         }
@@ -3143,7 +3597,9 @@ app.get('/item/aggByDateNLandId/:userId/:startDate/:endDate/:landId', (req, res)
         { "$sort" : { "_id.date": 1 } }
     ], function (err, result) {
         if (err) {
-            next(err);
+            // next(err);
+            loggerEx.error('/item/aggByDateNLandId/:userId/:startDate/:endDate/:landId : ' + err.toString());
+      		res.status(500).json({ error: err.toString() });
         } else {
             res.send(result);
         }
@@ -3192,7 +3648,9 @@ app.get('/item/aggByYMNLandId/:userId/:ym/:landId', (req, res) => {
         { "$sort" : { "_id.date": 1 } }
     ], function (err, result) {
         if (err) {
-            next(err);
+            // next(err);
+            loggerEx.error('/item/aggByYMNLandId/:userId/:ym/:landId : ' + err.toString());
+      		res.status(500).json({ error: err.toString() });
         } else {
             res.send(result);
         }
@@ -3234,7 +3692,9 @@ app.get('/item/agg/searchBy5/:userId/:startDate/:endDate/:itemName/:landId', (re
         { "$sort" : { "_id.date": 1 } }
     ], function (err, result) {
         if (err) {
-            next(err);
+            // next(err);
+            loggerEx.error('/item/agg/searchBy5/:userId/:startDate/:endDate/:itemName/:landId : ' + err.toString());
+      		res.status(500).json({ error: err.toString() });
         } else {
             res.send(result);
         }
@@ -3244,7 +3704,11 @@ app.get('/item/agg/searchBy5/:userId/:startDate/:endDate/:itemName/:landId', (re
 // Fetch item by id
 app.get('/item/:id', (req, res) => {  
   Item.find({}, '', function (error, item) {
-    if (error) { console.error(error); }
+    if (error) { 
+    	// console.error(error); 
+    	loggerEx.error('/item/:id : ' + error.toString());
+      	res.status(500).json({ error: error.toString() });
+    }
     res.send(item)
   })
   .where('_id').equals(req.params.id)
@@ -3253,7 +3717,11 @@ app.get('/item/:id', (req, res) => {
 // Delete item
 app.delete('/item/:id', (req, res) => {
   ItemDetail.find({}, '', function (error, ids) {
-    if (error) { console.error(error); }
+    if (error) { 
+    	// console.error(error); 
+    	loggerEx.error('/item/:id : ' + error.toString());
+      	res.status(500).json({ error: error.toString() });
+    }
     
     // 삭제할 itemId 얻기
     var itemIdArray = []
@@ -3267,7 +3735,11 @@ app.delete('/item/:id', (req, res) => {
 		{ $pull: { itemDetail: { itemId : { $in: itemIdArray } } } },
 		{ multi: true },
 		function(err, doc) {
-	        if(err) { console.log(err); }
+	        if(err) { 
+	        	// console.log(err); 
+	        	loggerEx.error('/item/:id : ' + err.toString());
+      			res.status(500).json({ error: err.toString() });
+	        }
 	        else {
 	          Item.find({
 					_id: req.params.id
@@ -3302,11 +3774,17 @@ app.delete('/item/:id', (req, res) => {
 						_id: req.params.id
 				    }, function(err, lands) {
 						if (err) {
-							res.send(err)
+							// res.send(err)
+							loggerEx.error('/item/:id : ' + err.toString());
+      						res.status(500).json({ error: err.toString() });
 						}
 						// itemdetails 컬렉션에서 parentId에 해당하는 도큐먼트 삭제
 						ItemDetail.remove({parentId: req.params.id}, function(err2, ids2) {
-							if (err2) { res.send(err2) }
+							if (err2) { 
+								// res.send(err2) 
+								loggerEx.error('/item/:id : ' + err2.toString());
+      							res.status(500).json({ error: err2.toString() });
+							}
 							res.send({success: true})							
 						})
 				 	})
@@ -3320,7 +3798,7 @@ app.delete('/item/:id', (req, res) => {
 
 // Fetch items by date, item
 app.get('/items/searchBy3/:startDate/:endDate/:item', (req, res) => {  
-  console.log(req.params)
+  // console.log(req.params)
   var query = Item.find({})
   if(0 != req.params.startDate) {
   	query.where('date').gte(req.params.startDate)
@@ -3341,7 +3819,7 @@ app.get('/items/searchBy3/:startDate/:endDate/:item', (req, res) => {
 
 // Fetch items by date, item
 app.get('/items/searchBy4/:startDate/:endDate/:item/:landId', (req, res) => {  
-  console.log(req.params)
+  // console.log(req.params)
   var query = Item.find({})
   if(0 != req.params.startDate) {
   	query.where('date').gte(req.params.startDate)
@@ -3367,7 +3845,7 @@ app.get('/items/searchBy4/:startDate/:endDate/:item/:landId', (req, res) => {
 
 // Fetch items by date, userId, landId
 app.get('/items/searchBy4_2/:startDate/:endDate/:userId/:landId', (req, res) => {  
-  console.log(req.params)
+  // console.log(req.params)
   var query = Item.find({})
   if(0 != req.params.startDate) {
   	query.where('date').gte(req.params.startDate)
@@ -3388,15 +3866,12 @@ app.get('/items/searchBy4_2/:startDate/:endDate/:userId/:landId', (req, res) => 
 })
 
 // Fetch items by date, userId, landId
-app.get('/items/searchBy5/:startDate/:endDate/:userId/:landId/:itemName', (req, res) => { 
-	// console.log(req.params)
+app.get('/items/searchBy5/:startDate/:endDate/:userId/:landId/:itemName', (req, res) => { 	
 	var startDate = req.params.startDate.replace(/-/gi, "")
-	startDate += '000000000'
-	// console.log(startDate)
+	startDate += '000000000'	
 
 	var endDate = req.params.endDate.replace(/-/gi, "")
-	endDate += '235959999'
-	// console.log(endDate)
+	endDate += '235959999'	
 
 	if ('ALL' == req.params.itemName) {
 		req.params.itemName = ""
@@ -3404,7 +3879,11 @@ app.get('/items/searchBy5/:startDate/:endDate/:userId/:landId/:itemName', (req, 
 
 	var itemDetails = []
 	ItemDetail.find({ "itemName" : { $regex: req.params.itemName, $options: 'g' } }, '', function (error, ids) {
-	 	if (error) { console.error(error); }
+	 	if (error) { 
+	 		// console.error(error); 
+	 		loggerEx.error('/items/searchBy5/:startDate/:endDate/:userId/:landId/:itemName : ' + error.toString());
+      		res.status(500).json({ error: error.toString() });
+	 	}
 	 
 	 	var idArray = []
 	 	for (var i = 0; i < ids.length; i++) {
@@ -3513,7 +3992,9 @@ app.get('/items/lookupBy5/:startDate/:endDate/:userId/:landId/:itemName', (req, 
 		{ '$sort' : { 'date': 1 } }
     ], function (err, result) {
         if (err) {
-            next(err);
+            // next(err);
+            loggerEx.error('/items/lookupBy5/:startDate/:endDate/:userId/:landId/:itemName : ' + err.toString());
+      		res.status(500).json({ error: err.toString() });
         } else {
             res.send(result);
         }
@@ -3584,7 +4065,9 @@ app.get('/items/lookupBy4/:startDate/:endDate/:userId/:landId', (req, res) => {
 		{ '$sort' : { 'date': 1 } }
     ], function (err, result) {
         if (err) {
-            next(err);
+            // next(err);
+            loggerEx.error('/items/lookupBy4/:startDate/:endDate/:userId/:landId : ' + err.toString());
+      		res.status(500).json({ error: err.toString() });
         } else {
             res.send(result);
         }
@@ -3655,7 +4138,9 @@ app.get('/itmesLookupByYMUserIdLandId/:userId/:ym/:landId', (req, res) => {
 		{ '$sort' : { 'date': 1 } }
     ], function (err, result) {
         if (err) {
-            next(err);
+            // next(err);
+            loggerEx.error('/itmesLookupByYMUserIdLandId/:userId/:ym/:landId : ' + err.toString());
+      		res.status(500).json({ error: err.toString() });
         } else {
             res.send(result);
         }
@@ -3663,19 +4148,20 @@ app.get('/itmesLookupByYMUserIdLandId/:userId/:ym/:landId', (req, res) => {
 })
 
 // Fetch items by date, userId, landId
-app.get('/items/searchBy5/:startDate/:endDate/:userId/:landId/', (req, res) => { 	
-	// console.log(req.params)
+app.get('/items/searchBy5/:startDate/:endDate/:userId/:landId', (req, res) => { 		
 	var startDate = req.params.startDate.replace(/-/gi, "")
-	startDate += '000000000'
-	// console.log(startDate)
+	startDate += '000000000'	
 
 	var endDate = req.params.endDate.replace(/-/gi, "")
-	endDate += '235959999'
-	// console.log(endDate)
+	endDate += '235959999'	
 
 	var itemDetails = []
 	ItemDetail.find({}, '', function (error, ids) {
-	 	if (error) { console.error(error); }
+	 	if (error) { 
+	 		// console.error(error); 
+	 		loggerEx.error('/items/searchBy5/:startDate/:endDate/:userId/:landId : ' + error.toString());
+      		res.status(500).json({ error: error.toString() });
+	 	}
 	 
 	 	var idArray = []
 	 	for (var i = 0; i < ids.length; i++) {
@@ -3718,12 +4204,20 @@ async function getItemByLandId(idArray, landId) {
 	// const itemResult = []
 	if ('0' == landId) {
 		const itemResult = await Item.find({ _id: { $in: idArray } }, '', function (error2, items) {
-	 		if (error2) { console.error(error2); }
+	 		if (error2) { 
+	 			// console.error(error2); 
+	 			loggerEx.error('getItemByLandId : ' + error2.toString());
+      			res.status(500).json({ error: error2.toString() });
+	 		}
 	 	})
 	 	return itemResult
 	} else {
 		const itemResult = await Item.find({ _id: { $in: idArray } }, '', function (error2, items) {
-	 		if (error2) { console.error(error2); }
+	 		if (error2) { 
+	 			// console.error(error2); 
+	 			loggerEx.error('getItemByLandId : ' + error2.toString());
+      			res.status(500).json({ error: error2.toString() });
+	 		}
 	 	})
 	 	.where('landId').equals(landId)
 	 	return itemResult
@@ -3732,9 +4226,13 @@ async function getItemByLandId(idArray, landId) {
 
 // Fetch items by year, month, userId
 app.get('/items/searchByYMUserId/:ym/:userId', (req, res) => {
-  console.log(req.params)
+  // console.log(req.params)
   Item.find({}, '', function (error, items) {
-    if (error) { console.error(error); }
+    if (error) { 
+    	// console.error(error); 
+    	loggerEx.error('/items/searchByYMUserId/:ym/:userId : ' + error.toString());
+      	res.status(500).json({ error: error.toString() });
+    }
     res.send(items)
   })
   .where('date').regex(req.params.ym)
@@ -3743,9 +4241,13 @@ app.get('/items/searchByYMUserId/:ym/:userId', (req, res) => {
 
 // Fetch items by year, month, userId, landId
 app.get('/items/searchByYMUserIdLandId/:ym/:userId/:landId', (req, res) => {
-  console.log(req.params)
+  // console.log(req.params)
   Item.find({}, '', function (error, items) {
-    if (error) { console.error(error); }
+    if (error) { 
+    	// console.error(error); 
+    	loggerEx.error('/items/searchByYMUserIdLandId/:ym/:userId/:landId : ' + error.toString());
+      	res.status(500).json({ error: error.toString() });
+    }
     res.send(items)
   })
   .where('date').regex(req.params.ym)
@@ -3755,9 +4257,13 @@ app.get('/items/searchByYMUserIdLandId/:ym/:userId/:landId', (req, res) => {
 
 // Fetch items by date & userId
 app.get('/items/:startDate/:endDate/:userId', (req, res) => {
-  console.log(req.params)
+  // console.log(req.params)
   Item.find({}, '', function (error, items) {
-    if (error) { console.error(error); }
+    if (error) { 
+    	// console.error(error); 
+    	loggerEx.error('/items/:startDate/:endDate/:userId : ' + error.toString());
+      	res.status(500).json({ error: error.toString() });
+    }
     res.send(items)
   })
   .where('date').gte(req.params.startDate).lte(req.params.endDate)
@@ -3766,7 +4272,7 @@ app.get('/items/:startDate/:endDate/:userId', (req, res) => {
 
 // Fetch items by date & userId & itemDetail
 app.get('/itemsByYMNUserIdAndDetail/:startDate/:endDate/:userId', (req, res) => {
-  console.log(req.params)
+  // console.log(req.params)
   Item.aggregate([
 		{
 		    '$lookup':
@@ -3788,7 +4294,9 @@ app.get('/itemsByYMNUserIdAndDetail/:startDate/:endDate/:userId', (req, res) => 
         { "$sort" : { "date": 1 } }
     ], function (err, result) {
         if (err) {
-            next(err);
+            // next(err);
+            loggerEx.error('/itemsByYMNUserIdAndDetail/:startDate/:endDate/:userId : ' + err.toString());
+      		res.status(500).json({ error: err.toString() });
         } else {
             res.send(result);
         }
@@ -3797,9 +4305,13 @@ app.get('/itemsByYMNUserIdAndDetail/:startDate/:endDate/:userId', (req, res) => 
 
 // Fetch items by userId, landId, item, itemName
 app.get('/items/getByUserLandItemName/:userId/:landId/:item/:itemName', (req, res) => {
-  console.log(req.params)
+  // console.log(req.params)
   Item.find({}, '', function (error, items) {
-    if (error) { console.error(error); }
+    if (error) { 
+    	// console.error(error); 
+    	loggerEx.error('/items/getByUserLandItemName/:userId/:landId/:item/:itemName : ' + error.toString());
+      	res.status(500).json({ error: error.toString() });
+    }
 
     if (0 < items.length) {
     	for(var i = 0; i < items[0].itemDetail.length; i++) {
@@ -3852,7 +4364,9 @@ app.get('/itemsGetAggData/:userId/:startDate/:endDate', (req, res) => {
         { "$sort" : { "_id.date": 1 } }
     ], function (err, result) {
         if (err) {
-            next(err);
+            // next(err);
+            loggerEx.error('/itemsGetAggData/:userId/:startDate/:endDate : ' + err.toString());
+      		res.status(500).json({ error: err.toString() });
         } else {
             res.send(result);
         }
@@ -3883,7 +4397,9 @@ app.get('/journalsGetAggData/:userId/:startDate/:endDate', (req, res) => {
         { "$sort" : { "_id.date": 1 } }
     ], function (err, result) {
         if (err) {
-            next(err);
+            // next(err);
+            loggerEx.error('/journalsGetAggData/:userId/:startDate/:endDate : ' + err.toString());
+      		res.status(500).json({ error: err.toString() });
         } else {
             res.send(result);
         }
@@ -3914,7 +4430,9 @@ app.get('/journalsGetCOOAggData/:userId/:startDate/:endDate', (req, res) => {
         { "$sort" : { "_id.date": 1 } }
     ], function (err, result) {
         if (err) {
-            next(err);
+            // next(err);
+            loggerEx.error('/journalsGetCOOAggData/:userId/:startDate/:endDate : ' + err.toString());
+      		res.status(500).json({ error: err.toString() });
         } else {
             res.send(result);
         }
@@ -3940,32 +4458,48 @@ app.put('/leaveUser/:userId', (req, res) => {
 
     leave_user.save(function (error, result) {
     	if (error) {
-    		console.error(error);
+    		// console.error(error);
+    		loggerEx.error('/leaveUser/:userId : ' + error.toString());
+      		res.status(500).json({ error: error.toString() });
     	}
     	// 2. Delete Journals
     	Journal.remove({
     		userId: req.params.userId
     	}, function(err, removedJournals) {
-    		if (err) { res.send(err) }
+    		if (err) { 
+    			// res.send(err) 
+    			loggerEx.error('/leaveUser/:userId : ' + err.toString());
+      			res.status(500).json({ error: err.toString() });
+    		}
 
     		// 3. Delete Items
     		Item.remove({
     			userId: req.params.userId
     		}, function(err, removedItems) {
-    			if (err) { res.send(err) }	    			
+    			if (err) { 
+    				// res.send(err) 
+    				loggerEx.error('/leaveUser/:userId : ' + err.toString());
+      				res.status(500).json({ error: err.toString() });
+    			}	    			
 
     			// 4. Delete Lands
     			Land.remove({
     				userId: req.params.userId
     			}, function(err, removedLands) {
-    				if (err) { res.send(err) }
+    				if (err) { 
+    					// res.send(err) 
+    					loggerEx.error('/leaveUser/:userId : ' + err.toString());
+      					res.status(500).json({ error: err.toString() });
+    				}
 
     				// 5. Delete Users
 			    	User.remove({
 						id: req.params.userId
 					}, function(err, removedUsers) {
 						if (err) {
-							res.send(err)
+							// res.send(err)
+							loggerEx.error('/leaveUser/:userId : ' + err.toString());
+      						res.status(500).json({ error: err.toString() });
 						}
 						res.send({
 							success: true
@@ -3979,11 +4513,11 @@ app.put('/leaveUser/:userId', (req, res) => {
 
 // Add new itemDetail
 app.post('/itemDetail', (req, res) => {
-  console.log(req.body);
+  // console.log(req.body);
   var itemDetail = req.body.itemDetail;
   var itemId = itemDetail.createDate + moment().format("HHmmssSSS")	
   // var itemId = moment().format("YYYYMMDDHHmmssSSS")	
-  console.log(itemId)
+  // console.log(itemId)
 
   var new_itemDetail = new ItemDetail({
   	itemId: itemId,
@@ -3997,7 +4531,9 @@ app.post('/itemDetail', (req, res) => {
 
   new_itemDetail.save(function (error, result) {
     if (error) {
-      console.log(error)
+      // console.log(error)
+      loggerEx.error('/itemDetail : ' + error.toString());
+      res.status(500).json({ error: error.toString() });
     }
     res.send({
       success: true,
@@ -4010,7 +4546,11 @@ app.post('/itemDetail', (req, res) => {
 // Fetch itemDetail by userId, itemId
 app.get('/itemDetailByItemId/:userId/:itemId', (req, res) => {
   ItemDetail.find({}, '', function (error, items) {
-    if (error) { console.error(error); }
+    if (error) { 
+    	// console.error(error); 
+    	loggerEx.error('/itemDetailByItemId/:userId/:itemId : ' + error.toString());
+      	res.status(500).json({ error: error.toString() });
+    }
     res.send(items)
   })
   .where('userId').equals(req.params.userId)
@@ -4019,9 +4559,13 @@ app.get('/itemDetailByItemId/:userId/:itemId', (req, res) => {
 
 // Update item usage
 app.put('/itemDetailUpdateItemUsage', (req, res) => { 
-  console.log(req.body.itemDetail)  
+  // console.log(req.body.itemDetail)  
   ItemDetail.find({}, '', function (error, item) {
-    if (error) { console.error(error); }
+    if (error) { 
+    	// console.error(error); 
+    	loggerEx.error('/itemDetailUpdateItemUsage : ' + error.toString());
+      	res.status(500).json({ error: error.toString() });
+    }
 
     if (0 < item.length) {	// item이 있을 경우 save
     	item[0].itemUsage = req.body.itemDetail.itemUsage - item[0].journalUsage
@@ -4030,7 +4574,11 @@ app.put('/itemDetailUpdateItemUsage', (req, res) => {
 	    item[0].itemPrice = req.body.itemDetail.itemPrice
 	    
 	    item[0].save(function (error, result) {
-	    	if (error) { console.log(error) }
+	    	if (error) { 
+	    		// console.log(error) 
+	    		loggerEx.error('/itemDetailUpdateItemUsage : ' + error.toString());
+      			res.status(500).json({ error: error.toString() });
+	    	}
 			res.send({ 
 				success: true,
 				result: result
@@ -4051,7 +4599,9 @@ app.put('/itemDetailUpdateItemUsage', (req, res) => {
 
 		new_itemDetail.save(function (error, result) {
 		    if (error) {
-		      console.log(error)
+		      // console.log(error)
+		      loggerEx.error('/itemDetailUpdateItemUsage : ' + error.toString());
+      		  res.status(500).json({ error: error.toString() });
 		    }
 		    res.send({
 		      success: true,
@@ -4069,12 +4619,20 @@ app.put('/itemDetailUpdateItemUsage', (req, res) => {
 app.put('/itemDetailUpdateJournalUsage', (req, res) => { 
   console.log(req.body.itemDetail)  
   ItemDetail.find({}, '', function (error, item) {
-    if (error) { console.error(error); }
+    if (error) { 
+    	// console.error(error); 
+    	loggerEx.error('/itemDetailUpdateJournalUsage : ' + error.toString());
+      	res.status(500).json({ error: error.toString() });
+    }
 
     item[0].journalUsage = item[0].journalUsage + (req.body.itemDetail.journalUsage - req.body.itemDetail.originalJournalUsage)
     // item[0].journalUsage = req.body.itemDetail.journalUsage * 1
     item[0].save(function (error, result) {
-    	if (error) { console.log(error) }
+    	if (error) { 
+    		// console.log(error) 
+    		loggerEx.error('/itemDetailUpdateJournalUsage : ' + error.toString());
+      		res.status(500).json({ error: error.toString() });
+    	}
 		res.send({ 
 			success: true,
 			result: result
@@ -4088,11 +4646,17 @@ app.put('/itemDetailUpdateJournalUsage', (req, res) => {
 // Update itemdeails with parentId by itemId
 app.put('/updateItemDetailWithParentId/:itemId/:parentId', (req, res) => {
 	ItemDetail.find({}, '', function (error, ids) {
-		if (error) { console.error(error); }
+		if (error) { 
+			// console.error(error); 
+			loggerEx.error('/updateItemDetailWithParentId/:itemId/:parentId : ' + error.toString());
+      		res.status(500).json({ error: error.toString() });
+		}
 	    ids[0].parentId = req.params.parentId
 	    ids[0].save(function (error) {
 	      if (error) {
-	        console.log(error)
+	        // console.log(error)
+	        loggerEx.error('/updateItemDetailWithParentId/:itemId/:parentId : ' + error.toString());
+      		res.status(500).json({ error: error.toString() });
 	      }
 	      res.send({
 	        success: true
@@ -4104,13 +4668,21 @@ app.put('/updateItemDetailWithParentId/:itemId/:parentId', (req, res) => {
 
 // Delete journal usage
 app.put('/itemDetailDeleteJournalUsage', (req, res) => { 
-  console.log(req.body.itemDetail)  
+  // console.log(req.body.itemDetail)  
   ItemDetail.find({}, '', function (error, item) {
-    if (error) { console.error(error); }
+    if (error) { 
+    	// console.error(error); 
+    	loggerEx.error('/itemDetailDeleteJournalUsage : ' + error.toString());
+      	res.status(500).json({ error: error.toString() });
+    }
 
     item[0].journalUsage = item[0].journalUsage - (req.body.itemDetail.journalUsage * 1)
     item[0].save(function (error, result) {
-    	if (error) { console.log(error) }
+    	if (error) { 
+    		// console.log(error)
+    		loggerEx.error('/itemDetailDeleteJournalUsage : ' + error.toString());
+      		res.status(500).json({ error: error.toString() });
+    	}
 		res.send({ 
 			success: true,
 			result: result
@@ -4127,7 +4699,9 @@ app.delete('/deleteItemDetailByItemId/:itemId', (req, res) => {
 		itemId: req.params.itemId
 	}, function(err, lands) {
 		if (err) {
-			res.send(err)
+			// res.send(err)
+			loggerEx.error('/deleteItemDetailByItemId/:itemId : ' + err.toString());
+      		res.status(500).json({ error: err.toString() });
 		}
 		res.send({
 			success: true
