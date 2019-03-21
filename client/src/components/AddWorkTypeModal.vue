@@ -81,6 +81,7 @@ import McService from '@/services/McService'
 import ScService from '@/services/ScService'
 import WcService from '@/services/WcService'
 import DcService from '@/services/DcService'
+import LogService from '@/services/LogService'
 export default {
   $_veeValidate: {
     validator: 'new'
@@ -143,24 +144,49 @@ export default {
     this.getBCS()
   },
   methods: {
-    async getScByDcode () {
-      const response = await DcService.fetchScsByDcode({
-        dCode: this.dcsCode
+    async logError (page, funcName, message) {
+      await LogService.logError({
+        errorPage: page,
+        funcName: funcName,
+        message: message
       })
+    },
+    async getScByDcode () {
+      var response = null
+      try {
+        response = await DcService.fetchScsByDcode({
+          dCode: this.dcsCode
+        })
+      } catch (e) {
+        this.logError('AddWorkTypeModal.vue', 'getScByDcode', e.toString())
+        this.$router.push('/500')
+      }
       this.scsCode = response.data.dcs[0].sCode
       this.getMcByScode()
     },
     async getMcByScode () {
-      const response = await ScService.fetchMcsByScode({
-        sCode: this.scsCode
-      })
+      var response = null
+      try {
+        response = await ScService.fetchMcsByScode({
+          sCode: this.scsCode
+        })
+      } catch (e) {
+        this.logError('AddWorkTypeModal.vue', 'getMcByScode', e.toString())
+        this.$router.push('/500')
+      }
       this.mcsCode = response.data.scs[0].mCode
       this.getBcByMcode()
     },
     async getBcByMcode () {
-      const response = await McService.fetchBcsByMcode({
-        mCode: this.mcsCode
-      })
+      var response = null
+      try {
+        response = await McService.fetchBcsByMcode({
+          mCode: this.mcsCode
+        })
+      } catch (e) {
+        this.logError('AddWorkTypeModal.vue', 'getBcByMcode', e.toString())
+        this.$router.push('/500')
+      }
       this.bcsCode = response.data.mcs[0].bCode
 
       // 대, 중, 소분류 자동선택
@@ -173,65 +199,104 @@ export default {
       this.scs = this.scsCode
     },
     async getBCS () {
-      const response = await BcService.fetchBcs({})
+      var response = null
+      try {
+        response = await BcService.fetchBcs({})
+      } catch (e) {
+        this.logError('AddWorkTypeModal.vue', 'getBCS', e.toString())
+        this.$router.push('/500')
+      }
       this.bcsItems = response.data.bcs
     },
     async getMCS (bCode) {
-      const response = await McService.fetchMcsByBCode({
-        bCode: bCode
-      })
+      var response = null
+      try {
+        response = await McService.fetchMcsByBCode({
+          bCode: bCode
+        })
+      } catch (e) {
+        this.logError('AddWorkTypeModal.vue', 'getMCS', e.toString())
+        this.$router.push('/500')
+      }
       this.mcsItems = response.data.mcs
     },
     async getSCS (mCode) {
-      const response = await ScService.fetchSByM({
-        mCode: mCode
-      })
+      var response = null
+      try {
+        response = await ScService.fetchSByM({
+          mCode: mCode
+        })
+      } catch (e) {
+        this.logError('AddWorkTypeModal.vue', 'getSCS', e.toString())
+        this.$router.push('/500')
+      }
       this.scsItems = response.data.scs
     },
     async getMaxWCS () {
-      const response = await WcService.fetchMaxWcs({
-      })
+      var response = null
+      try {
+        response = await WcService.fetchMaxWcs({})
+      } catch (e) {
+        this.logError('AddWorkTypeModal.vue', 'getMaxWCS', e.toString())
+        this.$router.push('/500')
+      }
       this.maxWcs = response.data[0].wCode
     },
     async addWorkType () {
-      // this.maxWcs = (this.maxWcs.replace('W', '') * 1) + 1
       this.maxWcs = (this.maxWcs.substr(1) * 1) + 1
       this.maxWcs = 'W' + this.leadingZeros(this.maxWcs, 3)
-      // console.log(this.bcs + ', ' + this.mcs + ', ' + this.scs + ', ' + this.maxWcs + ', ' + this.workType)
-      const response = await WcService.createWc({
-        bCode: this.bcs,
-        mCode: this.mcs,
-        sCode: this.scs,
-        wCode: this.maxWcs,
-        text: this.workType,
-        asItem: '0'
-      })
+      var response = null
+      try {
+        response = await WcService.createWc({
+          bCode: this.bcs,
+          mCode: this.mcs,
+          sCode: this.scs,
+          wCode: this.maxWcs,
+          text: this.workType,
+          asItem: '0'
+        })
+      } catch (e) {
+        this.logError('AddWorkTypeModal.vue', 'addWorkType', e.toString())
+        this.$router.push('/500')
+      }
       this.addedWorkTypeCode = response.data.result.wCode
       // console.log(this.addedWorkTypeCode)
     },
     async addWorkTypeForItem () {
       this.maxWcs = (this.maxWcs.substr(1) * 1) + 1
       this.maxWcs = 'W' + this.leadingZeros(this.maxWcs, 3)
-      const response = await WcService.createWc({
-        bCode: this.bcs,
-        mCode: this.mcs,
-        sCode: this.scs,
-        wCode: this.maxWcs,
-        text: this.workType,
-        asItem: '1'
-      })
+      var response = null
+      try {
+        response = await WcService.createWc({
+          bCode: this.bcs,
+          mCode: this.mcs,
+          sCode: this.scs,
+          wCode: this.maxWcs,
+          text: this.workType,
+          asItem: '1'
+        })
+      } catch (e) {
+        this.logError('AddWorkTypeModal.vue', 'addWorkTypeForItem', e.toString())
+        this.$router.push('/500')
+      }
       this.addedWorkTypeCode = response.data.result.wCode
     },
     async checkDuplicatedWorkType () {
-      const response = await WcService.fetchSameWc({
-        workTypeText: this.workType
-      })
-      console.log(response.data)
+      var response = null
+      try {
+        response = await WcService.fetchSameWc({
+          workTypeText: this.workType
+        })
+      } catch (e) {
+        this.logError('AddWorkTypeModal.vue', 'checkDuplicatedWorkType', e.toString())
+        this.$router.push('/500')
+      }
+      // console.log(response.data)
       if (response.data.length >= 1) {
-        console.log('true')
+        // console.log('true')
         alert('같은 이름의 분류가 존재합니다')
       } else {
-        console.log('false')
+        // console.log('false')
         this.save()
       }
     },

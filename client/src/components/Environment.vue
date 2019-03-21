@@ -119,6 +119,7 @@ import WeatherService from '@/services/WeatherService'
 import LandService from '@/services/LandService'
 import SsService from '@/services/SsService'
 import WcDataService from '@/services/WcDataService'
+import LogService from '@/services/LogService'
 const CanvasJS = require('../../canvasjs.min.js')
 export default {
   $_veeValidate: {
@@ -342,11 +343,24 @@ export default {
     }
   },
   methods: {
-    async fetchTodayWeather (nx, ny) {
-      const response = await WeatherService.fetchTodayWeather({
-        nx: nx,
-        ny: ny
+    async logError (page, funcName, message) {
+      await LogService.logError({
+        errorPage: page,
+        funcName: funcName,
+        message: message
       })
+    },
+    async fetchTodayWeather (nx, ny) {
+      var response = null
+      try {
+        response = await WeatherService.fetchTodayWeather({
+          nx: nx,
+          ny: ny
+        })
+      } catch (e) {
+        this.logError('Environment.vue', 'fetchTodayWeather', e.toString())
+        this.$router.push('/500')
+      }
       for (var i = 0; i < response.data.item.length; i++) {
         var sky = 'SKY'
         var t1h = 'T1H'
@@ -396,10 +410,15 @@ export default {
       this.getWeatherCrawlerDataAgg()
     },
     async getWeatherCrawlerDataAgg () {
-      const response = await WcDataService.fetchWcDataAgg({
-        startDate: this.sDate,
-        endDate: this.eDate
-      })
+      var response = null
+      try {
+        response = await WcDataService.fetchWcDataAgg({
+          startDate: this.sDate,
+          endDate: this.eDate
+        })
+      } catch (e) {
+        this.$router.push('/500')
+      }
 
       this.chartOptions.data[0].dataPoints = []
       this.chartOptions.data[1].dataPoints = []
@@ -452,10 +471,16 @@ export default {
       this.getSensorDataAgg()
     },
     async getSensorDataAgg () {
-      const response = await SsService.fetchSensorDataAgg({
-        startDate: this.sDate.replace(/-/gi, ''),
-        endDate: this.eDate.replace(/-/gi, '')
-      })
+      var response = null
+      try {
+        response = await SsService.fetchSensorDataAgg({
+          startDate: this.sDate.replace(/-/gi, ''),
+          endDate: this.eDate.replace(/-/gi, '')
+        })
+      } catch (e) {
+        this.logError('Environment.vue', 'getSensorDataAgg', e.toString())
+        this.$router.push('/500')
+      }
 
       this.chartOptions2.data[0].dataPoints = []
       this.chartOptions2.data[1].dataPoints = []
@@ -526,8 +551,14 @@ export default {
       this.getSensorData()
     },
     async getSensorData () {
-      const response = await SsService.fetchSensorData({
-      })
+      var response = null
+      try {
+        response = await SsService.fetchSensorData({
+        })
+      } catch (e) {
+        this.logError('Environment.vue', 'getSensorData', e.toString())
+        this.$router.push('/500')
+      }
       // console.log(response.data[0])
       this.innerT1h = '온도 : ' + response.data[0].temperature + '℃'
       this.innerREH = '습도 : ' + response.data[0].humidity + '%'
@@ -535,9 +566,15 @@ export default {
     },
     async getLandsByUserId () {
       var vm = this
-      const response = await LandService.fetchLands({
-        userId: this.userId
-      })
+      var response = null
+      try {
+        response = await LandService.fetchLands({
+          userId: this.userId
+        })
+      } catch (e) {
+        this.logError('Environment.vue', 'getLandsByUserId', e.toString())
+        this.$router.push('/500')
+      }
       // Do geo coding
       // https://github.com/googlemaps/google-maps-services-js
       var googleMapsClient = require('@google/maps').createClient({

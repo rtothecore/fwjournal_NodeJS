@@ -67,6 +67,7 @@ import {bus} from '../main'
 import moment from 'moment'
 import SmsAuthService from '@/services/SmsAuthService'
 import UserService from '@/services/UserService'
+import LogService from '@/services/LogService'
 export default {
   data () {
     return {
@@ -99,10 +100,23 @@ export default {
     })
   },
   methods: {
-    async createNewAuthCode () {
-      const response = await SmsAuthService.createNewSMSAuthCode({
-        phone_no: this.phoneNo
+    async logError (page, funcName, message) {
+      await LogService.logError({
+        errorPage: page,
+        funcName: funcName,
+        message: message
       })
+    },
+    async createNewAuthCode () {
+      var response = null
+      try {
+        response = await SmsAuthService.createNewSMSAuthCode({
+          phone_no: this.phoneNo
+        })
+      } catch (e) {
+        this.logError('ChangePhoneNoModal.vue', 'createNewAuthCode', e.toString())
+        this.$router.push('/500')
+      }
       if (response.data.success) {
         this.$swal({
           type: 'success',
@@ -117,11 +131,16 @@ export default {
       }
     },
     async updateUserPhoneNoData () {
-      const response = await UserService.updateUserPhoneNo({
-        id: this.userId,
-        phone_no: this.phoneNo
-      })
-      console.log(response.data)
+      try {
+        await UserService.updateUserPhoneNo({
+          id: this.userId,
+          phone_no: this.phoneNo
+        })
+      } catch (e) {
+        this.logError('ChangePhoneNoModal.vue', 'updateUserPhoneNoData', e.toString())
+        this.$router.push('/500')
+      }
+      // console.log(response.data)
 
       this.$swal({
         type: 'success',
@@ -133,9 +152,15 @@ export default {
       })
     },
     async getAuthCode () {
-      const response = await SmsAuthService.getAuthCode({
-        phone_no: this.phoneNo
-      })
+      var response = null
+      try {
+        response = await SmsAuthService.getAuthCode({
+          phone_no: this.phoneNo
+        })
+      } catch (e) {
+        this.logError('ChangePhoneNoModal.vue', 'getAuthCode', e.toString())
+        this.$router.push('/500')
+      }
       // console.log(response.data[0].auth_code)
       if (this.authCode === response.data[0].auth_code) {
         clearInterval(this.authTimer)
@@ -157,9 +182,14 @@ export default {
       }
     },
     async deleteAuthCode () {
-      await SmsAuthService.deleteAuthcode({
-        phone_no: this.phoneNo
-      })
+      try {
+        await SmsAuthService.deleteAuthcode({
+          phone_no: this.phoneNo
+        })
+      } catch (e) {
+        this.logError('ChangePhoneNoModal.vue', 'deleteAuthCode', e.toString())
+        this.$router.push('/500')
+      }
     },
     goToStep3 () {
       this.getAuthCode()

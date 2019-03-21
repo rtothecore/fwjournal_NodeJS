@@ -196,7 +196,8 @@ import LandService from '@/services/LandService'
 import ScService from '@/services/ScService'
 import WcService from '@/services/WcService'
 import ItemService from '@/services/ItemService'
-// import ItemDetailService from '@/services/ItemDetailService'
+import DBService from '@/services/DBService'
+import LogService from '@/services/LogService'
 import ImageInput from './ImageInput.vue'
 export default {
   $_veeValidate: {
@@ -311,12 +312,14 @@ export default {
     }
   },
   created () {
-    this.userId = this.$session.get('userId')
-    this.init()
-    this.getLands()
-    this.getWorkTypeItems()
-    this.selectLand = '0'
-    this.getItemsBy5()
+    if (this.checkDB()) {
+      this.userId = this.$session.get('userId')
+      this.init()
+      this.getLands()
+      this.getWorkTypeItems()
+      this.selectLand = '0'
+      this.getItemsBy5()
+    }
   },
   components: {
     ImageInput: ImageInput
@@ -359,12 +362,31 @@ export default {
     }
   },
   methods: {
+    async logError (page, funcName, message) {
+      await LogService.logError({
+        errorPage: page,
+        funcName: funcName,
+        message: message
+      })
+    },
     async getWorkTypeItems () {
-      const response = await WcService.fetchDistinctBCPText({})
+      var response = null
+      try {
+        response = await WcService.fetchDistinctBCPText({})
+      } catch (e) {
+        this.logError('SearchItem.vue', 'getWorkTypeItems', e.toString())
+        this.$router.push('/500')
+      }
       for (var i = 0; i < response.data.length; i++) {
-        const response2 = await WcService.fetchBCPDataByText({
-          bcpText: response.data[i]
-        })
+        var response2 = null
+        try {
+          response2 = await WcService.fetchBCPDataByText({
+            bcpText: response.data[i]
+          })
+        } catch (e) {
+          this.logError('SearchItem.vue', 'getWorkTypeItems', e.toString())
+          this.$router.push('/500')
+        }
         if (response2.data.asItem === '1') {
           var tmpItem = {}
           // tmpItem.text = '작물>' + response2.data.text
@@ -373,12 +395,23 @@ export default {
           this.WorkTypeitems.push(tmpItem)
         }
       }
-
-      const response3 = await WcService.fetchDistinctBALText({})
+      var response3 = null
+      try {
+        response3 = await WcService.fetchDistinctBALText({})
+      } catch (e) {
+        this.logError('SearchItem.vue', 'getWorkTypeItems', e.toString())
+        this.$router.push('/500')
+      }
       for (var j = 0; j < response3.data.length; j++) {
-        const response4 = await WcService.fetchBALDataByText({
-          balText: response3.data[j]
-        })
+        var response4 = null
+        try {
+          response4 = await WcService.fetchBALDataByText({
+            balText: response3.data[j]
+          })
+        } catch (e) {
+          this.logError('SearchItem.vue', 'getWorkTypeItems', e.toString())
+          this.$router.push('/500')
+        }
         if (response4.data.asItem === '1') {
           var tmpItem2 = {}
           // tmpItem2.text = '가축>' + response4.data.text
@@ -410,13 +443,19 @@ export default {
         this.selectLand = 0
       }
 
-      const response = await ItemService.fetchItemLookupBy5({
-        userId: this.userId,
-        startDate: tmpStartDate,
-        endDate: tmpEndDate,
-        itemName: tmpSearchWord,
-        landId: this.selectLand
-      })
+      var response = null
+      try {
+        response = await ItemService.fetchItemLookupBy5({
+          userId: this.userId,
+          startDate: tmpStartDate,
+          endDate: tmpEndDate,
+          itemName: tmpSearchWord,
+          landId: this.selectLand
+        })
+      } catch (e) {
+        this.logError('SearchItem.vue', 'getItemsBy5', e.toString())
+        this.$router.push('/500')
+      }
       var tmpItems = response.data
 
       for (var i = 0; i < tmpItems.length; i++) {
@@ -430,32 +469,61 @@ export default {
       this.items = tmpItems
     },
     async deleteItemData (id) {
-      await ItemService.deleteItem(id)
+      try {
+        await ItemService.deleteItem(id)
+      } catch (e) {
+        this.logError('SearchItem.vue', 'deleteItemData', e.toString())
+        this.$router.push('/500')
+      }
     },
     async getCropCodeByLandId (landId) {
-      const response = await LandService.fetchCropCodeByLandId({
-        landId: landId
-      })
+      var response = null
+      try {
+        response = await LandService.fetchCropCodeByLandId({
+          landId: landId
+        })
+      } catch (e) {
+        this.logError('SearchItem.vue', 'getCropCodeByLandId', e.toString())
+        this.$router.push('/500')
+      }
       this.selectedCropCode = response.data[0].cropCode
       this.getCropNameByCropCode(this.selectedCropCode)
       this.getWorkTypeByCropCode(this.selectedCropCode)
     },
     async getCropNameByCropCode (cropCode) {
-      const response = await ScService.fetchCropNameByCropCode({
-        cropCode: cropCode
-      })
+      var response = null
+      try {
+        response = await ScService.fetchCropNameByCropCode({
+          cropCode: cropCode
+        })
+      } catch (e) {
+        this.logError('SearchItem.vue', 'getCropNameByCropCode', e.toString())
+        this.$router.push('/500')
+      }
       this.editedItem.cropName = response.data[0].text
     },
     async getWorkTypeByCropCode (cropCode) {
-      const response = await WcService.fetchTextByCropCode({
-        cropCode: cropCode
-      })
+      var response = null
+      try {
+        response = await WcService.fetchTextByCropCode({
+          cropCode: cropCode
+        })
+      } catch (e) {
+        this.logError('SearchItem.vue', 'getWorkTypeByCropCode', e.toString())
+        this.$router.push('/500')
+      }
       this.editeWorkTypeItems = response.data
     },
     async getLands () {
-      const response = await LandService.fetchLands({
-        userId: this.userId
-      })
+      var response = null
+      try {
+        response = await LandService.fetchLands({
+          userId: this.userId
+        })
+      } catch (e) {
+        this.logError('SearchItem.vue', 'getLands', e.toString())
+        this.$router.push('/500')
+      }
       this.landItems = response.data.lands
 
       var landItemForAll = {}
@@ -463,15 +531,24 @@ export default {
       landItemForAll.name = '전체'
       this.landItems.push(landItemForAll)
     },
+    async checkDB () {
+      try {
+        await DBService.checkDB({})
+      } catch (e) {
+        this.$router.push('/500')
+        return false
+      }
+      return true
+    },
     onChangeWSTime: function (event) {
       var tmpStr = event
       this.editedItem.workSTime = tmpStr.replace(':', '')
-      console.log(this.editedItem.workSTime)
+      // console.log(this.editedItem.workSTime)
     },
     onChangeWETime: function (event) {
       var tmpStr = event
       this.editedItem.workETime = tmpStr.replace(':', '')
-      console.log(this.editedItem.workETime)
+      // console.log(this.editedItem.workETime)
     },
     onChangeLand: function (event) {
       if (event === '0') {
@@ -497,9 +574,10 @@ export default {
       }
     },
     editItem (item) {
-      // console.log(item)
-      var emitParams = {'itemId': item._id, 'origin': 'fromSearchItem'}
-      bus.$emit('dialogForEdit', emitParams)
+      if (this.checkDB()) {
+        var emitParams = {'itemId': item._id, 'origin': 'fromSearchItem'}
+        bus.$emit('dialogForEdit', emitParams)
+      }
     },
     deleteItem (item) {
       const index = this.items.indexOf(item)
@@ -538,19 +616,9 @@ export default {
         if (!result) {
           return
         }
-        // 선택한 농장명이 전체일 경우 검색어를 지우고 검색
-        /*
-        if (this.selectLand === '0') {
-          // this.searchWord = ''
-          this.items = []
-          this.init()
-          this.getItems()
-        } else {
-          // 선택한 농장명이 전체가 아닐 경우
+        if (this.checkDB()) {
           this.getItemsBy5()
         }
-        */
-        this.getItemsBy5()
       }).catch(() => {})
     },
     searchReset () {

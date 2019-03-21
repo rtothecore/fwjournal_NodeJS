@@ -32,34 +32,6 @@
             <b-form-input v-model="id" id="basicInputId" type="text" :disabled="true" placeholder="Disabled"></b-form-input>
           </b-form-group>
           </h4>
-          <!--
-          <v-text-field
-            v-model="name"                        
-            label="이름"
-            disabled
-          ></v-text-field>
-          -->
-          <!--
-          <h4>
-          <b-form-group
-            label="이름"
-            label-for="basicInputName"
-            :label-cols="4"
-            :horizontal="true">
-            <b-form-input v-model="name" id="basicInputName" type="text" :disabled="true" placeholder="Disabled"></b-form-input>
-          </b-form-group>
-          </h4>
-          -->
-          <!--
-          <v-text-field
-            v-model="birthDate"
-            :rules="birthDateRules"
-            :counter="10"
-            label="생년월일"
-            required
-            type="number"
-          ></v-text-field>
-          -->
           <h4>
           <b-form-group
             label="생년월일"
@@ -166,6 +138,8 @@
 
 <script>
 import {bus} from '../main'
+import DBService from '@/services/DBService'
+import LogService from '@/services/LogService'
 import UserService from '@/services/UserService'
 export default {
   data: () => ({
@@ -206,12 +180,27 @@ export default {
     }
   },
   created () {
-    this.userId = this.$session.get('userId')
-    this.getUser()
+    if (this.checkDB()) {
+      this.userId = this.$session.get('userId')
+      this.getUser()
+    }
   },
   methods: {
+    async logError (page, funcName, message) {
+      await LogService.logError({
+        errorPage: page,
+        funcName: funcName,
+        message: message
+      })
+    },
     async getUser () {
-      const response = await UserService.fetchUser(this.userId)
+      var response = null
+      try {
+        response = await UserService.fetchUser(this.userId)
+      } catch (e) {
+        this.logError('ConfigPrivate.vue', 'getUser', e.toString())
+        this.$router.push('/500')
+      }
       // console.log(response.data)
       this.id = response.data[0].id
       this.name = response.data[0].name
@@ -227,11 +216,17 @@ export default {
       }
     },
     async updateUserAgeSex () {
-      const response = await UserService.updateUserBirthDateSex({
-        id: this.userId,
-        birth_date: this.birthDate,
-        sex: this.select
-      })
+      var response = null
+      try {
+        response = await UserService.updateUserBirthDateSex({
+          id: this.userId,
+          birth_date: this.birthDate,
+          sex: this.select
+        })
+      } catch (e) {
+        this.logError('ConfigPrivate.vue', 'updateUserAgeSex', e.toString())
+        this.$router.push('/500')
+      }
       if (response.data.success) {
         this.$swal({
           type: 'success',
@@ -250,10 +245,16 @@ export default {
         this.shareFlag = 0
         this.switch1Label = '공유안함'
       }
-      const response = await UserService.updateUserShareFlag({
-        id: this.userId,
-        share_flag: this.shareFlag
-      })
+      var response = null
+      try {
+        response = await UserService.updateUserShareFlag({
+          id: this.userId,
+          share_flag: this.shareFlag
+        })
+      } catch (e) {
+        this.logError('ConfigPrivate.vue', 'updateUserShareFlag', e.toString())
+        this.$router.push('/500')
+      }
       if (this.shareFlag === 1 && response.data.success) {
         this.$swal({
           type: 'success',
@@ -264,9 +265,20 @@ export default {
         })
       }
     },
+    async checkDB () {
+      try {
+        await DBService.checkDB({})
+      } catch (e) {
+        this.$router.push('/500')
+        return false
+      }
+      return true
+    },
     submit2 () {
       if (this.$refs.form2.validate()) {
-        this.updateUserAgeSex()
+        if (this.checkDB()) {
+          this.updateUserAgeSex()
+        }
       }
     },
     clear2 () {
@@ -274,17 +286,25 @@ export default {
     },
     goToChangePhonePage () {
       // this.$router.push('/changePhoneNo')
-      bus.$emit('dialogForChangePhoneNo', 'test')
+      if (this.checkDB()) {
+        bus.$emit('dialogForChangePhoneNo', 'test')
+      }
     },
     goToChangePwPage () {
       // this.$router.push('/changePw')
-      bus.$emit('dialogForChangePassword', 'test')
+      if (this.checkDB()) {
+        bus.$emit('dialogForChangePassword', 'test')
+      }
     },
     goToChangeLeavePage () {
-      bus.$emit('dialogForLeaveUser', 'test')
+      if (this.checkDB()) {
+        bus.$emit('dialogForLeaveUser', 'test')
+      }
     },
     onChangeShareFlag () {
-      this.updateUserShareFlag()
+      if (this.checkDB()) {
+        this.updateUserShareFlag()
+      }
     }
   }
 }

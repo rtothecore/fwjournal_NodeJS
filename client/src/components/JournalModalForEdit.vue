@@ -665,13 +665,13 @@
 <script>
 import {bus} from '../main'
 import LandService from '@/services/LandService'
-// import ScService from '@/services/ScService'
 import WcService from '@/services/WcService'
 import DcService from '@/services/DcService'
 import JournalService from '@/services/JournalService'
 import ItemService from '@/services/ItemService'
 import ItemDetailService from '@/services/ItemDetailService'
 import WcDataService from '@/services/WcDataService'
+import LogService from '@/services/LogService'
 import ImageInput from './ImageInput.vue'
 export default {
   $_veeValidate: {
@@ -885,10 +885,23 @@ export default {
       }
     },
     */
-    async getItem () {
-      const response = await ItemService.fetchItem({
-        id: this.itemId
+    async logError (page, funcName, message) {
+      await LogService.logError({
+        errorPage: page,
+        funcName: funcName,
+        message: message
       })
+    },
+    async getItem () {
+      var response = null
+      try {
+        response = await ItemService.fetchItem({
+          id: this.itemId
+        })
+      } catch (e) {
+        this.logError('JournalModalForEdit.vue', 'getItem', e.toString())
+        this.$router.push('/500')
+      }
       // this.Item_User_Profile = '자재관리 수정 - ' + response.data[0].date
       this.Item_User_Profile = response.data[0].date
 
@@ -904,10 +917,16 @@ export default {
       var itemDetails = response.data[0].itemDetail
       this.itemItems = []
       for (var i = 0; i < itemDetails.length; i++) {
-        const response2 = await ItemDetailService.fetchItemDetailByItemId({
-          userId: this.userId,
-          itemId: itemDetails[i]
-        })
+        var response2 = null
+        try {
+          response2 = await ItemDetailService.fetchItemDetailByItemId({
+            userId: this.userId,
+            itemId: itemDetails[i]
+          })
+        } catch (e) {
+          this.logError('JournalModalForEdit.vue', 'getItem', e.toString())
+          this.$router.push('/500')
+        }
         this.itemItems.push(response2.data[0])
         // 재고량 계산
         this.itemItems[i].itemStock = response2.data[0].itemAmount - response2.data[0].journalUsage - this.itemItems[i].itemUsage
@@ -952,9 +971,15 @@ export default {
       }
     },
     async getJournal () {
-      const response = await JournalService.fetchJournal({
-        id: this.journalId
-      })
+      var response = null
+      try {
+        response = await JournalService.fetchJournal({
+          id: this.journalId
+        })
+      } catch (e) {
+        this.logError('JournalModalForEdit.vue', 'getJournal', e.toString())
+        this.$router.push('/500')
+      }
       // this.User_Profile = '영농일지 수정 - ' + response.data[0].date
       this.User_Profile = response.data[0].date
 
@@ -1042,9 +1067,15 @@ export default {
       this.cooItems = response.data[0].COO
       this.onChangeItemCost()
 
-      const response2 = await WcService.fetchOneTextByCcode({
-        code: this.selectWorkType
-      })
+      var response2 = null
+      try {
+        response2 = await WcService.fetchOneTextByCcode({
+          code: this.selectWorkType
+        })
+      } catch (e) {
+        this.logError('JournalModalForEdit.vue', 'getJournal', e.toString())
+        this.$router.push('/500')
+      }
       this.selectedWorkTypeText = response2.data[0].text
 
       if (this.selectedWorkTypeText === '출하') {
@@ -1066,10 +1097,16 @@ export default {
 
         // this.itemNames = []
         for (var k = 0; k < response.data[0].itemDetail.length; k++) {
-          const response3 = await ItemDetailService.fetchItemDetailByItemId({
-            userId: this.userId,
-            itemId: response.data[0].itemDetail[k].itemId
-          })
+          var response3 = null
+          try {
+            response3 = await ItemDetailService.fetchItemDetailByItemId({
+              userId: this.userId,
+              itemId: response.data[0].itemDetail[k].itemId
+            })
+          } catch (e) {
+            this.logError('JournalModalForEdit.vue', 'getJournal', e.toString())
+            this.$router.push('/500')
+          }
           /*
           // console.log(response3.data)
           this.itemNames.push(response3.data[0])
@@ -1135,17 +1172,29 @@ export default {
       }
     },
     async fetchItemsByWcode (workCode) {
-      const response = await ItemService.fetchItemsByWcode({
-        userId: this.userId,
-        wCode: workCode
-      })
+      var response = null
+      try {
+        response = await ItemService.fetchItemsByWcode({
+          userId: this.userId,
+          wCode: workCode
+        })
+      } catch (e) {
+        this.logError('JournalModalForEdit.vue', 'fetchItemsByWcode', e.toString())
+        this.$router.push('/500')
+      }
       this.itemNames = []
       for (var i = 0; i < response.data.length; i++) {
         for (var j = 0; j < response.data[i].itemDetail.length; j++) {
-          const response2 = await ItemDetailService.fetchItemDetailByItemId({
-            userId: this.userId,
-            itemId: response.data[i].itemDetail[j]
-          })
+          var response2 = null
+          try {
+            response2 = await ItemDetailService.fetchItemDetailByItemId({
+              userId: this.userId,
+              itemId: response.data[i].itemDetail[j]
+            })
+          } catch (e) {
+            this.logError('JournalModalForEdit.vue', 'fetchItemsByWcode', e.toString())
+            this.$router.push('/500')
+          }
           this.itemNames.push(response2.data[0])
         }
       }
@@ -1159,16 +1208,28 @@ export default {
       this.initItemNames()
     },
     async getLands () {
-      const response = await LandService.fetchLands({
-        userId: this.userId
-      })
+      var response = null
+      try {
+        response = await LandService.fetchLands({
+          userId: this.userId
+        })
+      } catch (e) {
+        this.logError('JournalModalForEdit.vue', 'getLands', e.toString())
+        this.$router.push('/500')
+      }
       this.landItems = response.data.lands
       this.iLandItems = response.data.lands
     },
     async getCropCodeByLandId (landId) {
-      const response = await LandService.fetchCropCodeByLandId({
-        landId: landId
-      })
+      var response = null
+      try {
+        response = await LandService.fetchCropCodeByLandId({
+          landId: landId
+        })
+      } catch (e) {
+        this.logError('JournalModalForEdit.vue', 'getCropCodeByLandId', e.toString())
+        this.$router.push('/500')
+      }
       this.selectedCropCode = response.data[0].cropCode
       this.getCropNameByCropCode(this.selectedCropCode)
       this.getWorkTypeByCropCode(this.selectedCropCode)
@@ -1179,11 +1240,17 @@ export default {
       this.getWeatherCrawlerDataAggByAddress(this.User_Profile, this.User_Profile, tmpAddress)
     },
     async getWeatherCrawlerDataAggByAddress (sDate, eDate, address) {
-      const response = await WcDataService.fetchWeatherAggDataByAddr({
-        startDate: sDate,
-        endDate: eDate,
-        address: address
-      })
+      var response = null
+      try {
+        response = await WcDataService.fetchWeatherAggDataByAddr({
+          startDate: sDate,
+          endDate: eDate,
+          address: address
+        })
+      } catch (e) {
+        this.logError('JournalModalForEdit.vue', 'getWeatherCrawlerDataAggByAddress', e.toString())
+        this.$router.push('/500')
+      }
       // console.log(response.data)
 
       if (response.data.length >= 1) {
@@ -1251,22 +1318,40 @@ export default {
       }
     },
     async getWorkTypeByCropCode (cropCode) {
-      const response = await WcService.fetchTextByCropCode({
-        cropCode: cropCode
-      })
+      var response = null
+      try {
+        response = await WcService.fetchTextByCropCode({
+          cropCode: cropCode
+        })
+      } catch (e) {
+        this.logError('JournalModalForEdit.vue', 'getWorkTypeByCropCode', e.toString())
+        this.$router.push('/500')
+      }
       this.workType = response.data
       this.workType.push({text: '새 작업추가'})
     },
     async getCropNameByCropCode (cropCode) {
-      const response = await DcService.fetchCropNameByCropCode({
-        cropCode: cropCode
-      })
+      var response = null
+      try {
+        response = await DcService.fetchCropNameByCropCode({
+          cropCode: cropCode
+        })
+      } catch (e) {
+        this.logError('JournalModalForEdit.vue', 'getCropNameByCropCode', e.toString())
+        this.$router.push('/500')
+      }
       this.cropName = response.data[0].text
     },
     async getWorkTypeByWorkTypeCode (workTypeCode) {
-      const response = await WcService.fetchTextByCcode({
-        code: workTypeCode
-      })
+      var response = null
+      try {
+        response = await WcService.fetchTextByCcode({
+          code: workTypeCode
+        })
+      } catch (e) {
+        this.logError('JournalModalForEdit.vue', 'getWorkTypeByWorkTypeCode', e.toString())
+        this.$router.push('/500')
+      }
       this.workType = response.data
       this.workType.push({text: '새 작업추가'})
     },
@@ -1282,9 +1367,15 @@ export default {
       for (var i = 0; i < this.itemItems.length; i++) {
         this.itemItems[i].parentId = this.itemId
         this.itemItems[i].userId = this.userId
-        const response3 = await ItemDetailService.updateItemUsageByItemId({
-          itemDetail: this.itemItems[i]
-        })
+        var response3 = null
+        try {
+          response3 = await ItemDetailService.updateItemUsageByItemId({
+            itemDetail: this.itemItems[i]
+          })
+        } catch (e) {
+          this.logError('JournalModalForEdit.vue', 'updateItem', e.toString())
+          this.$router.push('/500')
+        }
 
         updatedItemIds.push(response3.data.result.itemId)
       }
@@ -1292,8 +1383,13 @@ export default {
       for (var j = 0; j < this.deletedItemIds.length; j++) {
         // journals 콜렉션에서 해당 itemId Delete
         this.deleteJournalByItemId(this.deletedItemIds[j])
-        // itemdetails 콜렉션 Delete
-        await ItemDetailService.deleteItemDetailByItemId(this.deletedItemIds[j])
+        try {
+          // itemdetails 콜렉션 Delete
+          await ItemDetailService.deleteItemDetailByItemId(this.deletedItemIds[j])
+        } catch (e) {
+          this.logError('JournalModalForEdit.vue', 'updateItem', e.toString())
+          this.$router.push('/500')
+        }
       }
       // console.log(updatedItemIds)
 
@@ -1314,24 +1410,35 @@ export default {
         pictureCData = this.iavatar3.uploadedFilename
       }
 
-      await ItemService.updateItem({
-        id: this.itemId,
-        userId: this.userId,
-        date: this.Item_User_Profile,
-        landId: this.iSelectLand,
-        item: this.selectItem,
-        itemDetail: updatedItemIds,
-        purpose: this.purpose,
-        pictureA: pictureAData,
-        pictureB: pictureBData,
-        pictureC: pictureCData
-      })
+      try {
+        await ItemService.updateItem({
+          id: this.itemId,
+          userId: this.userId,
+          date: this.Item_User_Profile,
+          landId: this.iSelectLand,
+          item: this.selectItem,
+          itemDetail: updatedItemIds,
+          purpose: this.purpose,
+          pictureA: pictureAData,
+          pictureB: pictureBData,
+          pictureC: pictureCData
+        })
+      } catch (e) {
+        this.logError('JournalModalForEdit.vue', 'updateItem', e.toString())
+        this.$router.push('/500')
+      }
 
       // 작업분류명
       var workTypeVal = ''
-      const response2 = await WcService.fetchOneTextByCcode({
-        code: this.selectItem
-      })
+      var response2 = null
+      try {
+        response2 = await WcService.fetchOneTextByCcode({
+          code: this.selectItem
+        })
+      } catch (e) {
+        this.logError('JournalModalForEdit.vue', 'updateItem', e.toString())
+        this.$router.push('/500')
+      }
       workTypeVal = response2.data[0].text
       this.updatedEvent.title = workTypeVal + ' 구입'
       this.updatedEvent.start = this.Item_User_Profile
@@ -1401,9 +1508,14 @@ export default {
         } else {
           tempItemDetail.originalJournalUsage = this.usageItems[j].originalJournalUsage
         }
-        await ItemDetailService.updateJournalUsageByItemId({
-          itemDetail: tempItemDetail
-        })
+        try {
+          await ItemDetailService.updateJournalUsageByItemId({
+            itemDetail: tempItemDetail
+          })
+        } catch (e) {
+          this.logError('JournalModalForEdit.vue', 'updateJournal', e.toString())
+          this.$router.push('/500')
+        }
       }
 
       // itemdetails 컬렉션의 특정 품목 journal 사용량 Update
@@ -1412,25 +1524,30 @@ export default {
         this.deleteJournalUsage(this.deletedJournalsItemIds[k].itemId, this.deletedJournalsItemIds[k].journalUsage)
       }
 
-      await JournalService.updateJournal({
-        id: this.journalId,
-        userId: this.userId,
-        date: this.User_Profile,
-        landId: this.selectLand,
-        workCode: this.selectedWorkTypeCode,
-        workContent: this.workContent,
-        workTime: this.workTime,
-        workerNumber: this.workerNumber,
-        remarks: this.remarks,
-        coo: this.cooItems,
-        shipment: shipment,
-        income: income,
-        itemDetail: itemDetailDatas,
-        output: output,
-        pictureA: pictureAData,
-        pictureB: pictureBData,
-        pictureC: pictureCData
-      })
+      try {
+        await JournalService.updateJournal({
+          id: this.journalId,
+          userId: this.userId,
+          date: this.User_Profile,
+          landId: this.selectLand,
+          workCode: this.selectedWorkTypeCode,
+          workContent: this.workContent,
+          workTime: this.workTime,
+          workerNumber: this.workerNumber,
+          remarks: this.remarks,
+          coo: this.cooItems,
+          shipment: shipment,
+          income: income,
+          itemDetail: itemDetailDatas,
+          output: output,
+          pictureA: pictureAData,
+          pictureB: pictureBData,
+          pictureC: pictureCData
+        })
+      } catch (e) {
+        this.logError('JournalModalForEdit.vue', 'updateJournal', e.toString())
+        this.$router.push('/500')
+      }
 
       this.fetchNameByLandId(this.selectLand)
       this.fetchTextByCode(this.selectedWorkTypeCode)
@@ -1441,17 +1558,26 @@ export default {
       this.updatedEvent.textColor = 'white'
     },
     async updateItemUsage (userId, landId, item, itemName, usage) {
-      const response = await ItemService.updateItemUsageByJournalUsage({
-        userId: userId,
-        landId: landId,
-        item: item,
-        itemName: itemName,
-        usage: usage
-      })
-      console.log(response.data)
+      try {
+        await ItemService.updateItemUsageByJournalUsage({
+          userId: userId,
+          landId: landId,
+          item: item,
+          itemName: itemName,
+          usage: usage
+        })
+      } catch (e) {
+        this.logError('JournalModalForEdit.vue', 'updateItemUsage', e.toString())
+        this.$router.push('/500')
+      }
     },
     async deleteItem (id) {
-      await ItemService.deleteItem(id)
+      try {
+        await ItemService.deleteItem(id)
+      } catch (e) {
+        this.logError('JournalModalForEdit.vue', 'deleteItem', e.toString())
+        this.$router.push('/500')
+      }
     },
     async deleteJournal (id) {
       /*
@@ -1462,45 +1588,85 @@ export default {
         this.updateItemUsage(this.userId, this.selectedLandId, this.selectedWorkTypeCode, this.usageItems[i].itemName, absoluteValForUsage)
       }
       */
-
-      await JournalService.deleteJournal(id)
+      try {
+        await JournalService.deleteJournal(id)
+      } catch (e) {
+        this.logError('JournalModalForEdit.vue', 'deleteJournal', e.toString())
+        this.$router.push('/500')
+      }
     },
     async fetchNameByLandId (landId) {
-      const response = await LandService.fetchNameByLandId({
-        landId: landId
-      })
+      var response = null
+      try {
+        response = await LandService.fetchNameByLandId({
+          landId: landId
+        })
+      } catch (e) {
+        this.logError('JournalModalForEdit.vue', 'fetchNameByLandId', e.toString())
+        this.$router.push('/500')
+      }
       this.updatedEvent.title = response.data[0].name
     },
     async fetchCropNameByCropCode (cropCode) {
-      const response = await DcService.fetchCropNameByCropCode({
-        cropCode: cropCode
-      })
+      var response = null
+      try {
+        response = await DcService.fetchCropNameByCropCode({
+          cropCode: cropCode
+        })
+      } catch (e) {
+        this.logError('JournalModalForEdit.vue', 'fetchCropNameByCropCode', e.toString())
+        this.$router.push('/500')
+      }
       this.updatedEvent.title += ' - ' + response.data[0].text
     },
     async fetchTextByCode (workCode) {
-      const response = await WcService.fetchOneTextByCcode({
-        code: workCode
-      })
+      var response = null
+      try {
+        response = await WcService.fetchOneTextByCcode({
+          code: workCode
+        })
+      } catch (e) {
+        this.logError('JournalModalForEdit.vue', 'fetchTextByCode', e.toString())
+        this.$router.push('/500')
+      }
       this.updatedEvent.title += ' - ' + response.data[0].text
     },
     async getIWorkTypeByCropCode (cropCode) {
-      const response = await WcService.fetchTextByCropCodeAsItem({
-        cropCode: cropCode
-      })
+      var response = null
+      try {
+        response = await WcService.fetchTextByCropCodeAsItem({
+          cropCode: cropCode
+        })
+      } catch (e) {
+        this.logError('JournalModalForEdit.vue', 'getIWorkTypeByCropCode', e.toString())
+        this.$router.push('/500')
+      }
       this.items = response.data
       this.items.push({text: '새 작업추가'})
     },
     async getCropCodeByILandId (landId) {
-      const response = await LandService.fetchCropCodeByLandId({
-        landId: landId
-      })
+      var response = null
+      try {
+        response = await LandService.fetchCropCodeByLandId({
+          landId: landId
+        })
+      } catch (e) {
+        this.logError('JournalModalForEdit.vue', 'getCropCodeByILandId', e.toString())
+        this.$router.push('/500')
+      }
       this.selectedCropCode = response.data[0].cropCode
       this.getIWorkTypeByCropCode(this.selectedCropCode)
     },
     async fetchTextByCcode (workCode) {
-      const response = await WcService.fetchOneTextByCcode({
-        code: workCode
-      })
+      var response = null
+      try {
+        response = await WcService.fetchOneTextByCcode({
+          code: workCode
+        })
+      } catch (e) {
+        this.logError('JournalModalForEdit.vue', 'fetchTextByCcode', e.toString())
+        this.$router.push('/500')
+      }
       this.selectedWorkTypeText = response.data[0].text
 
       if (this.selectedWorkTypeText === '출하') {
@@ -1548,7 +1714,12 @@ export default {
       }
     },
     async deleteJournalByItemId (itemId) {
-      await JournalService.deleteJournalByItemId(itemId)
+      try {
+        await JournalService.deleteJournalByItemId(itemId)
+      } catch (e) {
+        this.logError('JournalModalForEdit.vue', 'deleteJournalByItemId', e.toString())
+        this.$router.push('/500')
+      }
     },
     async deleteJournalUsage (itemId, journalUsage) {
       var tmpItemDetail = {}
@@ -1556,15 +1727,26 @@ export default {
       tmpItemDetail.itemId = itemId
       tmpItemDetail.journalUsage = journalUsage
 
-      await ItemDetailService.deleteJournalUsageByItemId({
-        itemDetail: tmpItemDetail
-      })
+      try {
+        await ItemDetailService.deleteJournalUsageByItemId({
+          itemDetail: tmpItemDetail
+        })
+      } catch (e) {
+        this.logError('JournalModalForEdit.vue', 'deleteJournalUsage', e.toString())
+        this.$router.push('/500')
+      }
     },
     async fetchItemDetail (idxVal, itemIdVal) {
-      const response = await ItemDetailService.fetchItemDetailByItemId({
-        userId: this.userId,
-        itemId: itemIdVal
-      })
+      var response = null
+      try {
+        response = await ItemDetailService.fetchItemDetailByItemId({
+          userId: this.userId,
+          itemId: itemIdVal
+        })
+      } catch (e) {
+        this.logError('JournalModalForEdit.vue', 'fetchItemDetail', e.toString())
+        this.$router.push('/500')
+      }
       this.usageItems[idxVal].stock = response.data[0].itemAmount - response.data[0].journalUsage - response.data[0].itemUsage
       this.usageItems[idxVal].itemUsage = response.data[0].itemUsage
       this.usageItems[idxVal].journalRealUsage = response.data[0].journalUsage

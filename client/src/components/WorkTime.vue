@@ -120,6 +120,8 @@
 <script>
 import LandService from '@/services/LandService'
 import JournalService from '@/services/JournalService'
+import DBService from '@/services/DBService'
+import LogService from '@/services/LogService'
 // https://canvasjs.com/forums/topic/can-canvasjs-work-with-webpack/
 const CanvasJS = require('../../canvasjs.min.js')
 export default {
@@ -192,9 +194,11 @@ export default {
     }
   },
   created: function () {
-    this.userId = this.$session.get('userId')
-    this.getLands()
-    this.showCharts()
+    if (this.checkDB()) {
+      this.userId = this.$session.get('userId')
+      this.getLands()
+      this.showCharts()
+    }
   },
   computed: {
     computedDateFormatted () {
@@ -215,6 +219,13 @@ export default {
     }
   },
   methods: {
+    async logError (page, funcName, message) {
+      await LogService.logError({
+        errorPage: page,
+        funcName: funcName,
+        message: message
+      })
+    },
     async getJournalsWorktime () {
       var userId = this.userId
       if (!userId) {
@@ -232,12 +243,18 @@ export default {
       if (!landId) {
         landId = 0
       }
-      const response = await JournalService.fetchJournalsWorktime({
-        userId: userId,
-        startDate: startDate,
-        endDate: endDate,
-        landId: landId
-      })
+      var response = null
+      try {
+        response = await JournalService.fetchJournalsWorktime({
+          userId: userId,
+          startDate: startDate,
+          endDate: endDate,
+          landId: landId
+        })
+      } catch (e) {
+        this.logError('WorkTime.vue', 'getJournalsWorktime', e.toString())
+        this.$router.push('/500')
+      }
       var tmpJournals = response.data
       // console.log(tmpJournals)
       var tmpWorkDatas = []
@@ -250,7 +267,7 @@ export default {
         tmpWorkData.y = tmpJournals[i].workTime * 1
         tmpWorkDatas.push(tmpWorkData)
       }
-      console.log(tmpWorkDatas)
+      // console.log(tmpWorkDatas)
 
       // 같은 날짜의 데이터를 합침
       var tmpWorkDatasResult = []
@@ -265,16 +282,31 @@ export default {
           tmpWorkDatasResult.push(tmpDataPoint)
         }
       }
-      console.log(tmpWorkDatasResult)
+      // console.log(tmpWorkDatasResult)
 
       this.chartOptions.data[0].dataPoints = tmpWorkDatasResult
       this.chart.render()
     },
     async getLands () {
-      const response = await LandService.fetchLands({
-        userId: this.userId
-      })
+      var response = null
+      try {
+        response = await LandService.fetchLands({
+          userId: this.userId
+        })
+      } catch (e) {
+        this.logError('WorkTime.vue', 'getLands', e.toString())
+        this.$router.push('/500')
+      }
       this.landItems = response.data.lands
+    },
+    async checkDB () {
+      try {
+        await DBService.checkDB({})
+      } catch (e) {
+        this.$router.push('/500')
+        return false
+      }
+      return true
     },
     findSameLabel: function (targetArray, sourceTime) {
       for (var i = 0; i < targetArray.length; i++) {
@@ -294,7 +326,9 @@ export default {
         if (!result) {
           return
         }
-        this.getJournalsWorktime()
+        if (this.checkDB()) {
+          this.getJournalsWorktime()
+        }
       }).catch(() => {})
     },
     showCharts () {

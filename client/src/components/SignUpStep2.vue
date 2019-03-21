@@ -66,6 +66,7 @@
 <script>
 import moment from 'moment'
 import SmsAuthService from '@/services/SmsAuthService'
+import LogService from '@/services/LogService'
 const { detect } = require('detect-browser')
 const browser = detect()
 export default {
@@ -98,10 +99,23 @@ export default {
     }
   },
   methods: {
-    async createNewAuthCode () {
-      const response = await SmsAuthService.createNewSMSAuthCode({
-        phone_no: this.phoneNo
+    async logError (page, funcName, message) {
+      await LogService.logError({
+        errorPage: page,
+        funcName: funcName,
+        message: message
       })
+    },
+    async createNewAuthCode () {
+      var response = null
+      try {
+        response = await SmsAuthService.createNewSMSAuthCode({
+          phone_no: this.phoneNo
+        })
+      } catch (e) {
+        this.logError('SignUpStep2.vue', 'createNewAuthCode', e.toString())
+        this.$router.push('/500')
+      }
       if (response.data.success) {
         this.$swal({
           type: 'success',
@@ -116,10 +130,16 @@ export default {
       }
     },
     async getAuthCode () {
-      const response = await SmsAuthService.getAuthCode({
-        phone_no: this.phoneNo
-      })
-      console.log(response.data[0].auth_code)
+      var response = null
+      try {
+        response = await SmsAuthService.getAuthCode({
+          phone_no: this.phoneNo
+        })
+      } catch (e) {
+        this.logError('SignUpStep2.vue', 'getAuthCode', e.toString())
+        this.$router.push('/500')
+      }
+      // console.log(response.data[0].auth_code)
       if (this.authCode === response.data[0].auth_code) {
         clearInterval(this.authTimer)
         // https://router.vuejs.org/guide/essentials/navigation.html
@@ -136,9 +156,14 @@ export default {
       }
     },
     async deleteAuthCode () {
-      await SmsAuthService.deleteAuthcode({
-        phone_no: this.phoneNo
-      })
+      try {
+        await SmsAuthService.deleteAuthcode({
+          phone_no: this.phoneNo
+        })
+      } catch (e) {
+        this.logError('SignUpStep2.vue', 'deleteAuthCode', e.toString())
+        this.$router.push('/500')
+      }
     },
     goToStep3 () {
       this.getAuthCode()

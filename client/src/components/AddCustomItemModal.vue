@@ -14,63 +14,8 @@
                   label="품목명"                        
                 ></v-text-field>
               </v-flex>
-              <!--
-              <v-flex xs12 sm6 md3>
-                <v-select
-                  v-validate="'required'"
-                  :items="bcsItems"
-                  v-model="bcs"
-                  :error-messages="errors.collect('bcs')"
-                  label="대분류"
-                  data-vv-name="bcs"
-                  required
-                  v-on:change="onChangeBcs"
-                  item-text="text"
-                  item-value="bCode"
-                ></v-select>
-              </v-flex>
-              <v-flex xs12 sm6 md3>
-                <v-select
-                  v-validate="'required'"
-                  :items="mcsItems"
-                  v-model="mcs"
-                  :error-messages="errors.collect('mcs')"
-                  label="중분류"
-                  data-vv-name="mcs"
-                  required
-                  v-on:change="onChangeMcs"
-                  item-text="text"
-                  item-value="mCode"
-                ></v-select>
-              </v-flex>
-              <v-flex xs12 sm6 md3>
-                <v-select
-                  v-validate="'required'"
-                  :items="scsItems"
-                  v-model="scs"
-                  :error-messages="errors.collect('scs')"
-                  label="소분류"
-                  data-vv-name="scs"
-                  required
-                  v-on:change="onChangeScs"
-                  item-text="text"
-                  item-value="sCode"
-                ></v-select>
-              </v-flex>
-              <v-flex xs12 sm6 md3>
-                <v-text-field 
-                  v-validate="'required'"
-                  v-model="workType" 
-                  :error-messages="errors.collect('workType')"
-                  label="작업분류"
-                  required
-                  data-vv-name="workType">
-                </v-text-field>
-              </v-flex>
-              -->
             </v-layout>
-          </v-container>
-          <!-- <small>*필수 입력 사항입니다</small> -->
+          </v-container>          
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -84,13 +29,6 @@
 
 <script>
 import {bus} from '../main'
-/*
-import BcService from '@/services/BcService'
-import McService from '@/services/McService'
-import ScService from '@/services/ScService'
-import WcService from '@/services/WcService'
-import DcService from '@/services/DcService'
-*/
 export default {
   $_veeValidate: {
     validator: 'new'

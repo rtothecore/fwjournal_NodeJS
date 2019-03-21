@@ -183,8 +183,8 @@ import JournalService from '@/services/JournalService'
 import LandService from '@/services/LandService'
 import ScService from '@/services/ScService'
 import WcService from '@/services/WcService'
-// import DcService from '@/services/DcService'
-// import ItemService from '@/services/ItemService'
+import DBService from '@/services/DBService'
+import LogService from '@/services/LogService'
 import ImageInput from './ImageInput.vue'
 export default {
   $_veeValidate: {
@@ -293,12 +293,14 @@ export default {
     }
   },
   created () {
-    this.userId = this.$session.get('userId')
-    this.init()
-    this.getJournals()
-    this.getLands()
-    this.getWorkTypeItems()
-    this.selectLand = '0'
+    if (this.checkDB()) {
+      this.userId = this.$session.get('userId')
+      this.init()
+      this.getJournals()
+      this.getLands()
+      this.getWorkTypeItems()
+      this.selectLand = '0'
+    }
   },
   components: {
     ImageInput: ImageInput
@@ -335,12 +337,31 @@ export default {
     }
   },
   methods: {
+    async logError (page, funcName, message) {
+      await LogService.logError({
+        errorPage: page,
+        funcName: funcName,
+        message: message
+      })
+    },
     async getWorkTypeItems () {
-      const response = await WcService.fetchDistinctBCPText({})
+      var response = null
+      try {
+        response = await WcService.fetchDistinctBCPText({})
+      } catch (e) {
+        this.logError('Search.vue', 'getWorkTypeItems', e.toString())
+        this.$router.push('/500')
+      }
       for (var i = 0; i < response.data.length; i++) {
-        const response2 = await WcService.fetchBCPDataByText({
-          bcpText: response.data[i]
-        })
+        var response2 = null
+        try {
+          response2 = await WcService.fetchBCPDataByText({
+            bcpText: response.data[i]
+          })
+        } catch (e) {
+          this.logError('Search.vue', 'getWorkTypeItems', e.toString())
+          this.$router.push('/500')
+        }
         var tmpItem = {}
         tmpItem.text = '작물>' + response2.data.text
         // tmpItem.value = response2.data.bCode + response2.data.wCode
@@ -348,11 +369,23 @@ export default {
         this.WorkTypeitems.push(tmpItem)
       }
 
-      const response3 = await WcService.fetchDistinctBALText({})
+      var response3 = null
+      try {
+        response3 = await WcService.fetchDistinctBALText({})
+      } catch (e) {
+        this.logError('Search.vue', 'getWorkTypeItems', e.toString())
+        this.$router.push('/500')
+      }
       for (var j = 0; j < response3.data.length; j++) {
-        const response4 = await WcService.fetchBALDataByText({
-          balText: response3.data[j]
-        })
+        var response4 = null
+        try {
+          response4 = await WcService.fetchBALDataByText({
+            balText: response3.data[j]
+          })
+        } catch (e) {
+          this.logError('Search.vue', 'getWorkTypeItems', e.toString())
+          this.$router.push('/500')
+        }
         var tmpItem2 = {}
         tmpItem2.text = '가축>' + response4.data.text
         // tmpItem2.value = response4.data.bCode + response4.data.wCode
@@ -361,9 +394,15 @@ export default {
       }
     },
     async getLands () {
-      const response = await LandService.fetchLands({
-        userId: this.userId
-      })
+      var response = null
+      try {
+        response = await LandService.fetchLands({
+          userId: this.userId
+        })
+      } catch (e) {
+        this.logError('Search.vue', 'getLands', e.toString())
+        this.$router.push('/500')
+      }
       this.landItems = response.data.lands
 
       var landItemForAll = {}
@@ -372,11 +411,17 @@ export default {
       this.landItems.push(landItemForAll)
     },
     async getJournals () {
-      const response = await JournalService.fetchJournalLookup({
-        startDate: this.startDate,
-        endDate: this.endDate,
-        userId: this.userId
-      })
+      var response = null
+      try {
+        response = await JournalService.fetchJournalLookup({
+          startDate: this.startDate,
+          endDate: this.endDate,
+          userId: this.userId
+        })
+      } catch (e) {
+        this.logError('Search.vue', 'getJournals', e.toString())
+        this.$router.push('/500')
+      }
       // console.log(response.data)
       var tmpJournals = response.data
 
@@ -412,13 +457,19 @@ export default {
         this.selectLand = 0
       }
 
-      const response = await JournalService.fetchJournalsBy5LandId({
-        userId: this.userId,
-        startDate: tmpStartDate,
-        endDate: tmpEndDate,
-        searchWord: tmpSearchWord,
-        landId: this.selectLand
-      })
+      var response = null
+      try {
+        response = await JournalService.fetchJournalsBy5LandId({
+          userId: this.userId,
+          startDate: tmpStartDate,
+          endDate: tmpEndDate,
+          searchWord: tmpSearchWord,
+          landId: this.selectLand
+        })
+      } catch (e) {
+        this.logError('Search.vue', 'getJournalsBy5', e.toString())
+        this.$router.push('/500')
+      }
       var tmpJournals = response.data
 
       for (var i = 0; i < tmpJournals.length; i++) {
@@ -432,27 +483,59 @@ export default {
       this.journals = tmpJournals
     },
     async deleteJournal (id) {
-      await JournalService.deleteJournal(id)
+      try {
+        await JournalService.deleteJournal(id)
+      } catch (e) {
+        this.logError('Search.vue', 'deleteJournal', e.toString())
+        this.$router.push('/500')
+      }
     },
     async getCropCodeByLandId (landId) {
-      const response = await LandService.fetchCropCodeByLandId({
-        landId: landId
-      })
+      var response = null
+      try {
+        response = await LandService.fetchCropCodeByLandId({
+          landId: landId
+        })
+      } catch (e) {
+        this.logError('Search.vue', 'getCropCodeByLandId', e.toString())
+        this.$router.push('/500')
+      }
       this.selectedCropCode = response.data[0].cropCode
       this.getCropNameByCropCode(this.selectedCropCode)
       this.getWorkTypeByCropCode(this.selectedCropCode)
     },
     async getCropNameByCropCode (cropCode) {
-      const response = await ScService.fetchCropNameByCropCode({
-        cropCode: cropCode
-      })
+      var response = null
+      try {
+        response = await ScService.fetchCropNameByCropCode({
+          cropCode: cropCode
+        })
+      } catch (e) {
+        this.logError('Search.vue', 'getCropNameByCropCode', e.toString())
+        this.$router.push('/500')
+      }
       this.editedItem.cropName = response.data[0].text
     },
     async getWorkTypeByCropCode (cropCode) {
-      const response = await WcService.fetchTextByCropCode({
-        cropCode: cropCode
-      })
+      var response = null
+      try {
+        response = await WcService.fetchTextByCropCode({
+          cropCode: cropCode
+        })
+      } catch (e) {
+        this.logError('Search.vue', 'getWorkTypeByCropCode', e.toString())
+        this.$router.push('/500')
+      }
       this.editeWorkTypeItems = response.data
+    },
+    async checkDB () {
+      try {
+        await DBService.checkDB({})
+      } catch (e) {
+        this.$router.push('/500')
+        return false
+      }
+      return true
     },
     onChangeWSTime: function (event) {
       var tmpStr = event
@@ -487,12 +570,13 @@ export default {
       }
     },
     editItem (item) {
-      // console.log(item)
-      var emitParams = {'journalId': item._id, 'userId': item.userId, 'origin': 'fromSearch'}
-      if (item.userId === this.$session.get('userId')) {
-        bus.$emit('dialogForEdit', emitParams)
-      } else {
-        bus.$emit('dialogForShow', emitParams)
+      if (this.checkDB()) {
+        var emitParams = {'journalId': item._id, 'userId': item.userId, 'origin': 'fromSearch'}
+        if (item.userId === this.$session.get('userId')) {
+          bus.$emit('dialogForEdit', emitParams)
+        } else {
+          bus.$emit('dialogForShow', emitParams)
+        }
       }
     },
     deleteItem (item) {
@@ -532,17 +616,9 @@ export default {
         if (!result) {
           return
         }
-        /*
-        // 선택한 농장명이 전체일 경우 검색어를 지우고 검색
-        if (this.selectLand === '0') {
-          this.searchWord = ''
-          this.getJournals()
-        } else {
-          // 선택한 농장명이 전체가 아닐 경우
+        if (this.checkDB()) {
           this.getJournalsBy5()
         }
-        */
-        this.getJournalsBy5()
       }).catch(() => {})
     },
     searchReset () {

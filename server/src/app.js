@@ -46,6 +46,20 @@ var timestamp = (Math.floor(Date.now() / 1000)).toString()
 var salt = uniqid() 
 var signature = HmacMD5(timestamp + salt, apiSecret).toString()
 
+function SENDSMS (from, to, message) {
+	timestamp = (Math.floor(Date.now() / 1000)).toString() 
+	salt = uniqid() 
+	signature = HmacMD5(timestamp + salt, apiSecret).toString()
+	sendSMS({ api_key: apiKeyForSendSMS, 
+			  signature, 
+			  salt, 
+			  timestamp, 
+			  to: to, 
+			  from: from, 
+			  text: message 
+			})
+}
+
 // SEND SMS TEST
 // sendSMS({ api_key: apiKeyForSendSMS, signature, salt, timestamp, to: '01032795690', from: '01032795690', text: 'Hello world!' })
 // newGroup({ api_key: apiKeyForSendSMS, signature, salt, timestamp })
@@ -116,7 +130,7 @@ const logger = createLogger({
   level: 'info',
   format: format.combine(
     format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-    format.printf(info => `${info.timestamp} ${info.level}: ${info.message}`)
+    format.printf(info => `[${info.timestamp}] ${info.message}`)
   ),
   transports: [
     new transports.Console({
@@ -137,7 +151,7 @@ const loggerEx = createLogger({
   level: 'error',
   format: format.combine(
     format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-    format.printf(error => `${error.timestamp} ${error.level}: ${error.message}`)
+    format.printf(error => `[${error.timestamp}] ${error.message}`)
   ),
   transports: [
     new transports.Console({
@@ -184,12 +198,25 @@ mongoose.Promise = global.Promise;
 // mongoose.connect('mongodb://localhost:27017/fwjournal')
 // mongoose.connect('mongodb://192.168.0.73:27017/fwjournal')
 // http://mongoosejs.com/docs/connections.html
-mongoose.connect('mongodb://fwjournal:fwjournal**@192.168.66.40:28017/fwjournal')
+
+/*
+mongoose.connect('mongodb://fwjournal:fwjournal**@192.168.66.40:28018/fwjournal')
 var db = mongoose.connection
 db.on("error", console.error.bind(console, "connection error"));
 db.once("open", function(callback){
   console.log("Connection Succeeded");
 });
+*/
+// https://github.com/Automattic/mongoose/issues/4135
+mongoose.connect('mongodb://fwjournal:fwjournal**@192.168.66.40:28017/fwjournal')
+.then(() => {
+	console.log("Connection Succeeded");
+})
+.catch(err => {
+	// loggerEx.error(err.stack);
+	loggerEx.error("Mongodb Connection Error");		
+	// SENDSMS('0647536677', '01032795690', '(주)이지정보기술\n[영농일지]MongoDB커넥션에러.')
+})
 
 var User = require("../models/user")
 var Land = require("../models/land")
@@ -209,6 +236,70 @@ var ItemDetail = require("../models/itemDetail")
 
 const serviceKey = '73Jjl5lZRvBRKkGsPnGmZ7EL9JtwsWNi3hhCIN8cpVJzMdRRgyzntwz2lHmTKeR1tp7NWzoihNGGazcDEFgh8w%3D%3D'
 const serviceKeyForPrice = '8d8857fa9186167880dafee9a8c55dda0d2711b96cd4ae893983f7d870941d2e'
+
+// https://expressjs.com/ko/guide/using-middleware.html
+/*
+app.use(function (req, res, next) {
+  // https://stackoverflow.com/questions/19599543/check-mongoose-connection-state-without-creating-new-connection
+  // 0 = disconnected, 1 = connected, 2 = connecting, 3 = disconnecting
+  switch (mongoose.connection.readyState) {
+  	case 0 :  		
+  		loggerEx.error('MongoDB disconnected - ' + req.originalUrl);
+        res.status(500).json({ error: 'MongoDB disconnected' });
+        // SENDSMS('0647536677', '01032795690', '(주)이지정보기술\n[영농일지]MongoDB disconnected.')
+  		break;
+  	case 1 :
+  		next();
+  		break;
+  	case 2 :  		
+  		loggerEx.error('MongoDB connecting - ' + req.originalUrl);
+        res.status(500).json({ error: 'MongoDB connecting' });
+        // SENDSMS('0647536677', '01032795690', '(주)이지정보기술\n[영농일지]MongoDB connecting.')
+  		break;
+  	case 3 :   		
+  		loggerEx.error('MongoDB disconnecting - ' + req.originalUrl);
+        res.status(500).json({ error: 'MongoDB disconnecting' });
+        // SENDSMS('0647536677', '01032795690', '(주)이지정보기술\n[영농일지]MongoDB disconnecting.')
+  		break;
+  	default :
+  		break;
+  }    
+});
+*/
+
+app.get('/checkDB', (req, res) => {
+  // https://stackoverflow.com/questions/19599543/check-mongoose-connection-state-without-creating-new-connection
+  // 0 = disconnected, 1 = connected, 2 = connecting, 3 = disconnecting
+  switch (mongoose.connection.readyState) {
+  	case 0 :  		
+  		loggerEx.error('MongoDB disconnected');
+        res.status(500).json({ error: 'MongoDB disconnected' });
+        // SENDSMS('0647536677', '01032795690', '(주)이지정보기술\n[영농일지]MongoDB disconnected.')
+  		break;
+  	case 1 :
+  		res.status(200).json([{error: "MongoDB successfully connected"}]);
+  		break;
+  	case 2 :  		
+  		loggerEx.error('MongoDB connecting');
+        res.status(500).json({ error: 'MongoDB connecting' });
+        // SENDSMS('0647536677', '01032795690', '(주)이지정보기술\n[영농일지]MongoDB connecting.')
+  		break;
+  	case 3 :   		
+  		loggerEx.error('MongoDB disconnecting');
+        res.status(500).json({ error: 'MongoDB disconnecting' });
+        // SENDSMS('0647536677', '01032795690', '(주)이지정보기술\n[영농일지]MongoDB disconnecting.')
+  		break;
+  	default :
+  		break;
+  }    
+});
+
+// Add new workClass
+app.post('/logError', (req, res) => {
+  // console.log(req.body.funcName);
+  // console.log(req.body.message); 
+  loggerEx.error(req.body.errorPage + ' : ' + req.body.funcName + ' : ' + req.body.message); 
+})
 
 // https://stackoverflow.com/questions/35847293/uploading-a-file-and-passing-a-additional-parameter-with-multer
 app.post('/journalImg/upload', function(req, res) {
@@ -389,7 +480,7 @@ app.get('/ssData/getAllDataOfAggData/:startDate/:endDate', (req, res) => {
 
 // Fetch sensorData with aggregate
 app.get('/ssData/getAggData/:startDate/:endDate', (req, res) => {
-	console.log(req.body);
+	// console.log(req.body);
 	// http://www.fun-coding.org/mongodb_advanced5.html
 	// https://stackoverflow.com/questions/18785707/mongodb-aggregate-embedded-document-values
 	// https://stackoverflow.com/questions/39158286/mongoose-aggregate-with-unwind-before-group
@@ -445,12 +536,13 @@ app.get('/ssData/lastOne', (req, res) => {
 })
 
 function getTodayDate() {
+	// loggerEx.error('getTodayDate : ' + error.toString());
 	var todayDate = new Date()
 	var todayDateValue = ''
 	todayDateValue = leadingZeros(todayDate.getFullYear(), 4) + 
 			   		 leadingZeros(todayDate.getMonth() + 1, 2) +
 			   		 leadingZeros(todayDate.getDate(), 2)
-	return todayDateValue
+	return todayDateValue	
 }
 
 function getDateSubtract(subVal) {
@@ -829,10 +921,10 @@ app.get('/Airdata/:tmX/:tmY', (req, res) => {
 app.get('/wc/getWCsAsItem', (req, res) => {  
   // var wCode = req.params.code
   Wc.find({}, '', function (error4, wcs) {
-	if (error) { 
+	if (error4) { 
 		// console.error(error); 
-		loggerEx.error('/wc/getWCsAsItem : ' + error.toString());
-        res.status(500).json({ error: error.toString() });
+		loggerEx.error('/wc/getWCsAsItem : ' + error4.toString());
+        res.status(500).json({ error: error4.toString() });
 	}	
 	res.send(wcs)
   })
@@ -1145,7 +1237,7 @@ app.delete('/journals/:id', (req, res) => {
 
 // Delete journal by itemId
 app.delete('/journalsByItemId/:itemId', (req, res) => {	
-	console.log(req.params.itemId)
+	// console.log(req.params.itemId)
 	// https://docs.mongodb.com/manual/reference/operator/update/pull/
 	Journal.update(
 		{},
@@ -2096,7 +2188,7 @@ app.get('/journalsLookupBy4/:startDate/:endDate/:userId/:landId', (req, res) => 
 
 // Fetch lookup journals by date & userId
 app.get('/journalsLookup/:startDate/:endDate/:userId', (req, res) => {
-	console.log("journalsLookup IN!")
+	// console.log("journalsLookup IN!")
 	var userIdForSearch = []
 	userIdForSearch.push(req.params.userId)
 	// 1. 나의 share_flag 조회	
@@ -2715,7 +2807,7 @@ app.get('/lands/:id', (req, res) => {
 
 // Update land
 app.put('/lands/:id', (req, res) => {
-  console.log(req.body)
+  // console.log(req.body)
   Land.findById(req.params.id, 'userId name', function (error, lands) {
     if (error) { 
     	// console.error(error); 
@@ -2752,7 +2844,7 @@ app.delete('/lands/:id', (req, res) => {
 			loggerEx.error('/lands/:id : ' + err2.toString());
       		res.status(500).json({ error: err2.toString() });
 		}		
-		console.log('journals removed! - ' + journals)
+		// console.log('journals removed! - ' + journals)
 	})
 
 	// 이 농장과 연계된 자재일지를 모두 삭제	
@@ -2764,7 +2856,7 @@ app.delete('/lands/:id', (req, res) => {
 			loggerEx.error('/lands/:id : ' + err3.toString());
       		res.status(500).json({ error: err3.toString() });
 		}		
-		console.log('items removed! - ' + items)
+		// console.log('items removed! - ' + items)
 	})
 
 	Land.remove({
@@ -2992,7 +3084,7 @@ app.get('/joinUser/:id', (req, res) => {
 
 // Add new user, joinusers
 app.post('/addNewUser', (req, res) => {
-  console.log(req.body);
+  // console.log(req.body);
   var id = req.body.id;  
   var password = CryptoJS.AES.encrypt(req.body.password, cryptoKey)
   var name = req.body.name
@@ -3053,15 +3145,12 @@ app.post('/addNewUser', (req, res) => {
 
 // login with id & password
 // https://stackoverflow.com/questions/13397691/how-can-i-send-a-success-status-to-browser-from-nodejs-express
-app.put('/login', (req, res) => {
-	// console.log(req.body)
+app.put('/login', (req, res) => {	
 	User.find({}, '', function (error, result) {
-		if (error) { 
-			// console.error(error); 
+		if (error) { 			
 			loggerEx.error('/login : ' + error.toString());
       	  	res.status(500).json({ error: error.toString() });
 		}
-
 		if (0 == result.length) {
 			res.status(201).json([{error: "Invalid id"}]);
 		} else {
@@ -3076,7 +3165,30 @@ app.put('/login', (req, res) => {
 			}
 		}
 	})
-	.where('id').equals(req.body.id)	
+	.where('id').equals(req.body.id)
+
+	/*
+	User.find({}).where('id').equals(req.body.id)
+	.then((result) => {
+		if (0 == result.length) {
+			res.status(201).json([{error: "Invalid id"}]);
+		} else {
+			// Decrypt
+			var bytes  = CryptoJS.AES.decrypt(result[0].password, cryptoKey);			
+			var plaintext = bytes.toString(CryptoJS.enc.Utf8);
+			if(plaintext == req.body.password) {
+				// res.status(200).json([{error: "Password ok"}]);				
+				res.send(result)
+			} else {				
+				res.status(202).json([{error: "Invalid password"}]);				
+			}
+		}
+	})
+	.catch((error) => {
+		loggerEx.error('/login : ' + error.toString());
+      	res.status(500).json({ error: error.toString() });
+	})
+	*/
 })
 
 // Create random password

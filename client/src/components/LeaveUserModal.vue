@@ -68,6 +68,7 @@
 <script>
 import {bus} from '../main'
 import UserService from '@/services/UserService'
+import LogService from '@/services/LogService'
 export default {
   data () {
     return {
@@ -97,12 +98,25 @@ export default {
     })
   },
   methods: {
-    async doLeaveUser () {
-      const response = await UserService.leaveUser({
-        userId: this.userId,
-        reason: this.selectedReason,
-        reasonDetail: this.leaveReasonDetail
+    async logError (page, funcName, message) {
+      await LogService.logError({
+        errorPage: page,
+        funcName: funcName,
+        message: message
       })
+    },
+    async doLeaveUser () {
+      var response = null
+      try {
+        response = await UserService.leaveUser({
+          userId: this.userId,
+          reason: this.selectedReason,
+          reasonDetail: this.leaveReasonDetail
+        })
+      } catch (e) {
+        this.logError('LeaveUserModal.vue', 'doLeaveUser', e.toString())
+        this.$router.push('/500')
+      }
       if (response.data.success) {
         this.$swal({
           type: 'success',

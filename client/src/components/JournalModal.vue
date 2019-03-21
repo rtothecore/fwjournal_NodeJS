@@ -636,13 +636,12 @@
 import {bus} from '../main'
 import LandService from '@/services/LandService'
 import DcService from '@/services/DcService'
-// import ScService from '@/services/ScService'
 import WcService from '@/services/WcService'
 import JournalService from '@/services/JournalService'
-// import WeatherService from '@/services/WeatherService'
 import ItemService from '@/services/ItemService'
 import WcDataService from '@/services/WcDataService'
 import ItemDetailService from '@/services/ItemDetailService'
+import LogService from '@/services/LogService'
 import ImageInput from './ImageInput.vue'
 // var async = require('async')  // https://caolan.github.io/async/
 export default {
@@ -813,16 +812,35 @@ export default {
     ImageInput: ImageInput
   },
   methods: {
+    async logError (page, funcName, message) {
+      await LogService.logError({
+        errorPage: page,
+        funcName: funcName,
+        message: message
+      })
+    },
     async getItems () {
-      const response = await WcService.fetchWorkCodesAsItem()
+      var response = null
+      try {
+        response = await WcService.fetchWorkCodesAsItem()
+      } catch (e) {
+        this.logError('JournalModal.vue', 'getItems', e.toString())
+        this.$router.push('/500')
+      }
       this.items = response.data
     },
     async getWeatherCrawlerDataAggByAddress (sDate, eDate, address) {
-      const response = await WcDataService.fetchWeatherAggDataByAddr({
-        startDate: sDate,
-        endDate: eDate,
-        address: address
-      })
+      var response = null
+      try {
+        response = await WcDataService.fetchWeatherAggDataByAddr({
+          startDate: sDate,
+          endDate: eDate,
+          address: address
+        })
+      } catch (e) {
+        this.logError('JournalModal.vue', 'getWeatherCrawlerDataAggByAddress', e.toString())
+        this.$router.push('/500')
+      }
       // console.log(response.data)
 
       if (response.data.length >= 1) {
@@ -888,16 +906,28 @@ export default {
       }
     },
     async getLands () {
-      const response = await LandService.fetchLands({
-        userId: this.userId
-      })
+      var response = null
+      try {
+        response = await LandService.fetchLands({
+          userId: this.userId
+        })
+      } catch (e) {
+        this.logError('JournalModal.vue', 'getLands', e.toString())
+        this.$router.push('/500')
+      }
       this.landItems = response.data.lands
       this.iLandItems = response.data.lands
     },
     async getCropCodeByLandId (landId) {
-      const response = await LandService.fetchCropCodeByLandId({
-        landId: landId
-      })
+      var response = null
+      try {
+        response = await LandService.fetchCropCodeByLandId({
+          landId: landId
+        })
+      } catch (e) {
+        this.logError('JournalModal.vue', 'getCropCodeByLandId', e.toString())
+        this.$router.push('/500')
+      }
       // console.log(response.data)
       this.selectedCropCode = response.data[0].cropCode
       this.getCropNameByCropCode(this.selectedCropCode)
@@ -910,57 +940,104 @@ export default {
       this.getWeatherCrawlerDataAggByAddress(this.User_Profile, this.User_Profile, tmpAddress)
     },
     async getCropCodeByILandId (landId) {
-      const response = await LandService.fetchCropCodeByLandId({
-        landId: landId
-      })
+      var response = null
+      try {
+        response = await LandService.fetchCropCodeByLandId({
+          landId: landId
+        })
+      } catch (e) {
+        this.logError('JournalModal.vue', 'getCropCodeByILandId', e.toString())
+        this.$router.push('/500')
+      }
       this.selectedCropCode = response.data[0].cropCode
       this.getIWorkTypeByCropCode(this.selectedCropCode)
     },
     async getCropNameByCropCode (cropCode) {
-      const response = await DcService.fetchCropNameByCropCode({
-        cropCode: cropCode
-      })
+      var response = null
+      try {
+        response = await DcService.fetchCropNameByCropCode({
+          cropCode: cropCode
+        })
+      } catch (e) {
+        this.logError('JournalModal.vue', 'getCropNameByCropCode', e.toString())
+        this.$router.push('/500')
+      }
       this.cropName = response.data[0].text
       this.sCode = response.data[0].sCode
     },
     async getWorkTypeByCropCode (cropCode) {
-      const response = await WcService.fetchTextByCropCode({
-        cropCode: cropCode
-      })
+      var response = null
+      try {
+        response = await WcService.fetchTextByCropCode({
+          cropCode: cropCode
+        })
+      } catch (e) {
+        this.logError('JournalModal.vue', 'getWorkTypeByCropCode', e.toString())
+        this.$router.push('/500')
+      }
       this.workType = response.data
       this.workType.push({text: '새 작업추가'})
     },
     async getIWorkTypeByCropCode (cropCode) {
-      const response = await WcService.fetchTextByCropCodeAsItem({
-        cropCode: cropCode
-      })
+      var response = null
+      try {
+        response = await WcService.fetchTextByCropCodeAsItem({
+          cropCode: cropCode
+        })
+      } catch (e) {
+        this.logError('JournalModal.vue', 'getIWorkTypeByCropCode', e.toString())
+        this.$router.push('/500')
+      }
       this.items = response.data
       this.items.push({text: '새 작업추가'})
     },
     async fetchNameByLandId (landId) {
-      const response = await LandService.fetchNameByLandId({
-        landId: landId
-      })
+      var response = null
+      try {
+        response = await LandService.fetchNameByLandId({
+          landId: landId
+        })
+      } catch (e) {
+        this.logError('JournalModal.vue', 'fetchNameByLandId', e.toString())
+        this.$router.push('/500')
+      }
       this.newEvent.title = response.data[0].name
     },
     async fetchCropNameByCropCode (cropCode) {
-      const response = await DcService.fetchCropNameByCropCode({
-        cropCode: cropCode
-      })
+      var response = null
+      try {
+        response = await DcService.fetchCropNameByCropCode({
+          cropCode: cropCode
+        })
+      } catch (e) {
+        this.logError('JournalModal.vue', 'fetchCropNameByCropCode', e.toString())
+        this.$router.push('/500')
+      }
       this.newEvent.title += ' - ' + response.data[0].text
     },
     async fetchTextByCode (workCode) {
-      console.log(workCode)
-      const response = await WcService.fetchOneTextByCcode({
-        code: workCode
-      })
-      console.log(response.data)
+      var response = null
+      try {
+        response = await WcService.fetchOneTextByCcode({
+          code: workCode
+        })
+      } catch (e) {
+        this.logError('JournalModal.vue', 'fetchTextByCode', e.toString())
+        this.$router.push('/500')
+      }
+      // console.log(response.data)
       this.newEvent.title += ' - ' + response.data[0].text
     },
     async fetchTextByCcode (workCode) {
-      const response = await WcService.fetchOneTextByCcode({
-        code: workCode
-      })
+      var response = null
+      try {
+        response = await WcService.fetchOneTextByCcode({
+          code: workCode
+        })
+      } catch (e) {
+        this.logError('JournalModal.vue', 'fetchTextByCcode', e.toString())
+        this.$router.push('/500')
+      }
       this.selectedWorkTypeText = response.data[0].text
       if (this.selectedWorkTypeText === '출하') {
         this.showShipment = true
@@ -987,10 +1064,16 @@ export default {
       }
     },
     async fetchItemsByWcode (workCode) {
-      const response = await ItemService.fetchItemsByWcode({
-        userId: this.userId,
-        wCode: workCode
-      })
+      var response = null
+      try {
+        response = await ItemService.fetchItemsByWcode({
+          userId: this.userId,
+          wCode: workCode
+        })
+      } catch (e) {
+        this.logError('JournalModal.vue', 'fetchItemsByWcode', e.toString())
+        this.$router.push('/500')
+      }
       this.itemNames = []
       //
       var tmpItemName = {}
@@ -1001,10 +1084,16 @@ export default {
       //
       for (var i = 0; i < response.data.length; i++) {
         for (var j = 0; j < response.data[i].itemDetail.length; j++) {
-          const response2 = await ItemDetailService.fetchItemDetailByItemId({
-            userId: this.userId,
-            itemId: response.data[i].itemDetail[j]
-          })
+          var response2 = null
+          try {
+            response2 = await ItemDetailService.fetchItemDetailByItemId({
+              userId: this.userId,
+              itemId: response.data[i].itemDetail[j]
+            })
+          } catch (e) {
+            this.logError('JournalModal.vue', 'fetchItemsByWcode', e.toString())
+            this.$router.push('/500')
+          }
           this.itemNames.push(response2.data[0])
         }
       }
@@ -1071,9 +1160,15 @@ export default {
         this.itemItems[i].itemUsage = 0
         this.itemItems[i].createDate = this.User_Profile.replace(/-/gi, '')
 
-        const response3 = await ItemDetailService.createItemDetail({
-          itemDetail: this.itemItems[i]
-        })
+        var response3 = null
+        try {
+          response3 = await ItemDetailService.createItemDetail({
+            itemDetail: this.itemItems[i]
+          })
+        } catch (e) {
+          this.logError('JournalModal.vue', 'createNewItem', e.toString())
+          this.$router.push('/500')
+        }
         insertedItemIds.push(response3.data.result.itemId)
       }
 
@@ -1094,17 +1189,23 @@ export default {
         pictureCData = this.iavatar3.uploadedFilename
       }
 
-      const response = await ItemService.createItem({
-        userId: this.userId,
-        date: this.User_Profile,
-        landId: this.iSelectLand,
-        item: this.selectedItem,
-        itemDetail: insertedItemIds,
-        purpose: this.purpose,
-        pictureA: pictureAData,
-        pictureB: pictureBData,
-        pictureC: pictureCData
-      })
+      var response = null
+      try {
+        response = await ItemService.createItem({
+          userId: this.userId,
+          date: this.User_Profile,
+          landId: this.iSelectLand,
+          item: this.selectedItem,
+          itemDetail: insertedItemIds,
+          purpose: this.purpose,
+          pictureA: pictureAData,
+          pictureB: pictureBData,
+          pictureC: pictureCData
+        })
+      } catch (e) {
+        this.logError('JournalModal.vue', 'createNewItem', e.toString())
+        this.$router.push('/500')
+      }
 
       // itemdetails 콜렉션의 parentId를 업데이트
       for (var j = 0; j < insertedItemIds.length; j++) {
@@ -1116,9 +1217,15 @@ export default {
 
       this.newEvent.itemId = response.data.result._id
       var workTypeVal = ''
-      const response2 = await WcService.fetchOneTextByCcode({
-        code: response.data.result.item
-      })
+      var response2 = null
+      try {
+        response2 = await WcService.fetchOneTextByCcode({
+          code: response.data.result.item
+        })
+      } catch (e) {
+        this.logError('JournalModal.vue', 'createNewItem', e.toString())
+        this.$router.push('/500')
+      }
       workTypeVal = response2.data[0].text
       this.newEvent.title = workTypeVal + ' 구입'
       this.newEvent.start = this.User_Profile
@@ -1206,27 +1313,32 @@ export default {
         pictureCData = this.avatar3.uploadedFilename
       }
 
-      const response = await JournalService.createJournal({
-        userId: this.userId,
-        // date: this.User_Profile.substring(10, 20),
-        date: this.User_Profile,
-        landId: this.selectedLandId,
-        workCode: this.selectedWorkTypeCode,
-        workContent: this.workContent,
-        workTime: this.workTime,
-        workerNumber: this.workerNumber,
-        weather: weatherData,
-        remarks: this.remarks,
-        coo: cooDatas,
-        shipment: shipmentData,
-        income: incomeData,
-        itemDetail: itemDetailDatas,
-        output: outputData,
-        pictureA: pictureAData,
-        pictureB: pictureBData,
-        pictureC: pictureCData
-      })
-      // console.log(response.data)
+      var response = null
+      try {
+        response = await JournalService.createJournal({
+          userId: this.userId,
+          // date: this.User_Profile.substring(10, 20),
+          date: this.User_Profile,
+          landId: this.selectedLandId,
+          workCode: this.selectedWorkTypeCode,
+          workContent: this.workContent,
+          workTime: this.workTime,
+          workerNumber: this.workerNumber,
+          weather: weatherData,
+          remarks: this.remarks,
+          coo: cooDatas,
+          shipment: shipmentData,
+          income: incomeData,
+          itemDetail: itemDetailDatas,
+          output: outputData,
+          pictureA: pictureAData,
+          pictureB: pictureBData,
+          pictureC: pictureCData
+        })
+      } catch (e) {
+        this.logError('JournalModal.vue', 'createNewJournal', e.toString())
+        this.$router.push('/500')
+      }
 
       this.newEvent.journalId = response.data.result._id
       this.fetchNameByLandId(this.selectedLandId)
@@ -1239,19 +1351,30 @@ export default {
       // this.newEvent.eventIndex = this.eventIndex
     },
     async updateItemUsage (userId, landId, item, itemName, usage) {
-      await ItemService.updateItemUsageByJournalUsage({
-        userId: userId,
-        landId: landId,
-        item: item,
-        itemName: itemName,
-        usage: usage
-      })
+      try {
+        await ItemService.updateItemUsageByJournalUsage({
+          userId: userId,
+          landId: landId,
+          item: item,
+          itemName: itemName,
+          usage: usage
+        })
+      } catch (e) {
+        this.logError('JournalModal.vue', 'updateItemUsage', e.toString())
+        this.$router.push('/500')
+      }
     },
     async fetchItemDetail (idxVal, itemIdVal) {
-      const response = await ItemDetailService.fetchItemDetailByItemId({
-        userId: this.userId,
-        itemId: itemIdVal
-      })
+      var response = null
+      try {
+        response = await ItemDetailService.fetchItemDetailByItemId({
+          userId: this.userId,
+          itemId: itemIdVal
+        })
+      } catch (e) {
+        this.logError('JournalModal.vue', 'fetchItemDetail', e.toString())
+        this.$router.push('/500')
+      }
       this.usageItems[idxVal].stock = response.data[0].itemAmount - response.data[0].journalUsage - response.data[0].itemUsage
       this.usageItems[idxVal].itemUsage = response.data[0].itemUsage
       this.usageItems[idxVal].journalRealUsage = response.data[0].journalUsage
@@ -1440,7 +1563,7 @@ export default {
     },
     onBlurItemSelect: function (event, idx) {
       // console.log(e)
-      console.log('selected')
+      // console.log('selected')
       this.usageItems[idx].itemName = this.itemNames[1]
     },
     onChangeItemName: function (event, idx) {
@@ -1476,13 +1599,13 @@ export default {
       this.newEvent.start = this.User_Profile.substring(10, 20) + ' ' + event
       var tmpStr = event
       this.selectedWSTime = tmpStr.replace(':', '')
-      console.log(this.selectedWSTime)
+      // console.log(this.selectedWSTime)
     },
     onChangeWETime: function (event) {
       this.newEvent.end = this.User_Profile.substring(10, 20) + ' ' + event
       var tmpStr = event
       this.selectedWETime = tmpStr.replace(':', '')
-      console.log(this.selectedWETime)
+      // console.log(this.selectedWETime)
     },
     save () {
       this.$validator.validateAll().then((result) => {

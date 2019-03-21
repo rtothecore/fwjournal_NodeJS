@@ -144,6 +144,7 @@
 import moment from 'moment'
 import SsService from '@/services/SsService'
 import WcDataService from '@/services/WcDataService'
+import LogService from '@/services/LogService'
 export default {
   $_veeValidate: {
     validator: 'new'
@@ -276,14 +277,26 @@ export default {
       this.wcdatas = []
       this.getWeatherCrawlerDataAgg()
     },
+    async logError (page, funcName, message) {
+      await LogService.logError({
+        errorPage: page,
+        funcName: funcName,
+        message: message
+      })
+    },
     async getWeatherCrawlerDataAgg () {
       this.queryStartTime = moment()
-      console.log(this.queryStartTime)
+      // console.log(this.queryStartTime)
 
-      const response = await WcDataService.fetchAllDataOfWcDataAgg({
-        startDate: this.sDate.replace(/-/gi, ''),
-        endDate: this.eDate.replace(/-/gi, '')
-      })
+      var response = null
+      try {
+        response = await WcDataService.fetchAllDataOfWcDataAgg({
+          startDate: this.sDate.replace(/-/gi, ''),
+          endDate: this.eDate.replace(/-/gi, '')
+        })
+      } catch (e) {
+        this.$router.push('/500')
+      }
 
       // console.log(response.data)
       this.wcdatas = response.data
@@ -293,10 +306,10 @@ export default {
       this.wcdatasCount = response.data.length
 
       this.queryEndTime = moment()
-      console.log(this.queryEndTime)
+      // console.log(this.queryEndTime)
 
       var queryRunTime = this.queryEndTime - this.queryStartTime
-      console.log('wcdatas runTime : ' + queryRunTime)
+      // console.log('wcdatas runTime : ' + queryRunTime)
       this.wcdatasTime = queryRunTime
     },
     getSsDataAgg: function () {
@@ -307,10 +320,16 @@ export default {
       this.queryStartTime = moment()
       console.log(this.queryStartTime)
 
-      const response = await SsService.fetchAllDataOfSensorDataAgg({
-        startDate: this.sDate.replace(/-/gi, ''),
-        endDate: this.eDate.replace(/-/gi, '')
-      })
+      var response = null
+      try {
+        response = await SsService.fetchAllDataOfSensorDataAgg({
+          startDate: this.sDate.replace(/-/gi, ''),
+          endDate: this.eDate.replace(/-/gi, '')
+        })
+      } catch (e) {
+        this.logError('QueryTest.vue', 'getSensorDataAgg', e.toString())
+        this.$router.push('/500')
+      }
 
       // console.log(response.data)
       this.ssdatas = response.data

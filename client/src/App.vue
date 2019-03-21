@@ -306,7 +306,8 @@ export default {
       if (this.$router.currentRoute.path === '/suStep1' ||
           this.$router.currentRoute.path === '/suStep2' ||
           this.$router.currentRoute.path === '/suStep3' ||
-          this.$router.currentRoute.path === '/suStep4') {
+          this.$router.currentRoute.path === '/suStep4' ||
+          this.$router.currentRoute.path === '/500') {
         // console.log('except!')
       } else {
         this.$router.push('/login')
