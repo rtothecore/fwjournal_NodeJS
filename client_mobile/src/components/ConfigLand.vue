@@ -222,6 +222,8 @@
 
 <script>
 import {bus} from '../main'
+import DBService from '@/services/DBService'
+import LogService from '@/services/LogService'
 import LandService from '@/services/LandService'
 import BcService from '@/services/BcService'
 import McService from '@/services/McService'
@@ -335,114 +337,198 @@ export default {
     }
   },
   created () {
-    this.userId = this.$session.get('userId')
-    this.getLands()
-    this.getBCS()
+    if (this.checkDB()) {
+      this.userId = this.$session.get('userId')
+      this.getLands()
+      this.getBCS()
+    }
   },
   methods: {
+    async logError (page, funcName, message) {
+      await LogService.logError({
+        errorPage: page,
+        funcName: funcName,
+        message: message
+      })
+    },
     async getBCS () {
-      const response = await BcService.fetchBcs({})
+      var response = null
+      try {
+        response = await BcService.fetchBcs({})
+      } catch (e) {
+        this.logError('ConfigLand.vue', 'getBCS', e.toString())
+        this.$router.push('/500')
+      }
       this.items0 = response.data.bcs
     },
     async getMCS (bCode) {
-      const response = await McService.fetchMcsByBCode({
-        bCode: bCode
-      })
+      var response = null
+      try {
+        response = await McService.fetchMcsByBCode({
+          bCode: bCode
+        })
+      } catch (e) {
+        this.logError('ConfigLand.vue', 'getMCS', e.toString())
+        this.$router.push('/500')
+      }
       this.items1 = response.data.mcs
     },
     async getSCS (mCode) {
-      const response = await ScService.fetchSByM({
-        mCode: mCode
-      })
+      var response = null
+      try {
+        response = await ScService.fetchSByM({
+          mCode: mCode
+        })
+      } catch (e) {
+        this.logError('ConfigLand.vue', 'getSCS', e.toString())
+        this.$router.push('/500')
+      }
       this.items2 = response.data.scs
     },
     async getDCS (sCode) {
-      const response = await DcService.fetchDcsByScode({
-        sCode: sCode
-      })
+      var response = null
+      try {
+        response = await DcService.fetchDcsByScode({
+          sCode: sCode
+        })
+      } catch (e) {
+        this.logError('ConfigLand.vue', 'getDCS', e.toString())
+        this.$router.push('/500')
+      }
       this.items3 = response.data.dcs
     },
     async getLands () {
-      const response = await LandService.fetchLands({
-        userId: this.userId
-      })
+      var response = null
+      try {
+        response = await LandService.fetchLands({
+          userId: this.userId
+        })
+      } catch (e) {
+        this.logError('ConfigLand.vue', 'getLands', e.toString())
+        this.$router.push('/500')
+      }
       this.lands = response.data.lands
       for (var i = 0; i < this.lands.length; i++) {
         this.lands[i].dcsCode = this.lands[i].cropCode
-        const response2 = await DcService.fetchCropNameByCropCode({
-          cropCode: this.lands[i].cropCode
-        })
+        var response2 = null
+        try {
+          response2 = await DcService.fetchCropNameByCropCode({
+            cropCode: response.data.lands[i].cropCode
+          })
+        } catch (e) {
+          this.logError('ConfigLand.vue', 'getLands', e.toString())
+          this.$router.push('/500')
+        }
         this.lands[i].cropCode = response2.data[0].text
 
         this.lands[i].scsCode = response2.data[0].sCode
-        const response3 = await ScService.fetchTextBySCode({
-          sCode: response2.data[0].sCode
-        })
+        var response3 = null
+        try {
+          response3 = await ScService.fetchTextBySCode({
+            sCode: response2.data[0].sCode
+          })
+        } catch (e) {
+          this.logError('ConfigLand.vue', 'getLands', e.toString())
+          this.$router.push('/500')
+        }
         this.lands[i].scs = response3.data.scs[0].text
 
         this.lands[i].mcsCode = response3.data.scs[0].mCode
-        const response4 = await McService.fetchTextByMCode({
-          mCode: response3.data.scs[0].mCode
-        })
+        var response4 = null
+        try {
+          response4 = await McService.fetchTextByMCode({
+            mCode: response3.data.scs[0].mCode
+          })
+        } catch (e) {
+          this.logError('ConfigLand.vue', 'getLands', e.toString())
+          this.$router.push('/500')
+        }
         this.lands[i].mcs = response4.data.mcs[0].text
         this.lands[i].bcsCode = response4.data.mcs[0].bCode
       }
     },
     async createNewLand () {
-      await LandService.createNewLand({
-        userId: this.userId,
-        name: this.editedItem.name,
-        address: this.editedItem.address,
-        addressDetail: this.editedItem.addressDetail,
-        size: this.editedItem.size,
-        sizeDetail: this.editedItem.sizeDetail,
-        cropCode: this.cropCode
-      })
+      try {
+        await LandService.createNewLand({
+          userId: this.userId,
+          name: this.editedItem.name,
+          address: this.editedItem.address,
+          addressDetail: this.editedItem.addressDetail,
+          size: this.editedItem.size,
+          sizeDetail: this.editedItem.sizeDetail,
+          cropCode: this.cropCode
+        })
+      } catch (e) {
+        this.logError('ConfigLand.vue', 'createNewLand', e.toString())
+        this.$router.push('/500')
+      }
       this.getLands()
       this.getBCS()
     },
     async updateLand () {
-      /*
-      if (this.cropCode === '') {
-        this.cropCode = this.editedItem.dcsCode
-      }
-      */
       this.cropCode = this.editedItem.cropCode
-      await LandService.updateLand({
-        id: this.editedItem._id,
-        name: this.editedItem.name,
-        address: this.editedItem.address,
-        addressDetail: this.editedItem.addressDetail,
-        size: this.editedItem.size,
-        sizeDetail: this.editedItem.sizeDetail,
-        cropCode: this.cropCode
-      })
+      try {
+        await LandService.updateLand({
+          id: this.editedItem._id,
+          name: this.editedItem.name,
+          address: this.editedItem.address,
+          addressDetail: this.editedItem.addressDetail,
+          size: this.editedItem.size,
+          sizeDetail: this.editedItem.sizeDetail,
+          cropCode: this.cropCode
+        })
+      } catch (e) {
+        this.logError('ConfigLand.vue', 'updateLand', e.toString())
+        this.$router.push('/500')
+      }
       this.getLands()
       this.getBCS()
     },
     async deleteLand (id) {
-      await LandService.deleteLand(id)
+      try {
+        await LandService.deleteLand(id)
+      } catch (e) {
+        this.logError('ConfigLand.vue', 'deleteLand', e.toString())
+        this.$router.push('/500')
+      }
     },
     async getCropName () {
-      const response2 = await DcService.fetchCropNameByCropCode({
-        cropCode: this.editedItem.cropCode
-      })
+      var response2 = null
+      try {
+        response2 = await DcService.fetchCropNameByCropCode({
+          cropCode: this.editedItem.cropCode
+        })
+      } catch (e) {
+        this.logError('ConfigLand.vue', 'getCropName', e.toString())
+        this.$router.push('/500')
+      }
       this.editedItem.cropCode = response2.data[0].text
+    },
+    async checkDB () {
+      try {
+        await DBService.checkDB({})
+      } catch (e) {
+        this.$router.push('/500')
+        return false
+      }
+      return true
     },
     initialize () {
     },
     editItem (item) {
       // console.log(item)
-      this.editedIndex = this.lands.indexOf(item)
-      this.editedItem = Object.assign({}, item)
-      this.editedItem.bcs = item.bcsCode
-      this.getMCS(item.bcsCode)
-      this.editedItem.mcs = item.mcsCode
-      this.getSCS(item.mcsCode)
-      this.editedItem.scs = item.scsCode
-      this.getDCS(item.scsCode)
-      this.editedItem.cropCode = item.dcsCode
-      this.dialog = true
+      if (this.checkDB()) {
+        this.editedIndex = this.lands.indexOf(item)
+        this.editedItem = Object.assign({}, item)
+        this.editedItem.bcs = item.bcsCode
+        this.getMCS(item.bcsCode)
+        this.editedItem.mcs = item.mcsCode
+        this.getSCS(item.mcsCode)
+        this.editedItem.scs = item.scsCode
+        this.getDCS(item.scsCode)
+        this.editedItem.cropCode = item.dcsCode
+        this.dialog = true
+      }
     },
     deleteI () {
       const index = this.editedIndex

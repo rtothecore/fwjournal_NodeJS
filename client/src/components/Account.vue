@@ -1260,16 +1260,28 @@ export default {
 
       var tmpIncomeTotal = 0
       for (var i = 0; i < this.incomeItems.length; i++) {
-        // 농장명
-        const response2 = await LandService.fetchNameByLandId({
-          landId: this.incomeItems[i].landId
-        })
+        var response2 = null
+        try {
+          // 농장명
+          response2 = await LandService.fetchNameByLandId({
+            landId: this.incomeItems[i].landId
+          })
+        } catch (e) {
+          this.logError('Account.vue', 'getTotalIncomeData', e.toString())
+          this.$router.push('/500')
+        }
         this.incomeItems[i].landName = response2.data[0].name
 
-        // 항목(작물)
-        const response3 = await LandService.fetchCropNameByLandId({
-          landId: this.incomeItems[i].landId
-        })
+        var response3 = null
+        try {
+          // 항목(작물)
+          response3 = await LandService.fetchCropNameByLandId({
+            landId: this.incomeItems[i].landId
+          })
+        } catch (e) {
+          this.logError('Account.vue', 'getTotalIncomeData', e.toString())
+          this.$router.push('/500')
+        }
         this.incomeItems[i].cropName = response3.data[0].text
 
         // 수입 소계
@@ -1364,12 +1376,16 @@ export default {
       this.totalCooCost = tmpTotal
     },
     showItem (item) {
-      var emitParams = {'journalId': item._id, 'userId': item.userId, 'origin': 'fromPredict'}
-      bus.$emit('dialogForShow', emitParams)
+      if (this.checkDB()) {
+        var emitParams = {'journalId': item._id, 'userId': item.userId, 'origin': 'fromPredict'}
+        bus.$emit('dialogForShow', emitParams)
+      }
     },
     showItemForItem (item) {
-      var emitParams = {'itemId': item._id, 'userId': item.userId, 'origin': 'fromPredict'}
-      bus.$emit('dialogForShowItem', emitParams)
+      if (this.checkDB()) {
+        var emitParams = {'itemId': item._id, 'userId': item.userId, 'origin': 'fromPredict'}
+        bus.$emit('dialogForShowItem', emitParams)
+      }
     },
     submit () {
       if (this.$refs.form.validate()) {

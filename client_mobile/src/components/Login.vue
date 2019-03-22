@@ -70,6 +70,8 @@
 // import {bus} from '../main'
 // import moment from 'moment'
 import UserService from '@/services/UserService'
+import DBService from '@/services/DBService'
+import LogService from '@/services/LogService'
 export default {
   $_veeValidate: {
     validator: 'new'
@@ -93,7 +95,26 @@ export default {
   mounted () {
     this.$validator.localize('ko', this.dictionary)
   },
+  created: function () {
+    this.checkDB()
+  },
   methods: {
+    async checkDB () {
+      try {
+        await DBService.checkDB({})
+      } catch (e) {
+        this.$router.push('/500')
+        return false
+      }
+      return true
+    },
+    async logError (page, funcName, message) {
+      await LogService.logError({
+        errorPage: page,
+        funcName: funcName,
+        message: message
+      })
+    },
     async getUserByIdNPw () {
       try {
         const response = await UserService.login({
@@ -122,64 +143,76 @@ export default {
           })
         }
       } catch (e) {
-        alert(e)
+        // alert(e)
+        this.logError('Login.vue', 'getUserByIdNPw', e.toString())
+        this.$router.push('/500')
       }
     },
     async findPassword () {
-      const response = await UserService.findPassword({
-        id: this.id
-      })
-      if (response.status === 200) {
-        this.$swal({
-          type: 'success',
-          title: '임시비밀번호 발송',
-          showConfirmButton: false,
-          timer: 777
-        }).then((result) => {
+      try {
+        const response = await UserService.findPassword({
+          id: this.id
         })
-      } else if (response.status === 201) {
-        this.$swal({
-          type: 'warning',
-          title: '존재하지않는 아이디입니다',
-          showConfirmButton: false,
-          timer: 777
-        }).then((result) => {
-        })
+        if (response.status === 200) {
+          this.$swal({
+            type: 'success',
+            title: '임시비밀번호 발송',
+            showConfirmButton: false,
+            timer: 777
+          }).then((result) => {
+          })
+        } else if (response.status === 201) {
+          this.$swal({
+            type: 'warning',
+            title: '존재하지않는 아이디입니다',
+            showConfirmButton: false,
+            timer: 777
+          }).then((result) => {
+          })
+        }
+      } catch (e) {
+        this.logError('Login.vue', 'findPassword', e.toString())
+        this.$router.push('/500')
       }
     },
     async checkPwExpired () {
-      const response = await UserService.checkPasswordExpired({
-        id: this.id
-      })
-      if (response.status === 200) {
-        // 로그인 성공
-      } else if (response.status === 201 || response.status === 203) {
-        // 비번 수정 창으로 이동
-        this.$swal({
-          type: 'warning',
-          title: '비밀번호를 변경해주세요',
-          showConfirmButton: false,
-          timer: 1444
-        }).then((result) => {
-          // this.$router.push('/changePw')
-          // https://router.vuejs.org/guide/essentials/navigation.html
-          // https://www.thepolyglotdeveloper.com/2017/11/pass-data-between-routes-vuejs-web-application/
-          // 임시비밀번호 발급받아 로그인하는 경우 비밀번호 변경 창을 띄운다
-          this.$router.push({ name: 'nameConfigPrivate', params: { callFrom: 'login' } })
+      try {
+        const response = await UserService.checkPasswordExpired({
+          id: this.id
         })
-      } else if (response.status === 202) {
-        // 임시비번 재발급 창으로 이동
-        this.$swal({
-          type: 'warning',
-          title: '비밀번호 찾기로 임시비밀번호를 재발급 받으세요',
-          showConfirmButton: false,
-          timer: 1444
-        }).then((result) => {
-          this.$session.destroy()
-          this.btnLogOutSeen = false
-          this.isBackImgActive = true
-          this.$router.push('/login')
-        })
+        if (response.status === 200) {
+          // 로그인 성공
+        } else if (response.status === 201 || response.status === 203) {
+          // 비번 수정 창으로 이동
+          this.$swal({
+            type: 'warning',
+            title: '비밀번호를 변경해주세요',
+            showConfirmButton: false,
+            timer: 1444
+          }).then((result) => {
+            // this.$router.push('/changePw')
+            // https://router.vuejs.org/guide/essentials/navigation.html
+            // https://www.thepolyglotdeveloper.com/2017/11/pass-data-between-routes-vuejs-web-application/
+            // 임시비밀번호 발급받아 로그인하는 경우 비밀번호 변경 창을 띄운다
+            this.$router.push({ name: 'nameConfigPrivate', params: { callFrom: 'login' } })
+          })
+        } else if (response.status === 202) {
+          // 임시비번 재발급 창으로 이동
+          this.$swal({
+            type: 'warning',
+            title: '비밀번호 찾기로 임시비밀번호를 재발급 받으세요',
+            showConfirmButton: false,
+            timer: 1444
+          }).then((result) => {
+            this.$session.destroy()
+            this.btnLogOutSeen = false
+            this.isBackImgActive = true
+            this.$router.push('/login')
+          })
+        }
+      } catch (e) {
+        this.logError('Login.vue', 'checkPwExpired', e.toString())
+        this.$router.push('/500')
       }
     },
     login () {
@@ -187,7 +220,9 @@ export default {
         if (!result) {
           return
         }
-        this.getUserByIdNPw()
+        if (this.checkDB()) {
+          this.getUserByIdNPw()
+        }
       }).catch(() => {})
     },
     goToRegister () {

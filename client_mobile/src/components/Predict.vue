@@ -141,10 +141,9 @@
 import {bus} from '../main'
 import moment from 'moment'
 import JournalService from '@/services/JournalService'
-// import ScService from '@/services/ScService'
-// import WcService from '@/services/WcService'
 import LandService from '@/services/LandService'
-// import DcService from '@/services/DcService'
+import DBService from '@/services/DBService'
+import LogService from '@/services/LogService'
 export default {
   $_veeValidate: {
     validator: 'new'
@@ -213,19 +212,43 @@ export default {
     }
   },
   created: function () {
-    this.userId = this.$session.get('userId')
-    var today = moment().format('YYYY-MM-DD')
-    this.sDate = today
-    this.onChangeDate(today)
-    this.getLands()
-    this.getJournalsByDate()
-    this.selectLand = '0'
+    if (this.checkDB()) {
+      this.userId = this.$session.get('userId')
+      var today = moment().format('YYYY-MM-DD')
+      this.sDate = today
+      this.onChangeDate(today)
+      this.getLands()
+      this.getJournalsByDate()
+      this.selectLand = '0'
+    }
   },
   methods: {
-    async getLands () {
-      const response = await LandService.fetchLands({
-        userId: this.userId
+    async logError (page, funcName, message) {
+      await LogService.logError({
+        errorPage: page,
+        funcName: funcName,
+        message: message
       })
+    },
+    async checkDB () {
+      try {
+        await DBService.checkDB({})
+      } catch (e) {
+        this.$router.push('/500')
+        return false
+      }
+      return true
+    },
+    async getLands () {
+      var response = null
+      try {
+        response = await LandService.fetchLands({
+          userId: this.userId
+        })
+      } catch (e) {
+        this.logError('Predict.vue', 'getLands', e.toString())
+        this.$router.push('/500')
+      }
       this.landItems = response.data.lands
 
       var landItemForAll = {}
@@ -244,12 +267,18 @@ export default {
         this.selectLand = 0
       }
 
-      const response = await JournalService.fetchJournalLookupBy4({
-        startDate: this.startDate,
-        endDate: this.endDate,
-        userId: this.userId,
-        landId: this.selectLand
-      })
+      var response = null
+      try {
+        response = await JournalService.fetchJournalLookupBy4({
+          startDate: this.startDate,
+          endDate: this.endDate,
+          userId: this.userId,
+          landId: this.selectLand
+        })
+      } catch (e) {
+        this.logError('Predict.vue', 'getJournalsByDate', e.toString())
+        this.$router.push('/500')
+      }
 
       if (response.data.length > 0) {
         var tmpJournals = response.data
@@ -287,11 +316,17 @@ export default {
         }
         this.journals = tmpJournals
       } else {  // 작년 10일이내의 데이터가 없는 경우 작년 해당월의 데이터를 보여줌
-        const response4 = await JournalService.fetchJournalLookupByYMUserIdLandId({
-          ym: this.lastYearYM,
-          userId: this.userId,
-          landId: this.selectLand
-        })
+        var response4 = null
+        try {
+          response4 = await JournalService.fetchJournalLookupByYMUserIdLandId({
+            ym: this.lastYearYM,
+            userId: this.userId,
+            landId: this.selectLand
+          })
+        } catch (e) {
+          this.logError('Predict.vue', 'getJournalsByDate', e.toString())
+          this.$router.push('/500')
+        }
         var tmpJournals2 = response4.data
         console.log(response4.data)
 
@@ -348,16 +383,19 @@ export default {
       // this.getJournalsByDate()
     },
     showItem (item) {
-      // console.log(item)
-      var emitParams = {'journalId': item._id, 'userId': item.userId, 'origin': 'fromPredict'}
-      bus.$emit('dialogForShow', emitParams)
+      if (this.checkDB()) {
+        var emitParams = {'journalId': item._id, 'userId': item.userId, 'origin': 'fromPredict'}
+        bus.$emit('dialogForShow', emitParams)
+      }
     },
     searchJournals () {
       this.$validator.validateAll().then((result) => {
         if (!result) {
           return
         }
-        this.getJournalsByDate()
+        if (this.checkDB()) {
+          this.getJournalsByDate()
+        }
       }).catch(() => {})
     },
     searchReset () {

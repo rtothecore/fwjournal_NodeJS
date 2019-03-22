@@ -2,7 +2,7 @@
   <v-layout align-center justify-center fill-height flex-column>
     <div
       id="e3"
-      :style=mainStyle
+      style="width: 95%; height: 480px; margin: auto;"
       class="grey lighten-3"      
     >
       <v-toolbar
@@ -36,8 +36,6 @@
 </template>
 
 <script>
-const { detect } = require('detect-browser')
-const browser = detect()
 export default {
   data () {
     return {
@@ -46,17 +44,6 @@ export default {
   },
   mounted () {
     this.$validator.localize('ko', this.dictionary)
-    // https://www.npmjs.com/package/detect-browser
-    if (browser) {
-      // console.log(browser.name)
-      // console.log(browser.version)
-      // console.log(browser.os)
-      if (browser.name === 'chrome') {
-        this.mainStyle = 'width: 500px; height: 520px; margin: auto;'
-      } else if (browser.name === 'ie') {
-        this.mainStyle = 'width: 500px; height: 520px; margin-bottom: auto;'
-      }
-    }
   },
   methods: {
   },

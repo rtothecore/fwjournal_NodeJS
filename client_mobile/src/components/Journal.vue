@@ -282,6 +282,8 @@
     import ItemService from '@/services/ItemService'
     import PriceService from '@/services/PriceService'
     import DcService from '@/services/DcService'
+    import DBService from '@/services/DBService'
+    import LogService from '@/services/LogService'
     import proj4 from 'proj4'
     
     export default {
@@ -399,11 +401,13 @@
             },
             dayClick (date, event, view) {
               // console.log(date.format())
-              var todayDate = moment().format('YYYY-MM-DD')
-              var clickedDate = date.format()
-              if (todayDate < clickedDate) {
-              } else {
-                bus.$emit('dialog', date.format())
+              if (this.checkDB()) {
+                var todayDate = moment().format('YYYY-MM-DD')
+                var clickedDate = date.format()
+                if (todayDate < clickedDate) {
+                } else {
+                  bus.$emit('dialog', date.format())
+                }
               }
             }
           }
@@ -416,15 +420,17 @@
         }
   },
   created () {
-        this.userId = this.$session.get('userId')
-        this.getJournal()
-        this.getItem()
-        this.getMyCrop()
-        this.getLastYearJournal()
-        this.getLands()
-        this.calendarWidth = '49%'
-        this.calendarHeight = '900px'
-        this.config.aspectRatio = 1
+        if (this.checkDB()) {
+          this.userId = this.$session.get('userId')
+          this.getJournal()
+          this.getItem()
+          this.getMyCrop()
+          this.getLastYearJournal()
+          this.getLands()
+          this.calendarWidth = '49%'
+          this.calendarHeight = '900px'
+          this.config.aspectRatio = 1
+        }
   },
   mounted () {
         var vm = this
@@ -488,37 +494,76 @@
         },
         eventSelected: function (event, jsEvent, view) {
           // console.log(event)
-          bus.$emit('dialogForEdit', event)
+          if (this.checkDB()) {
+            bus.$emit('dialogForEdit', event)
+          }
+        },
+        async logError (page, funcName, message) {
+          await LogService.logError({
+            errorPage: page,
+            funcName: funcName,
+            message: message
+          })
         },
         async getLands () {
-          const response = await LandService.fetchLands({
-            userId: this.userId
-          })
+          var response = null
+          try {
+            response = await LandService.fetchLands({
+              userId: this.userId
+            })
+          } catch (e) {
+            this.logError('Journal.vue', 'getLands', e.toString())
+            this.$router.push('/500')
+          }
           this.landItems = response.data.lands
           this.onChangeLand(response.data.lands[0]._id) // 맨처음의 농장을 기본으로 선택
         },
         async getMyCrop () {
           this.myCrops = []
-          const response = await LandService.fetchLands({
-            userId: this.userId
-          })
+          var response = null
+          try {
+            response = await LandService.fetchLands({
+              userId: this.userId
+            })
+          } catch (e) {
+            this.logError('Journal.vue', 'getMyCrop', e.toString())
+            this.$router.push('/500')
+          }
           for (var i = 0; i < response.data.lands.length; i++) {
-            const response2 = await DcService.fetchCropNameByCropCode({
-              cropCode: response.data.lands[i].cropCode
-            })
+            var response2 = null
+            try {
+              response2 = await DcService.fetchCropNameByCropCode({
+                cropCode: response.data.lands[i].cropCode
+              })
+            } catch (e) {
+              this.logError('Journal.vue', 'getMyCrop', e.toString())
+              this.$router.push('/500')
+            }
 
-            const response4 = await ScService.fetchTextBySCode({
-              sCode: response2.data[0].sCode
-            })
+            var response4 = null
+            try {
+              response4 = await ScService.fetchTextBySCode({
+                sCode: response2.data[0].sCode
+              })
+            } catch (e) {
+              this.logError('Journal.vue', 'getMyCrop', e.toString())
+              this.$router.push('/500')
+            }
             // console.log(response4.data)
 
             this.myCrops.push(response4.data.scs[0].text)
           }
           // console.log(this.myCrops)
           for (var j = 0; j < this.myCrops.length; j++) {
-            const response3 = await PriceService.fetchPriceData({
-              productName: this.myCrops[j]
-            })
+            var response3 = null
+            try {
+              response3 = await PriceService.fetchPriceData({
+                productName: this.myCrops[j]
+              })
+            } catch (e) {
+              this.logError('Journal.vue', 'getMyCrop', e.toString())
+              this.$router.push('/500')
+            }
             if (response3.data) {
               // console.log(response3.data.Grid_20150401000000000216_1.row)
               for (var k = 0; k < response3.data.Grid_20150401000000000216_1.row.length; k++) {
@@ -534,9 +579,15 @@
           }
         },
         async getJournal () {
-          const response = await JournalService.fetchJournalLookupByUserId({
-            userId: this.userId
-          })
+          var response = null
+          try {
+            response = await JournalService.fetchJournalLookupByUserId({
+              userId: this.userId
+            })
+          } catch (e) {
+            this.logError('Journal.vue', 'getJournal', e.toString())
+            this.$router.push('/500')
+          }
           for (var i = 0; i < response.data.length; i++) {
             var tmpEvent = {}
 
@@ -552,9 +603,15 @@
           }
         },
         async getItem () {
-          const response = await ItemService.fetchItemsLookupByUserId({
-            userId: this.userId
-          })
+          var response = null
+          try {
+            response = await ItemService.fetchItemsLookupByUserId({
+              userId: this.userId
+            })
+          } catch (e) {
+            this.logError('Journal.vue', 'getItem', e.toString())
+            this.$router.push('/500')
+          }
 
           for (var i = 0; i < response.data.length; i++) {
             var tmpEvent = {}
@@ -570,10 +627,16 @@
           }
         },
         async fetchTodayWeather (nx, ny) {
-          const response = await WeatherService.fetchTodayWeather({
-            nx: nx,
-            ny: ny
-          })
+          var response = null
+          try {
+            response = await WeatherService.fetchTodayWeather({
+              nx: nx,
+              ny: ny
+            })
+          } catch (e) {
+            this.logError('Journal.vue', 'fetchTodayWeather', e.toString())
+            this.$router.push('/500')
+          }
           // console.log(response.data)
           for (var i = 0; i < response.data.item.length; i++) {
             // var sky = 'SKY'
@@ -605,10 +668,16 @@
           }
         },
         async fetchWeatherForecast (nx, ny) {
-          const response = await WeatherService.fetchWeatherForecast({
-            nx: nx,
-            ny: ny
-          })
+          var response = null
+          try {
+            response = await WeatherService.fetchWeatherForecast({
+              nx: nx,
+              ny: ny
+            })
+          } catch (e) {
+            this.logError('Journal.vue', 'fetchWeatherForecast', e.toString())
+            this.$router.push('/500')
+          }
           // TOMORROW START
           var todayDate = new Date()
           todayDate.setDate(todayDate.getDate() + 1)
@@ -783,10 +852,16 @@
           // AFTER TOMORROW END
         },
         async fetchAirData (tmX, tmY) {
-          const response = await WeatherService.fetchAirData({
-            tmX: tmX,
-            tmY: tmY
-          })
+          var response = null
+          try {
+            response = await WeatherService.fetchAirData({
+              tmX: tmX,
+              tmY: tmY
+            })
+          } catch (e) {
+            this.logError('Journal.vue', 'fetchAirData', e.toString())
+            this.$router.push('/500')
+          }
           // console.log(response.data.pm10Grade)
           switch (response.data.pm10Grade) {
             case '1' :
@@ -806,11 +881,17 @@
           }
         },
         async getJournalsByDate () {
-          const response = await JournalService.fetchJournalLookup({
-            startDate: this.startDate,
-            endDate: this.endDate,
-            userId: this.userId
-          })
+          var response = null
+          try {
+            response = await JournalService.fetchJournalLookup({
+              startDate: this.startDate,
+              endDate: this.endDate,
+              userId: this.userId
+            })
+          } catch (e) {
+            this.logError('Journal.vue', 'getJournalsByDate', e.toString())
+            this.$router.push('/500')
+          }
 
           if (response.data.length > 0) {
             var tmpJournals = response.data
@@ -828,10 +909,16 @@
             }
             this.journals = tmpJournals
           } else {  // 작년 10일이내의 데이터가 없는 경우 작년 해당월의 데이터를 보여줌
-            const response4 = await JournalService.fetchJournalLookupByYMUserId({
-              ym: this.lastYearYM,
-              userId: this.userId
-            })
+            var response4 = null
+            try {
+              response4 = await JournalService.fetchJournalLookupByYMUserId({
+                ym: this.lastYearYM,
+                userId: this.userId
+              })
+            } catch (e) {
+              this.logError('Journal.vue', 'getJournalsByDate', e.toString())
+              this.$router.push('/500')
+            }
             var tmpJournals2 = response4.data
 
             for (var j = 0; j < response4.data.length; j++) {
@@ -846,6 +933,15 @@
           if (this.journals.length === 0) {
             this.showPredictTable = false
           }
+        },
+        async checkDB () {
+          try {
+            await DBService.checkDB({})
+          } catch (e) {
+            this.$router.push('/500')
+            return false
+          }
+          return true
         },
         getLastYearJournal: function () {
           var event = moment().format('YYYY-MM-DD')
@@ -986,9 +1082,10 @@
           return tmpStr
         },
         showItem (item) {
-          // console.log(item)
-          var emitParams = {'journalId': item._id, 'userId': item.userId, 'origin': 'fromPredict'}
-          bus.$emit('dialogForShow', emitParams)
+          if (this.checkDB()) {
+            var emitParams = {'journalId': item._id, 'userId': item.userId, 'origin': 'fromPredict'}
+            bus.$emit('dialogForShow', emitParams)
+          }
         }
   }
 }

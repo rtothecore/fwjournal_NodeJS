@@ -1209,10 +1209,15 @@ export default {
 
       // itemdetails 콜렉션의 parentId를 업데이트
       for (var j = 0; j < insertedItemIds.length; j++) {
-        await ItemDetailService.updateItemDetailWithParentId({
-          itemId: insertedItemIds[j],
-          parentId: response.data.result._id
-        })
+        try {
+          await ItemDetailService.updateItemDetailWithParentId({
+            itemId: insertedItemIds[j],
+            parentId: response.data.result._id
+          })
+        } catch (e) {
+          this.logError('JournalModal.vue', 'createNewItem', e.toString())
+          this.$router.push('/500')
+        }
       }
 
       this.newEvent.itemId = response.data.result._id
@@ -1288,9 +1293,14 @@ export default {
         tempItemDetail.itemId = this.usageItems[j].itemName
         tempItemDetail.journalUsage = this.usageItems[j].usage
         tempItemDetail.originalJournalUsage = 0
-        await ItemDetailService.updateJournalUsageByItemId({
-          itemDetail: tempItemDetail
-        })
+        try {
+          await ItemDetailService.updateJournalUsageByItemId({
+            itemDetail: tempItemDetail
+          })
+        } catch (e) {
+          this.logError('JournalModal.vue', 'createNewJournal', e.toString())
+          this.$router.push('/500')
+        }
       }
 
       // 생산량 데이터

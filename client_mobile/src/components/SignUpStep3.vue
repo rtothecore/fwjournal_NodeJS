@@ -112,6 +112,7 @@
 <script>
 import JoinUserService from '@/services/JoinUserService'
 import UserService from '@/services/UserService'
+import LogService from '@/services/LogService'
 export default {
   $_veeValidate: {
     validator: 'new'
@@ -163,10 +164,23 @@ export default {
     this.$validator.localize('ko', this.dictionary)
   },
   methods: {
-    async checkDuplicateUserId () {
-      const response = await JoinUserService.checkDuplicateUser({
-        id: this.id
+    async logError (page, funcName, message) {
+      await LogService.logError({
+        errorPage: page,
+        funcName: funcName,
+        message: message
       })
+    },
+    async checkDuplicateUserId () {
+      var response = null
+      try {
+        response = await JoinUserService.checkDuplicateUser({
+          id: this.id
+        })
+      } catch (e) {
+        this.logError('SignUpStep3.vue', 'checkDuplicateUserId', e.toString())
+        this.$router.push('/500')
+      }
       if (response.data.length === 0) {
         this.$swal({
           type: 'success',
@@ -189,15 +203,21 @@ export default {
       }
     },
     async createNewUser () {
-      const response = await UserService.createNewUser({
-        id: this.id,
-        password: this.pw,
-        name: this.name,
-        birth_date: this.birthDate,
-        sex: this.sex,
-        phone_no: this.phoneNo,
-        level: '99'
-      })
+      var response = null
+      try {
+        response = await UserService.createNewUser({
+          id: this.id,
+          password: this.pw,
+          name: this.name,
+          birth_date: this.birthDate,
+          sex: this.sex,
+          phone_no: this.phoneNo,
+          level: '99'
+        })
+      } catch (e) {
+        this.logError('SignUpStep3.vue', 'createNewUser', e.toString())
+        this.$router.push('/500')
+      }
       if (response.data.success) {
         this.$swal({
           type: 'success',

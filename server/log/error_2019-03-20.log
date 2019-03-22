@@ -1,8 +1,0 @@
-[2019-03-20 18:50:11] MongoDB disconnected
-[2019-03-20 18:50:11] MongoDB disconnected
-[2019-03-20 18:59:21] MongoDB disconnected
-[2019-03-20 19:01:39] /login : MongoNetworkError: failed to reconnect after 30 attempts with interval 1000 ms
-[2019-03-20 19:10:24] MongoDB disconnected
-[2019-03-20 19:11:16] /login : MongoNetworkError: failed to reconnect after 30 attempts with interval 1000 ms
-[2019-03-20 19:13:45] MongoDB disconnected
-[2019-03-20 19:15:22] /login : MongoNetworkError: failed to reconnect after 30 attempts with interval 1000 ms

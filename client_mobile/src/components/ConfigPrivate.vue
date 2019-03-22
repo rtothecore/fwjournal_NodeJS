@@ -167,6 +167,8 @@
 
 <script>
 import {bus} from '../main'
+import DBService from '@/services/DBService'
+import LogService from '@/services/LogService'
 import UserService from '@/services/UserService'
 export default {
   data: () => ({
@@ -207,12 +209,27 @@ export default {
     }
   },
   created () {
-    this.userId = this.$session.get('userId')
-    this.getUser()
+    if (this.checkDB()) {
+      this.userId = this.$session.get('userId')
+      this.getUser()
+    }
   },
   methods: {
+    async logError (page, funcName, message) {
+      await LogService.logError({
+        errorPage: page,
+        funcName: funcName,
+        message: message
+      })
+    },
     async getUser () {
-      const response = await UserService.fetchUser(this.userId)
+      var response = null
+      try {
+        response = await UserService.fetchUser(this.userId)
+      } catch (e) {
+        this.logError('ConfigPrivate.vue', 'getUser', e.toString())
+        this.$router.push('/500')
+      }
       this.id = response.data[0].id
       this.name = response.data[0].name
       this.birthDate = response.data[0].birth_date
@@ -227,11 +244,17 @@ export default {
       }
     },
     async updateUserAgeSex () {
-      const response = await UserService.updateUserBirthDateSex({
-        id: this.userId,
-        birth_date: this.birthDate,
-        sex: this.select
-      })
+      var response = null
+      try {
+        response = await UserService.updateUserBirthDateSex({
+          id: this.userId,
+          birth_date: this.birthDate,
+          sex: this.select
+        })
+      } catch (e) {
+        this.logError('ConfigPrivate.vue', 'updateUserAgeSex', e.toString())
+        this.$router.push('/500')
+      }
       if (response.data.success) {
         this.$swal({
           type: 'success',
@@ -250,14 +273,40 @@ export default {
         this.shareFlag = 0
         this.switch1Label = '공유안함'
       }
-      await UserService.updateUserShareFlag({
-        id: this.userId,
-        share_flag: this.shareFlag
-      })
+      var response = null
+      try {
+        response = await UserService.updateUserShareFlag({
+          id: this.userId,
+          share_flag: this.shareFlag
+        })
+      } catch (e) {
+        this.logError('ConfigPrivate.vue', 'updateUserShareFlag', e.toString())
+        this.$router.push('/500')
+      }
+      if (this.shareFlag === 1 && response.data.success) {
+        this.$swal({
+          type: 'success',
+          title: '자신의 일지가 공유되고\n타인의 공유정보를 볼 수 있습니다.',
+          showConfirmButton: false,
+          timer: 2000
+        }).then((result) => {
+        })
+      }
+    },
+    async checkDB () {
+      try {
+        await DBService.checkDB({})
+      } catch (e) {
+        this.$router.push('/500')
+        return false
+      }
+      return true
     },
     submit2 () {
       if (this.$refs.form2.validate()) {
-        this.updateUserAgeSex()
+        if (this.checkDB()) {
+          this.updateUserAgeSex()
+        }
       }
     },
     clear2 () {
@@ -265,17 +314,25 @@ export default {
     },
     goToChangePhonePage () {
       // this.$router.push('/changePhoneNo')
-      bus.$emit('dialogForChangePhoneNo', 'test')
+      if (this.checkDB()) {
+        bus.$emit('dialogForChangePhoneNo', 'test')
+      }
     },
     goToChangePwPage () {
       // this.$router.push('/changePw')
-      bus.$emit('dialogForChangePassword', 'test')
+      if (this.checkDB()) {
+        bus.$emit('dialogForChangePassword', 'test')
+      }
     },
     goToChangeLeavePage () {
-      bus.$emit('dialogForLeaveUser', 'test')
+      if (this.checkDB()) {
+        bus.$emit('dialogForLeaveUser', 'test')
+      }
     },
     onChangeShareFlag () {
-      this.updateUserShareFlag()
+      if (this.checkDB()) {
+        this.updateUserShareFlag()
+      }
     }
   }
 }

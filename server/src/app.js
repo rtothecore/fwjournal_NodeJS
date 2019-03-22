@@ -215,7 +215,7 @@ mongoose.connect('mongodb://fwjournal:fwjournal**@192.168.66.40:28017/fwjournal'
 .catch(err => {
 	// loggerEx.error(err.stack);
 	loggerEx.error("Mongodb Connection Error");		
-	// SENDSMS('0647536677', '01032795690', '(주)이지정보기술\n[영농일지]MongoDB커넥션에러.')
+	SENDSMS('0647536677', '01032795690', '(주)이지정보기술\n[영농일지]MongoDB커넥션에러.')
 })
 
 var User = require("../models/user")
@@ -274,7 +274,7 @@ app.get('/checkDB', (req, res) => {
   	case 0 :  		
   		loggerEx.error('MongoDB disconnected');
         res.status(500).json({ error: 'MongoDB disconnected' });
-        // SENDSMS('0647536677', '01032795690', '(주)이지정보기술\n[영농일지]MongoDB disconnected.')
+        SENDSMS('0647536677', '01032795690', '(주)이지정보기술\n[영농일지]MongoDB disconnected.')
   		break;
   	case 1 :
   		res.status(200).json([{error: "MongoDB successfully connected"}]);
@@ -282,12 +282,12 @@ app.get('/checkDB', (req, res) => {
   	case 2 :  		
   		loggerEx.error('MongoDB connecting');
         res.status(500).json({ error: 'MongoDB connecting' });
-        // SENDSMS('0647536677', '01032795690', '(주)이지정보기술\n[영농일지]MongoDB connecting.')
+        SENDSMS('0647536677', '01032795690', '(주)이지정보기술\n[영농일지]MongoDB connecting.')
   		break;
   	case 3 :   		
   		loggerEx.error('MongoDB disconnecting');
         res.status(500).json({ error: 'MongoDB disconnecting' });
-        // SENDSMS('0647536677', '01032795690', '(주)이지정보기술\n[영농일지]MongoDB disconnecting.')
+        SENDSMS('0647536677', '01032795690', '(주)이지정보기술\n[영농일지]MongoDB disconnecting.')
   		break;
   	default :
   		break;
@@ -299,6 +299,7 @@ app.post('/logError', (req, res) => {
   // console.log(req.body.funcName);
   // console.log(req.body.message); 
   loggerEx.error(req.body.errorPage + ' : ' + req.body.funcName + ' : ' + req.body.message); 
+  SENDSMS('0647536677', '01032795690', '(주)이지정보기술\n[영농일지]\nERROR-' + req.body.errorPage + '-' + req.body.funcName)
 })
 
 // https://stackoverflow.com/questions/35847293/uploading-a-file-and-passing-a-additional-parameter-with-multer

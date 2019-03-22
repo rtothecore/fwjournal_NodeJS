@@ -49,6 +49,7 @@
 <script>
 import {bus} from '../main'
 import AddressService from '@/services/AddressService'
+import LogService from '@/services/LogService'
 export default {
   $_veeValidate: {
     validator: 'new'
@@ -79,10 +80,23 @@ export default {
   created () {
   },
   methods: {
-    async getAddress () {
-      const response = await AddressService.fetchAddressData({
-        searchText: this.searchText
+    async logError (page, funcName, message) {
+      await LogService.logError({
+        errorPage: page,
+        funcName: funcName,
+        message: message
       })
+    },
+    async getAddress () {
+      var response = null
+      try {
+        response = await AddressService.fetchAddressData({
+          searchText: this.searchText
+        })
+      } catch (e) {
+        this.logError('SearchAddressModal.vue', 'getAddress', e.toString())
+        this.$router.push('/500')
+      }
       // console.log(response.data.results)
       this.searchedAddress = response.data.results
     },

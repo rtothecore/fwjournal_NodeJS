@@ -67,6 +67,7 @@
 <script>
 import {bus} from '../main'
 import UserService from '@/services/UserService'
+import LogService from '@/services/LogService'
 export default {
   $_veeValidate: {
     validator: 'new'
@@ -111,12 +112,25 @@ export default {
     })
   },
   methods: {
-    async savePassword () {
-      const response = await UserService.updateUserPassword({
-        id: this.userId,
-        nowPassword: this.oldPw,
-        password: this.newPw
+    async logError (page, funcName, message) {
+      await LogService.logError({
+        errorPage: page,
+        funcName: funcName,
+        message: message
       })
+    },
+    async savePassword () {
+      var response = null
+      try {
+        response = await UserService.updateUserPassword({
+          id: this.userId,
+          nowPassword: this.oldPw,
+          password: this.newPw
+        })
+      } catch (e) {
+        this.logError('ChangePasswordModal.vue', 'savePassword', e.toString())
+        this.$router.push('/500')
+      }
       if (response.data.success) {
         this.$swal({
           type: 'success',

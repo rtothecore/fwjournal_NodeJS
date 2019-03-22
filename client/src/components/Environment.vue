@@ -417,6 +417,7 @@ export default {
           endDate: this.eDate
         })
       } catch (e) {
+        this.logError('Environment.vue', 'getWeatherCrawlerDataAgg', e.toString())
         this.$router.push('/500')
       }
 

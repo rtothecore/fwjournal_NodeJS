@@ -525,6 +525,8 @@ import { extendMoment } from 'moment-range'
 import ItemService from '@/services/ItemService'
 import JournalService from '@/services/JournalService'
 import LandService from '@/services/LandService'
+import DBService from '@/services/DBService'
+import LogService from '@/services/LogService'
 const CanvasJS = require('../../canvasjs.min.js')
 const moment = extendMoment(Moment)
 export default {
@@ -785,6 +787,7 @@ export default {
     }
   },
   created: function () {
+    this.checkDB()
     this.userId = this.$session.get('userId')
     this.sDate = moment().format('YYYY-MM-DD').substr(0, 7)
     this.eDate = moment().format('YYYY-MM-DD').substr(0, 7)
@@ -1036,6 +1039,22 @@ export default {
       }
       return -999
     },
+    async checkDB () {
+      try {
+        await DBService.checkDB({})
+      } catch (e) {
+        this.$router.push('/500')
+        return false
+      }
+      return true
+    },
+    async logError (page, funcName, message) {
+      await LogService.logError({
+        errorPage: page,
+        funcName: funcName,
+        message: message
+      })
+    },
     // 지출 토탈(발생비용 + 자재구입) 차트 데이터 계산
     async getExpTotalChartData () {
       // 시작날짜와 종료날짜 사이의 월을 이용하여 데이터배열을 만든다
@@ -1068,11 +1087,17 @@ export default {
         // 시작날짜와 종료날짜 사이의 월을 이용하여 데이터배열을 만든다
         var tmpDataPoints = this.getBetweenMonthData(this.sDate, this.eDate)
 
-        const response = await ItemService.fetchItemExp({
-          userId: this.userId,
-          startDate: this.sDate,
-          endDate: this.eDate
-        })
+        var response = null
+        try {
+          response = await ItemService.fetchItemExp({
+            userId: this.userId,
+            startDate: this.sDate,
+            endDate: this.eDate
+          })
+        } catch (e) {
+          this.logError('Account.vue', 'getExpItemChartData', e.toString())
+          this.$router.push('/500')
+        }
 
         for (var i = 0; i < response.data.length; i++) {
           for (var j = 0; j < tmpDataPoints.length; j++) {
@@ -1090,11 +1115,17 @@ export default {
         // 시작날짜와 종료날짜 사이의 월을 이용하여 데이터배열을 만든다
         var tmpDataPoints = this.getBetweenMonthData(this.sDate, this.eDate)
 
-        const response = await JournalService.fetchJournalCOOSum({
-          userId: this.userId,
-          startDate: this.sDate,
-          endDate: this.eDate
-        })
+        var response = null
+        try {
+          response = await JournalService.fetchJournalCOOSum({
+            userId: this.userId,
+            startDate: this.sDate,
+            endDate: this.eDate
+          })
+        } catch (e) {
+          this.logError('Account.vue', 'getExpCooChartData', e.toString())
+          this.$router.push('/500')
+        }
 
         for (var i = 0; i < response.data.length; i++) {
           for (var j = 0; j < tmpDataPoints.length; j++) {
@@ -1107,11 +1138,17 @@ export default {
       }
     },
     async getItemData () {
-      const response = await ItemService.fetchJournalsByYMNUserIdAndDetail({
-        userId: this.userId,
-        startDate: this.sDate,
-        endDate: this.eDate
-      })
+      var response = null
+      try {
+        response = await ItemService.fetchJournalsByYMNUserIdAndDetail({
+          userId: this.userId,
+          startDate: this.sDate,
+          endDate: this.eDate
+        })
+      } catch (e) {
+        this.logError('Account.vue', 'getItemData', e.toString())
+        this.$router.push('/500')
+      }
 
       var tmpItemItems = []
       var tmpItemTotal = 0
@@ -1141,49 +1178,19 @@ export default {
       }
       this.itemItems = tmpItemItems
       this.itemTotal = tmpItemTotal
-      /*
-      const response = await ItemService.fetchJournalsByYMNUserIdAndDetail({
-        userId: this.userId,
-        startDate: this.sDate,
-        endDate: this.eDate
-      })
-      console.log(response.data)
-      var tmpItemItems = []
-      var tmpItemTotal = 0
-
-      for (var i = 0; i < response.data.length; i++) {
-        for (var j = 0; j < response.data[i].itemDetail.length; j++) {
-          var tmpItemItem = {}
-          // _id
-          tmpItemItem._id = response.data[i]._id
-
-          // 날짜
-          tmpItemItem.date = response.data[i].date
-
-          // 품목명
-          tmpItemItem.itemName = response.data[i].itemDetail[j].itemName
-
-          // 수량
-          tmpItemItem.amount = response.data[i].itemDetail[j].itemAmount
-
-          // 금액
-          tmpItemItem.cost = response.data[i].itemDetail[j].itemPrice
-
-          // 자재구입 소계
-          tmpItemTotal += tmpItemItem.cost
-          tmpItemItems.push(tmpItemItem)
-        }
-      }
-      this.itemItems = tmpItemItems
-      this.itemTotal = tmpItemTotal
-      */
     },
     async getCooData () {
-      const response = await JournalService.fetchJournalsByYMNUserIdAndCoo({
-        userId: this.userId,
-        startDate: this.sDate,
-        endDate: this.eDate
-      })
+      var response = null
+      try {
+        response = await JournalService.fetchJournalsByYMNUserIdAndCoo({
+          userId: this.userId,
+          startDate: this.sDate,
+          endDate: this.eDate
+        })
+      } catch (e) {
+        this.logError('Account.vue', 'getCooData', e.toString())
+        this.$router.push('/500')
+      }
 
       var tmpCooItems = []
       var tmpCooTotal = 0
@@ -1217,26 +1224,44 @@ export default {
       this.cooTotal = tmpCooTotal
     },
     async getTotalIncomeData () {
-      // 년월, 유저아이디로 income.amount가 '', null이 아닌 작업일지만 가져옴
-      const response = await JournalService.fetchJournalsByYMNUserId({
-        userId: this.userId,
-        startDate: this.sDate,
-        endDate: this.eDate
-      })
+      var response = null
+      try {
+        // 년월, 유저아이디로 income.amount가 '', null이 아닌 작업일지만 가져옴
+        response = await JournalService.fetchJournalsByYMNUserId({
+          userId: this.userId,
+          startDate: this.sDate,
+          endDate: this.eDate
+        })
+      } catch (e) {
+        this.logError('Account.vue', 'getTotalIncomeData', e.toString())
+        this.$router.push('/500')
+      }
       this.incomeItems = response.data
 
       var tmpIncomeTotal = 0
       for (var i = 0; i < this.incomeItems.length; i++) {
-        // 농장명
-        const response2 = await LandService.fetchNameByLandId({
-          landId: this.incomeItems[i].landId
-        })
+        var response2 = null
+        try {
+          // 농장명
+          response2 = await LandService.fetchNameByLandId({
+            landId: this.incomeItems[i].landId
+          })
+        } catch (e) {
+          this.logError('Account.vue', 'getTotalIncomeData', e.toString())
+          this.$router.push('/500')
+        }
         this.incomeItems[i].landName = response2.data[0].name
 
-        // 항목(작물)
-        const response3 = await LandService.fetchCropNameByLandId({
-          landId: this.incomeItems[i].landId
-        })
+        var response3 = null
+        try {
+          // 항목(작물)
+          response3 = await LandService.fetchCropNameByLandId({
+            landId: this.incomeItems[i].landId
+          })
+        } catch (e) {
+          this.logError('Account.vue', 'getTotalIncomeData', e.toString())
+          this.$router.push('/500')
+        }
         this.incomeItems[i].cropName = response3.data[0].text
 
         // 수입 소계
@@ -1247,11 +1272,17 @@ export default {
     async getIncomeData () {
       var tmpDataPoints = this.getBetweenMonthData(this.sDate, this.eDate)
 
-      const response = await JournalService.fetchJournalInc({
-        userId: this.userId,
-        startDate: this.sDate,
-        endDate: this.eDate
-      })
+      var response = null
+      try {
+        response = await JournalService.fetchJournalInc({
+          userId: this.userId,
+          startDate: this.sDate,
+          endDate: this.eDate
+        })
+      } catch (e) {
+        this.logError('Account.vue', 'getIncomeData', e.toString())
+        this.$router.push('/500')
+      }
 
       for (var i = 0; i < response.data.length; i++) {
         for (var j = 0; j < tmpDataPoints.length; j++) {
@@ -1264,35 +1295,19 @@ export default {
       this.chartOptionsForIncome.axisY.title = '원'
 
       this.chartForIncome.render()
-      /*
-      const response = await JournalService.fetchJournalInc({
-        userId: this.userId,
-        startDate: this.sDate,
-        endDate: this.eDate
-      })
-      var incomeData = response.data
-      console.log(response.data)
-
-      var tmpDataPoints = []
-      for (var i = 0; i < incomeData.length; i++) {
-        var tmpData = {}
-        // tmpData.x = new Date(incomeData[i]._id.date)
-        tmpData.label = incomeData[i]._id.date
-        tmpData.y = incomeData[i].totalIncome
-        tmpDataPoints.push(tmpData)
-      }
-      this.chartOptionsForIncome.data[0].dataPoints = tmpDataPoints
-      this.chartOptionsForIncome.axisY.title = '원'
-
-      this.chartForIncome.render()
-      */
     },
     async getIncomeSum () {
-      const response = await JournalService.fetchJournalInc({
-        userId: this.userId,
-        startDate: this.sDate,
-        endDate: this.eDate
-      })
+      var response = null
+      try {
+        response = await JournalService.fetchJournalInc({
+          userId: this.userId,
+          startDate: this.sDate,
+          endDate: this.eDate
+        })
+      } catch (e) {
+        this.logError('Account.vue', 'getIncomeSum', e.toString())
+        this.$router.push('/500')
+      }
       var incomeSumData = response.data
       var tmpTotal = 0
       for (var i = 0; i < incomeSumData.length; i++) {
@@ -1301,11 +1316,17 @@ export default {
       this.totalIncomeCost = tmpTotal
     },
     async getItemExpSum () {
-      const response = await ItemService.fetchItemExp({
-        userId: this.userId,
-        startDate: this.sDate,
-        endDate: this.eDate
-      })
+      var response = null
+      try {
+        response = await ItemService.fetchItemExp({
+          userId: this.userId,
+          startDate: this.sDate,
+          endDate: this.eDate
+        })
+      } catch (e) {
+        this.logError('Account.vue', 'getItemExpSum', e.toString())
+        this.$router.push('/500')
+      }
       var itemExpSumData = response.data
       var tmpTotal = 0
       for (var i = 0; i < itemExpSumData.length; i++) {
@@ -1317,11 +1338,17 @@ export default {
       // this.totalExpenditure = this.totalCooCost + this.totalItemCost
     },
     async getCOOSum () {
-      const response = await JournalService.fetchJournalCOOSum({
-        userId: this.userId,
-        startDate: this.sDate,
-        endDate: this.eDate
-      })
+      var response = null
+      try {
+        response = await JournalService.fetchJournalCOOSum({
+          userId: this.userId,
+          startDate: this.sDate,
+          endDate: this.eDate
+        })
+      } catch (e) {
+        this.logError('Account.vue', 'getCOOSum', e.toString())
+        this.$router.push('/500')
+      }
       var cooSumData = response.data
       var tmpTotal = 0
       for (var i = 0; i < cooSumData.length; i++) {
@@ -1330,12 +1357,16 @@ export default {
       this.totalCooCost = tmpTotal
     },
     showItem (item) {
-      var emitParams = {'journalId': item._id, 'origin': 'fromPredict'}
-      bus.$emit('dialogForShow', emitParams)
+      if (this.checkDB()) {
+        var emitParams = {'journalId': item._id, 'origin': 'fromPredict'}
+        bus.$emit('dialogForShow', emitParams)
+      }
     },
     showItemForItem (item) {
-      var emitParams = {'itemId': item._id, 'origin': 'fromPredict'}
-      bus.$emit('dialogForShowItem', emitParams)
+      if (this.checkDB()) {
+        var emitParams = {'itemId': item._id, 'origin': 'fromPredict'}
+        bus.$emit('dialogForShowItem', emitParams)
+      }
     },
     submit () {
       if (this.$refs.form.validate()) {
